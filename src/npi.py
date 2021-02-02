@@ -4,7 +4,8 @@ import date
 import pandas as pd
 import typer
 
-from src.medidas import return_all_medidas, load_dict_medidas
+from src.medidas import load_dict_medidas
+from src.taxonomia import return_all_medidas
 
 
 def extend_fecha(df: pd.DataFrame) -> pd.DataFrame:

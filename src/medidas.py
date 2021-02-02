@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import typer
 
+from src.taxonomia import return_all_medidas
+
 
 def read_npi_data(path_com: str) -> pd.DataFrame:
     """Read the data contained in a xlsm file"""
@@ -68,21 +70,6 @@ def gen_cod(prefix, maximo, missing=()):
     """ returns a list of the codes for a given range"""
     lista = set(range(1, maximo + 1)) - set(missing)
     return [prefix + "." + str(n) for n in lista]
-
-
-def return_all_medidas():
-    all_medidas = (
-        gen_cod("AF", 17, [10, 11])
-        + gen_cod("CD", 17)
-        + gen_cod("CE", 7)
-        + gen_cod("CO", 10)
-        + gen_cod("ED", 4)
-    )
-    all_medidas += gen_cod("ON", 10, [9]) + gen_cod("LA", 3) + gen_cod("RH", 11, [8])
-    all_medidas += (
-        gen_cod("MV", 4) + ["RS.1", "RS.2", "RS.8", "TP.1"] + gen_cod("TR", 9)
-    )
-    return all_medidas
 
 
 def filter_relevant_medidas(df: pd.DataFrame):
