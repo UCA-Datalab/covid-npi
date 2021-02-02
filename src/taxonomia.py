@@ -1,7 +1,6 @@
-import numpy as np
 import pandas as pd
 
-PATH_TAXONOMIA = "datos_NPI/Taxonomía_23012021.xlsx"
+PATH_TAXONOMIA = "../../modelos-covid/datos_NPI/Taxonomía_23012021.xlsx"
 
 
 def read_taxonomia(path_taxonomia=PATH_TAXONOMIA):
