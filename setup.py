@@ -22,7 +22,7 @@ setuptools.setup(
     install_requires=[
         "matplotlib==3.2.1",
         "numpy==1.18.1",
-        "pandas==0.24.2",
+        "pandas==1.0.3",
         "pip==19.3",
         "typer==0.3.2",
         "xlrd==1.1.0",

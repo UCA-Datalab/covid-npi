@@ -60,7 +60,7 @@ def read_npi_folder(path_data: str) -> pd.DataFrame:
         df = read_npi_data(path_file)
         list_df += [df]
 
-    df = pd.concat(list_df, sort=False).reset_index(drop=True)
+    df = pd.concat(list_df).reset_index(drop=True)
     return df
 
 
@@ -143,7 +143,7 @@ def pivot_unidad_valor(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def return_dict_provincia(df: pd.DataFrame) -> dict:
-    df_ccaa = df.groupby(["comunidad_autonoma", "provincia"], as_index=False).size()
+    df_ccaa = df.groupby(["comunidad_autonoma", "provincia"]).size().reset_index()
 
     dict_provincia = dict(zip(df_ccaa["provincia"], df_ccaa["comunidad_autonoma"]))
 
