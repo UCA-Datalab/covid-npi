@@ -25,5 +25,6 @@ setuptools.setup(
         "pandas==0.24.2",
         "pip==19.3",
         "typer==0.3.2",
+        "xlrd==1.1.0",
     ],
 )

@@ -3,11 +3,12 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - python==3.7.9
   - matplotlib==3.2.1
   - numpy==1.18.1
   - pandas==0.24.2
   - pip==19.3
-  - python==3.7.9
+  - xlrd==1.1.0
   - pip:
       - typer==0.3.2
       - -e .
