@@ -10,4 +10,4 @@ dependencies:
   - python==3.7.9
   - pip:
       - typer==0.3.2
-      - -e .[dev]
+      - -e .
