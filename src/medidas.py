@@ -60,7 +60,7 @@ def read_npi_folder(path_data: str) -> pd.DataFrame:
         df = read_npi_data(path_file)
         list_df += [df]
 
-    df = pd.concat(list_df).reset_index(drop=True)
+    df = pd.concat(list_df, sort=False).reset_index(drop=True)
     return df
 
 
