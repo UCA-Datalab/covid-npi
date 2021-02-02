@@ -1,0 +1,13 @@
+name: covid-npi
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - matplotlib==3.2.1
+  - numpy==1.18.1
+  - pandas==0.24.2
+  - pip==19.3
+  - python==3.7.9
+  - pip:
+      - typer==0.3.2
+      - -e .[dev]
