@@ -1,10 +1,10 @@
-import os
 from datetime import date
 
 import numpy as np
 import pandas as pd
 import typer
 
+from src.dictionaries import store_dict_scores
 from src.preprocess import load_dict_medidas
 from src.taxonomia import return_taxonomia, return_all_medidas
 
@@ -182,7 +182,7 @@ def pivot_df_score(df_score: pd.DataFrame):
     return df_medida
 
 
-def return_dict_scores(dict_medidas: dict, verbose: bool = True) -> dict:
+def return_dict_score_medidas(dict_medidas: dict, verbose: bool = True) -> dict:
     dict_scores = {}
 
     taxonomia = return_taxonomia()
@@ -203,20 +203,11 @@ def return_dict_scores(dict_medidas: dict, verbose: bool = True) -> dict:
     return dict_scores
 
 
-def store_dict_scores(dict_scores, path_output: str = "output/score_medidas"):
-    if not os.path.exists(path_output):
-        os.mkdir(path_output)
-
-    for provincia, df_score in dict_scores.items():
-        path_file = os.path.join(path_output, provincia.split("/")[0] + ".csv")
-        df_score.to_csv(path_file)
-
-
 def main(
     path_medidas: str = "output/medidas", path_output: str = "output/score_medidas"
 ):
     dict_medidas = load_dict_medidas(path_medidas=path_medidas)
-    dict_scores = return_dict_scores(dict_medidas)
+    dict_scores = return_dict_score_medidas(dict_medidas)
     store_dict_scores(dict_scores, path_output=path_output)
 
 
