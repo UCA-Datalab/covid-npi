@@ -249,7 +249,7 @@ def load_dict_medidas(path_medidas: str = "output_medidas"):
     return dict_medidas
 
 
-def main(path_data: str = "datos_NPI_2", path_output: str = "output_medidas"):
+def main(path_data: str = "datos_NPI_2", path_output: str = "output/medidas"):
     # Read all files and combine them
     df = read_npi_folder(path_data)
 

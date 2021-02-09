@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import typer
 
-from src.medidas import load_dict_medidas
+from src.preprocess import load_dict_medidas
 from src.taxonomia import return_taxonomia, return_all_medidas
 
 # Define NaN globally to build conditions with NaN
@@ -212,7 +212,9 @@ def store_dict_scores(dict_scores, path_output: str = "output_scores"):
         df_score.to_csv(path_file)
 
 
-def main(path_medidas: str = "output_medidas", path_output: str = "output_scores"):
+def main(
+    path_medidas: str = "output/medidas", path_output: str = "output/score_medidas"
+):
     dict_medidas = load_dict_medidas(path_medidas=path_medidas)
     dict_scores = return_dict_scores(dict_medidas)
     store_dict_scores(dict_scores, path_output=path_output)
