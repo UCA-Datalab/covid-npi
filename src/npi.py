@@ -1,11 +1,15 @@
 import os
+from datetime import date
 
-import date
+import numpy as np
 import pandas as pd
 import typer
 
 from src.medidas import load_dict_medidas
-from src.taxonomia import return_all_medidas
+from src.taxonomia import return_taxonomia, return_all_medidas
+
+# Define NaN globally to build conditions with NaN
+nan = np.nan
 
 
 def extend_fecha(df: pd.DataFrame) -> pd.DataFrame:
@@ -50,128 +54,117 @@ def build_condicion_personas(lista_medidas, personas):
     return condicion_compuesta
 
 
+def build_condicion_no_especifica(lista_medidas):
+    condicion = build_condicion_existe(lista_medidas)
+    condicion_compuesta = f"({condicion} & (personas == @nan))"
+    return condicion_compuesta
+
+
 def build_condicion_horario(lista_medidas, hora):
     condicion = build_condicion_existe(lista_medidas)
     condicion_compuesta = f"({condicion} & (hora <= {hora}))"
     return condicion_compuesta
 
 
-def score_medidas(df: pd.DataFrame) -> pd.DataFrame:
+def expand_nivel_educacion(df):
+    # Split the dataframe in two:
+    # df_ed contains only the measures that apply to different education levels
+    # df_no_ed contains the rest of measures
+    df_ed = df.query(
+        "(codigo == 'ED.1') | (codigo == 'ED.2') | (codigo == 'ED.5')"
+    ).copy()
+    df_no_ed = df.query(
+        "(codigo != 'ED.1') & (codigo != 'ED.2') & (codigo != 'ED.5')"
+    ).copy()
+    try:
+        df_ed["niv_edu"] = (
+            df_ed["nivel_educacion"]
+            .fillna("t")
+            .str.replace("\d+", "")
+            .str.upper()
+            .str[0]
+        )
+    except AttributeError:
+        return df
+
+    df_ed.reset_index(drop=True, inplace=True)
+    drop_idx = []
+
+    mask_edu = df_ed["niv_edu"] == "t"
+
+    for i, row in df_ed[mask_edu].iterrows():
+        drop_idx += [i]
+        for niv_edu in ["B", "U", "I", "P", "S"]:
+            new_row = row.copy()
+            new_row["niv_edu"] = niv_edu
+            df_ed = df_ed.append(new_row)
+
+    df_ed = df_ed.reset_index(drop=True).drop(drop_idx)
+    df_ed["codigo"] = df_ed["codigo"] + df_ed["niv_edu"]
+    df_ed = df_ed.drop(["niv_edu"], axis=1)
+
+    df_expanded = pd.concat([df_ed, df_no_ed])
+    return df_expanded
+
+
+def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     df_score = df.copy()
     # Asumimos que por defecto es baja
     df_score["score_medida"] = 0.3
 
-    condicion_alto = " | ".join(
-        [
-            build_condicion_existe(
-                [
-                    "AF.1",
-                    "AF.2",
-                    "AF.4",
-                    "AF.3",
-                    "AF.13",
-                    "AF.8",
-                    "AF.14",
-                    "CD.1",
-                    "CD.2",
-                    "CD.3",
-                    "CD.4",
-                    "CD.5",
-                    "CD.16",
-                    "CD.17",
-                    "CE.1",
-                    "CE.7",
-                    "CO.1",
-                    "CO.2",
-                    "CO.3",
-                    "CO.4",
-                    "CO.5",
-                    "CO.6",
-                    "ON.1",
-                    "ON.2",
-                    "ON.7",
-                    "LA.1",
-                    "RH.1",
-                    "RH.2",
-                    "RH.3",
-                    "MV.1",
-                    "RS.8",
-                    "MV.3",
-                    "MV.4",
-                    "TR.1",
-                    "TR.4",
-                    "TR.6",
-                    "TR.8",
-                ]
-            ),
-            build_condicion_personas(["RS.1", "RS.2"], 6),
-        ]
-    )
+    dict_condicion = {}
 
-    condicion_medio = " | ".join(
-        [
-            build_condicion_porcentaje(
-                [
-                    "AF.6",
-                    "AF.15",
-                    "AF.5",
-                    "AF.9",
-                    "AF.16",
-                    "CD.6",
-                    "CD.7",
-                    "CD.8",
-                    "CD.9",
-                    "CD.10",
-                    "CD.11",
-                    "CD.14",
-                    "CD.15",
-                    "CE.2",
-                    "CE.3",
-                    "CE.4",
-                    "CE.5",
-                    "CE.6",
-                    "CO.8",
-                    "CO.9",
-                    "CO.10",
-                    "ON.4",
-                    "ON.5",
-                    "ON.6" "LA.3",
-                    "RH.7",
-                    "RH.6",
-                    "TR.5",
-                    "TR.7",
-                    "TR.9",
-                ],
-                35,
-            ),
-            build_condicion_personas(
-                [
-                    "AF.6",
-                    "AF.7",
-                    "AF.5",
-                    "AF.17",
-                    "AF.12",
-                    "ON.10",
-                    "RH.9",
-                    "RH.10",
-                    "RH.11",
-                ],
-                6,
-            ),
-            build_condicion_personas(
-                ["CE.3", "CE.4", "CE.5", "CE.6", "RS.1", "RS.2"], 10
-            ),
-            build_condicion_personas(["CD.12", "CD.13"], 100),
-            build_condicion_existe(["ED.2", "ED.5", "TR.2"]),
-            build_condicion_horario(["RH.5"], 18),
-        ]
-    )
+    for nivel in ["alto", "medio"]:
+        list_condiciones = []
+        # Existe
+        existe = taxonomia.loc[
+            taxonomia[nivel].str.contains("existe"), "codigo"
+        ].unique()
+        if len(existe) > 0:
+            list_condiciones += [build_condicion_existe(existe)]
+        # Personas
+        for pers in [6, 10, 100]:
+            personas_leq = taxonomia.loc[
+                taxonomia[nivel].str.contains(f"<={pers}(?!%)", regex=True), "codigo"
+            ].unique()
+            if len(personas_leq) > 0:
+                list_condiciones += [build_condicion_personas(personas_leq, pers)]
+        # Personas no especifica
+        no_especifica = taxonomia.loc[
+            taxonomia[nivel].str.contains("noseespecifica"), "codigo"
+        ].unique()
+        if len(no_especifica) > 0:
+            list_condiciones += [build_condicion_no_especifica(no_especifica)]
+        # Porcentaje
+        for por in [35]:
+            porcentaje_leq = taxonomia.loc[
+                taxonomia[nivel].str.contains(f"<={por}%"), "codigo"
+            ].unique()
+            if len(porcentaje_leq) > 0:
+                list_condiciones += [build_condicion_porcentaje(porcentaje_leq, por)]
+        # Hora
+        for hor in [18]:
+            hora_leq = taxonomia.loc[
+                (taxonomia[nivel].str.contains(f"antesdelas{hor}:00"))
+                | (taxonomia[nivel].str.contains(f"antesoigualquelas{hor}:00")),
+                "codigo",
+            ].unique()
+            if len(hora_leq) > 0:
+                list_condiciones += [build_condicion_horario(hora_leq, hor)]
+        # All conditions
+        condicion = " | ".join(list_condiciones)
+        dict_condicion.update({nivel: condicion})
+
+    condicion_alto = dict_condicion["alto"]
+    condicion_medio = dict_condicion["medio"]
 
     mask_alto = df.query(condicion_alto).index
     mask_medio = df.query(condicion_medio).index
 
     df_score.loc[mask_medio, "score_medida"] = 0.6
     df_score.loc[mask_alto, "score_medida"] = 1
+
+    df_score = expand_nivel_educacion(df_score)
 
     df_score = (
         df_score[["codigo", "score_medida"]]
@@ -187,15 +180,17 @@ def score_medidas(df: pd.DataFrame) -> pd.DataFrame:
 def return_dict_scores(dict_medidas: dict) -> dict:
     dict_scores = {}
 
+    taxonomia = return_taxonomia()
     all_medidas = return_all_medidas()
 
     for provincia, df_sub in dict_medidas.items():
         df_sub_extended = extend_fecha(df_sub)
-        df_score = score_medidas(df_sub_extended)
+        df_score = score_medidas(df_sub_extended, taxonomia)
         assert df_score.max().max() <= 1, "Maximum greater than 1 for {provincia}"
         # Nos aseguramos de que todas las medidas estan en el df
-        missing = list(set(all_medidas) - set(df_score.columns))
-        df_score[missing] = 0
+        medidas_missing = list(set(all_medidas) - set(df_score.columns))
+        for m in medidas_missing:
+            df_score[m] = 0
         df_score = df_score[all_medidas]
         dict_scores.update({provincia: df_score})
 

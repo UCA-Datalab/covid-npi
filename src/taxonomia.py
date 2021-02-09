@@ -1,6 +1,6 @@
 import pandas as pd
 
-PATH_TAXONOMIA = "../../modelos-covid/datos_NPI/Taxonomía_23012021.xlsx"
+PATH_TAXONOMIA = "../datos_NPI/Taxonomía_07022021.xlsx"
 
 
 def read_taxonomia(path_taxonomia=PATH_TAXONOMIA):
@@ -43,4 +43,51 @@ def return_all_medidas(path_taxonomia=PATH_TAXONOMIA):
 
     list_codigos = df["codigo"].unique().tolist()
 
+    for codigo in ["ED.1", "ED.2", "ED.5"]:
+        for niv in ["I", "P", "S", "B", "U"]:
+            list_codigos += [codigo + niv]
+
     return list_codigos
+
+
+def classify_criteria(taxonomia):
+    """Parses "Criterio" column into three categories:
+    "alto", "medio", "bajo"
+    """
+    criterio = (
+        taxonomia["Criterio"]
+        .str.replace("\n", "")
+        .str.lower()
+        .str.replace(" ", "")
+        .str.split("si")
+    )
+
+    classified = []
+    for i, row in enumerate(criterio):
+        c = [""] * 3
+        for s in row:
+            if "alto" in s:
+                c[0] = s.replace("alto", "")
+            elif "medio" in s:
+                c[1] = s.replace("medio", "")
+            elif "bajo" in s:
+                c[2] = s.replace("bajo", "")
+        classified += [c]
+
+    classified = pd.DataFrame(classified, columns=["alto", "medio", "bajo"])
+    for col in classified.columns:
+        classified[col] = (
+            classified[col]
+            .str.replace("[;=]$", "", regex=True)
+            .str.replace("[;=]$", "", regex=True)
+            .str.replace("pormesa$", "", regex=True)
+        )
+
+    return classified
+
+
+def return_taxonomia(path_taxonomia=PATH_TAXONOMIA):
+    taxonomia = read_taxonomia(path_taxonomia)
+    criterio = classify_criteria(taxonomia)
+    taxonomia = pd.merge(taxonomia, criterio, left_index=True, right_index=True)
+    return taxonomia
