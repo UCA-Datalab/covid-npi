@@ -7,6 +7,17 @@ import typer
 from src.taxonomia import return_all_medidas
 
 
+DICT_PORCENTAJE = {
+    "cantalejo": 2,
+    "carrascaldelrio": 0.1,
+    "arandadeduero": 9.1,
+    "sotillodelaribera": 0.1,
+    "iscar": 1.2,
+    "pedrajassanesteban": 0.6,
+    "pesqueradeduero": 0.1,
+}
+
+
 def read_npi_data(path_com: str) -> pd.DataFrame:
     """Read the data contained in a xlsm file"""
     col_rename = {
@@ -117,6 +128,39 @@ def format_hora(df):
     return df
 
 
+def format_porcentaje_afectado(df: pd.DataFrame):
+    df = df.copy()
+    list_provincia = df["provincia"].unique()
+    # Loop through provincias
+    for provincia in list_provincia:
+        mask_provincia = df["provincia"] == provincia
+        porc = df.loc[mask_provincia, "porcentaje_afectado"].copy()
+        # If the column is a string, convert city names to values
+        try:
+            porc = (
+                porc.str.lower()
+                .str.replace(" ", "")
+                .str.replace(",", ".")
+                .str.normalize("NFKD")
+                .str.encode("ascii", errors="ignore")
+                .str.decode("utf-8")
+                .replace(DICT_PORCENTAJE)
+            )
+        except AttributeError:
+            pass
+        # If values are below 1, multiply by 100 to get percentages
+        try:
+            porc = porc.astype(float)
+            if porc.max() <= 1:
+                porc = (porc * 100).astype(float)
+        except TypeError:
+            print(f"porcentaje_afectado of {provincia} is not a float!")
+        df.loc[mask_provincia, "porcentaje_afectado"] = porc
+    # Round to one decimal
+    df["porcentaje_afectado"] = df["porcentaje_afectado"].astype(float).round(1)
+    return df
+
+
 def pivot_unidad_valor(df: pd.DataFrame) -> pd.DataFrame:
     """Pivot the column unidad so that we get one column per category"""
     # Pasamos las categorias de la columna "unidad" a columnas con valor "valor"
@@ -182,6 +226,7 @@ def store_dict_medidas(dict_medidas, path_output: str = "../output_medidas"):
                 "codigo",
                 "fecha_inicio",
                 "fecha_fin",
+                "fecha_publicacion_oficial",
                 "ambito",
                 "porcentaje_afectado",
                 "porcentaje",
@@ -213,6 +258,9 @@ def main(path_data: str = "datos_NPI_2", path_output: str = "output_medidas"):
 
     # Renombramos la columna unidad
     df_renamed = rename_unidad(df_filtered)
+
+    # Formateamos "porcentaje afectado"
+    df_renamed = format_porcentaje_afectado(df_renamed)
 
     # Pivotamos la columna "unidad" y le asignamos a cada categoría
     # su correspondiente "valor"
