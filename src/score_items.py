@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import typer
 
 from src.dictionaries import store_dict_scores, load_dict_scores
@@ -59,6 +60,43 @@ def score_items(df: pd.DataFrame):
 
     # Deporte interior
     df_item["DIN_afo"] = df[["AF.1", "AF.2", "AF.5", "AF.12"]].max(axis=1)
+    df_item["DIN_pub"] = df[["AF.3", "AF.14", "AF.16"]].max(axis=1)
+    df_item["DIN_pisc"] = df[["AF.8", "AF.9"]].max(axis=1)
+
+    # Cultura
+    df_item["CUL_mus"] = np.max(
+        [
+            df["CD.1"],
+            df["CD.6"],
+            (0.7 * np.max([df["CD.2"], df["CD.7"]], axis=0) + 0.3 * df["CD.8"])
+            * (df["CD.6"] == 0),
+        ]
+    )
+    df_item["CUL_cin"] = np.max(
+        [
+            df["CD.3"],
+            (0.7 * np.max([df["CD.4"], df["CD.9"]], axis=0) + 0.3 * df["CD.10"])
+            * (df["CD.3"] == 0),
+        ]
+    )
+
+    # Ocio Nocturno
+    df_item["OCN_afo"] = 0  # TODO
+    df_item["OCN_mes"] = df[["ON.1", "ON.2", "ON.10"]].max(axis=1)
+    df_item["OCN_hor"] = df[["ON.1", "ON.2", "ON.8"]].max(axis=1)
+    df_item["OCN_bai"] = df[["ON.1", "ON.2", "ON.3"]].max(axis=1)
+    df_item["OCN_ver"] = df["ON.7"]
+
+    # Restauración interior
+    df_item["RIN_bing"] = df[["LA.1", "LA.2"]].max(axis=1)
+    df_item["RIN_binh"] = df[["LA.1", "LA.3"]].max(axis=1)
+    df_item["RIN_afo"] = df[["RH.1", "RH.2", "RH.3", "RH.7"]].max(axis=1)
+    df_item["RIN_hor"] = df[["RH.1", "RH.2", "RH.3", "RH.5"]].max(axis=1)
+    df_item["RIN_mesa"] = df[["RH.1", "RH.2", "RH.3", "RH.9", "RH.11"]].max(axis=1)
+    
+    # Restauración exterior
+    df_item["REX_afo"] = df[["RH.1", "RH.2", "RH.6"]].max(axis=1)
+    df_item["REX_otr"] = df[["RH.1", "RH.2", "RH.9", "RH.10"]].max(axis=1)
 
     return df_item
 
@@ -70,9 +108,7 @@ def ponderate_items(df_item: pd.DataFrame):
     list_item.remove("porcentaje_afectado")
     dict_ponderado = {}
     for item in list_item:
-        dict_ponderado.update(
-            {item: compute_proportion(df_item, item)}
-        )
+        dict_ponderado.update({item: compute_proportion(df_item, item)})
     df_ponderado = pd.DataFrame.from_dict(dict_ponderado)
 
     df_ponderado = df_ponderado.reset_index().rename(columns={"index": "fecha"})
