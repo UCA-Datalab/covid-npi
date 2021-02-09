@@ -203,7 +203,7 @@ def return_dict_scores(dict_medidas: dict, verbose: bool = True) -> dict:
     return dict_scores
 
 
-def store_dict_scores(dict_scores, path_output: str = "output/score/medidas"):
+def store_dict_scores(dict_scores, path_output: str = "output/score_medidas"):
     if not os.path.exists(path_output):
         os.mkdir(path_output)
 
@@ -213,7 +213,7 @@ def store_dict_scores(dict_scores, path_output: str = "output/score/medidas"):
 
 
 def main(
-    path_medidas: str = "output/medidas", path_output: str = "output/score/medidas"
+    path_medidas: str = "output/medidas", path_output: str = "output/score_medidas"
 ):
     dict_medidas = load_dict_medidas(path_medidas=path_medidas)
     dict_scores = return_dict_scores(dict_medidas)
