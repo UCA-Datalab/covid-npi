@@ -44,10 +44,12 @@ def return_all_medidas(path_taxonomia=PATH_TAXONOMIA):
     list_codigos = df["codigo"].unique().tolist()
 
     for codigo in ["ED.1", "ED.2", "ED.5"]:
-        for niv in ["I", "P", "S", "B", "U"]:
-            list_codigos += [codigo + niv]
+        if codigo in list_codigos:
+            list_codigos.remove(codigo)
+            for niv in ["I", "P", "S", "B", "U"]:
+                list_codigos += [codigo + niv]
 
-    return list_codigos
+    return sorted(list_codigos)
 
 
 def classify_criteria(taxonomia):
