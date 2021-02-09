@@ -166,26 +166,18 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
 
     df_score = expand_nivel_educacion(df_score)
 
-    df_porcentaje = (
-        df_score[["codigo", "porcentaje_afectado"]]
-        .pivot(columns="codigo", values="porcentaje_afectado")
-        .fillna(100)
-    )
-    df_porcentaje["fecha"] = df["fecha"]
-    df_porcentaje = df_porcentaje.groupby("fecha").max()
-    df_porcentaje.columns = [
-        "por_" + col for col in df_porcentaje.columns if col != "fecha"
-    ]
+    return df_score
 
-    df_medida = (
-        df_score[["codigo", "score_medida"]]
-        .pivot(columns="codigo", values="score_medida")
-        .fillna(0)
-    )
-    df_medida["fecha"] = df["fecha"]
-    df_medida = df_medida.groupby("fecha").max()
 
-    df_medida = pd.merge(df_medida, df_porcentaje, on="fecha")
+def pivot_df_score(df_score: pd.DataFrame):
+    df_medida = df_score[["codigo", "score_medida"]].pivot(
+        columns="codigo", values="score_medida"
+    )
+    df_medida["fecha"] = df_score["fecha"].reset_index(drop=True)
+    df_medida["porcentaje_afectado"] = (
+        df_score["porcentaje_afectado"].fillna(100).reset_index(drop=True)
+    )
+    df_medida = df_medida.groupby(["fecha", "porcentaje_afectado"]).max()
 
     return df_medida
 
@@ -201,11 +193,11 @@ def return_dict_scores(dict_medidas: dict, verbose: bool = True) -> dict:
             print(provincia)
         df_sub_extended = extend_fecha(df_sub)
         df_score = score_medidas(df_sub_extended, taxonomia)
+        df_score = pivot_df_score(df_score)
         # Nos aseguramos de que todas las medidas estan en el df
         medidas_missing = list(set(all_medidas) - set(df_score.columns))
         for m in medidas_missing:
-            df_score[m] = 0
-            df_score["por_" + m] = 100
+            df_score[m] = np.nan
         dict_scores.update({provincia: df_score})
 
     return dict_scores
