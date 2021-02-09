@@ -166,32 +166,46 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
 
     df_score = expand_nivel_educacion(df_score)
 
-    df_score = (
+    df_porcentaje = (
+        df_score[["codigo", "porcentaje_afectado"]]
+        .pivot(columns="codigo", values="porcentaje_afectado")
+        .fillna(100)
+    )
+    df_porcentaje["fecha"] = df["fecha"]
+    df_porcentaje = df_porcentaje.groupby("fecha").max()
+    df_porcentaje.columns = [
+        "por_" + col for col in df_porcentaje.columns if col != "fecha"
+    ]
+
+    df_medida = (
         df_score[["codigo", "score_medida"]]
         .pivot(columns="codigo", values="score_medida")
         .fillna(0)
     )
-    df_score["fecha"] = df["fecha"]
-    df_score = df_score.groupby("fecha").max()
+    df_medida["fecha"] = df["fecha"]
+    df_medida = df_medida.groupby("fecha").max()
 
-    return df_score
+    df_medida = pd.merge(df_medida, df_porcentaje, on="fecha")
+
+    return df_medida
 
 
-def return_dict_scores(dict_medidas: dict) -> dict:
+def return_dict_scores(dict_medidas: dict, verbose: bool = True) -> dict:
     dict_scores = {}
 
     taxonomia = return_taxonomia()
     all_medidas = return_all_medidas()
 
     for provincia, df_sub in dict_medidas.items():
+        if verbose:
+            print(provincia)
         df_sub_extended = extend_fecha(df_sub)
         df_score = score_medidas(df_sub_extended, taxonomia)
-        assert df_score.max().max() <= 1, "Maximum greater than 1 for {provincia}"
         # Nos aseguramos de que todas las medidas estan en el df
         medidas_missing = list(set(all_medidas) - set(df_score.columns))
         for m in medidas_missing:
             df_score[m] = 0
-        df_score = df_score[all_medidas]
+            df_score["por_" + m] = 100
         dict_scores.update({provincia: df_score})
 
     return dict_scores
