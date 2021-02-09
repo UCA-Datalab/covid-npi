@@ -213,7 +213,7 @@ def return_dict_medidas(df: pd.DataFrame) -> dict:
     return dict_medidas
 
 
-def store_dict_medidas(dict_medidas, path_output: str = "../output_medidas"):
+def store_dict_medidas(dict_medidas, path_output: str = "../output/medidas"):
     if not os.path.exists(path_output):
         os.mkdir(path_output)
 
@@ -238,7 +238,7 @@ def store_dict_medidas(dict_medidas, path_output: str = "../output_medidas"):
         df_medida.to_csv(path_file, index=False)
 
 
-def load_dict_medidas(path_medidas: str = "output_medidas"):
+def load_dict_medidas(path_medidas: str = "output/medidas"):
     dict_medidas = {}
     list_files = os.listdir(path_medidas)
     for file in list_files:
