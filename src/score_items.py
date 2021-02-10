@@ -90,6 +90,8 @@ def score_items(df: pd.DataFrame):
     )
 
     # Educacion otra
+    df_item["EDU_uni"] = df[["ED.1U", "ED.5U", "ED.2U"]].max(axis=1)
+    df_item["EDU_acad"] = df[["ED.3", "ED.4"]].max(axis=1)
 
     # Ocio Nocturno
     df_item["OCN_afo"] = np.max(
