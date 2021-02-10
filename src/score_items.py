@@ -63,6 +63,28 @@ def score_items(df: pd.DataFrame):
     df_item["DIN_pub"] = df[["AF.3", "AF.14", "AF.16"]].max(axis=1)
     df_item["DIN_pisc"] = df[["AF.8", "AF.9"]].max(axis=1)
 
+    # Ceremonias
+
+    # Comercio
+
+    # Colegios
+
+    # Educacion otra
+
+    # Ocio Nocturno
+    df_item["OCN_afo"] = np.max(
+        [
+            df["ON.1"],
+            df["ON.2"],
+            df["ON.4"],
+            (0.7 * df["ON.5"] + 0.3 * df["ON.6"]) * (df["ON.4"] == 0),
+        ]
+    )
+    df_item["OCN_mes"] = df[["ON.1", "ON.2", "ON.10"]].max(axis=1)
+    df_item["OCN_hor"] = df[["ON.1", "ON.2", "ON.8"]].max(axis=1)
+    df_item["OCN_bai"] = df[["ON.1", "ON.2", "ON.3"]].max(axis=1)
+    df_item["OCN_ver"] = df["ON.7"]
+
     # Cultura
     df_item["CUL_mus"] = np.max(
         [
@@ -79,13 +101,9 @@ def score_items(df: pd.DataFrame):
             * (df["CD.3"] == 0),
         ]
     )
-
-    # Ocio Nocturno
-    df_item["OCN_afo"] = 0  # TODO
-    df_item["OCN_mes"] = df[["ON.1", "ON.2", "ON.10"]].max(axis=1)
-    df_item["OCN_hor"] = df[["ON.1", "ON.2", "ON.8"]].max(axis=1)
-    df_item["OCN_bai"] = df[["ON.1", "ON.2", "ON.3"]].max(axis=1)
-    df_item["OCN_ver"] = df["ON.7"]
+    df_item["CUL_sal"] = df[["CD.5", "CD.11"]].max(axis=1)
+    df_item["CUL_tor"] = df[["CD.17", "CD.14"]].max(axis=1)
+    df_item["CUL_zoo"] = df[["CD.16", "CD.15"]].max(axis=1)
 
     # Restauración interior
     df_item["RIN_bing"] = df[["LA.1", "LA.2"]].max(axis=1)
@@ -93,10 +111,36 @@ def score_items(df: pd.DataFrame):
     df_item["RIN_afo"] = df[["RH.1", "RH.2", "RH.3", "RH.7"]].max(axis=1)
     df_item["RIN_hor"] = df[["RH.1", "RH.2", "RH.3", "RH.5"]].max(axis=1)
     df_item["RIN_mesa"] = df[["RH.1", "RH.2", "RH.3", "RH.9", "RH.11"]].max(axis=1)
-    
+
     # Restauración exterior
     df_item["REX_afo"] = df[["RH.1", "RH.2", "RH.6"]].max(axis=1)
     df_item["REX_otr"] = df[["RH.1", "RH.2", "RH.9", "RH.10"]].max(axis=1)
+
+    # Distancia social
+    df_item["DS_even"] = df[["MV.1", "CD.12", "CD.13"]].max(axis=1)
+    df_item["DS_dom"] = df[["MV.1", "MV.2"]].max(axis=1)
+    df_item["DS_reun"] = df[["MV.1", "RS.1", "RS.2", "RS.8"]].max(axis=1)
+    df_item["DS_tran"] = df[["MV.1", "TP.1"]].max(axis=1)
+    df_item["DS_alc"] = df[["MV.1", "RS.6"]].max(axis=1)
+
+    # Movilidad
+    df_item["MOV_qued"] = df[["MV.1", "MV.3"]].max(axis=1)
+    df_item["MOV_per"] = df[["MV.1", "MV.4"]].max(axis=1)
+    df_item["MOV_int"] = df[["MV.1", "MV.7"]].max(axis=1)
+
+    # Trabajo
+    df_item["TRA_1"] = df[["TR.1", "TR.2", "TR.3"]].max(axis=1)
+    df_item["TRA_2"] = np.max(
+        [
+            df["TR.8"],
+            df["TR.9"],
+            (
+                0.3 * np.max([df["TR.4"], df["TR.5"]], axis=0)
+                + 0.7 * np.max([df["TR.6"], df["TR.7"]], axis=0)
+            )
+            * (df["TR.9"] == 0),
+        ]
+    )
 
     return df_item
 
