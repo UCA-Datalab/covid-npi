@@ -83,6 +83,11 @@ def score_items(df: pd.DataFrame):
     df_item["COM_libre"] = df[["CO.1", "CO.6", "CO.10"]].max(axis=1)
 
     # Colegios
+    for n in ["I", "P", "S", "B"]:
+        df_item[f"COL_{n}"] = df[[f"ED.1{n}", f"ED.5{n}", f"ED.2{n}"]].max(axis=1)
+    df_item["COL"] = (
+        df_item[["COL_I", "COL_P", "COL_S", "COL_B"]].fillna(0).mean(axis=1)
+    )
 
     # Educacion otra
 
