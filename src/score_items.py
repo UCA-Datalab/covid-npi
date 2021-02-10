@@ -64,6 +64,14 @@ def score_items(df: pd.DataFrame):
     df_item["DIN_pisc"] = df[["AF.8", "AF.9"]].max(axis=1)
 
     # Ceremonias
+    df_item["CER_cult"] = df[["CE.1", "CE.2"]].max(axis=1)
+    df_item["CER_cor"] = df[["CE.1", "CE.7"]].max(axis=1)
+    df_item["CER_ent"] = np.max(
+        [df["CE.9"], (0.7 * df["CE.3"] + 0.3 * df["CE.4"]) * (df["CE.9"] == 0)]
+    )
+    df_item["CER_otr"] = np.max(
+        [df["CE.10"], (0.7 * df["CE.5"] + 0.3 * df["CE.6"]) * (df["CE.10"] == 0)]
+    )
 
     # Comercio
 
