@@ -185,9 +185,13 @@ def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
 
 def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
     ponderacion = return_item_ponderacion(path_taxonomia=path_taxonomia)
-    pon = np.array(list(ponderacion.values()))
-    score = (df_afectado[ponderacion.keys()] * pon).sum(axis=1).div(pon.sum())
-    return score
+    list_ambito = ponderacion["ambito"].unique()
+    for ambito in list_ambito:
+        pon_sub = ponderacion.query(f"ambito == '{ambito}'")
+        pesos = pon_sub["ponderacion"].values
+        items = pon_sub["nombre"]
+        df_afectado[ambito] = (df_afectado[items] * pesos).sum(axis=1).div(pesos.sum())
+    return df_afectado
 
 
 def return_dict_score_items(
@@ -201,9 +205,7 @@ def return_dict_score_items(
             print(provincia)
         df_item = score_items(df_sub)
         df_afectado = apply_porcentaje_afectado_to_items(df_item)
-        df_afectado["TOTAL"] = score_ponderada(
-            df_afectado, path_taxonomia=path_taxonomia
-        )
+        df_afectado = score_ponderada(df_afectado, path_taxonomia=path_taxonomia)
         dict_items.update({provincia: df_item.set_index("fecha")})
         dict_items_afectado.update({provincia: df_afectado.set_index("fecha")})
 

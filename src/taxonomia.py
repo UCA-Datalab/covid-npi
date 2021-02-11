@@ -31,6 +31,8 @@ def read_taxonomia(path_taxonomia=PATH_TAXONOMIA):
             df.fillna(method="ffill", inplace=True)
         except KeyError:
             continue
+        # Add ambito
+        df["ambito"] = sheet
         list_df += [df]
 
     df = pd.concat(list_df).reset_index(drop=True)
@@ -104,7 +106,7 @@ def return_taxonomia(path_taxonomia=PATH_TAXONOMIA):
     return taxonomia
 
 
-def return_item_ponderacion(path_taxonomia=PATH_TAXONOMIA) -> dict:
+def return_item_ponderacion(path_taxonomia=PATH_TAXONOMIA) -> pd.DataFrame:
     taxonomia = read_taxonomia(path_taxonomia)
     # Fill missing names with "variable" + item count
     mask_nan = taxonomia["nombre"].isna()
@@ -116,6 +118,7 @@ def return_item_ponderacion(path_taxonomia=PATH_TAXONOMIA) -> dict:
     )
     # Extract the ponderation of each item
     ponderacion = (
-        taxonomia[["nombre", "ponderacion"]].drop_duplicates().reset_index(drop=True)
+        taxonomia[["ambito", "nombre", "ponderacion"]].drop_duplicates().reset_index(
+            drop=True)
     )
-    return dict(zip(ponderacion["nombre"], ponderacion["ponderacion"]))
+    return ponderacion
