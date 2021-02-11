@@ -13,6 +13,8 @@ def read_taxonomia(path_taxonomia=PATH_TAXONOMIA):
         "Código medida concreta": "codigo",
         "Medida concreta": "medida",
         "Ponderación del item": "ponderacion",
+        "Nombre item": "nombre",
+        "Nombre ítem": "nombre2",
     }
 
     for sheet in list_sheet:
@@ -32,6 +34,13 @@ def read_taxonomia(path_taxonomia=PATH_TAXONOMIA):
         list_df += [df]
 
     df = pd.concat(list_df).reset_index(drop=True)
+
+    # If "nombre2" columns exists, fill NaNs of "nombre" with it
+    try:
+        df["nombre"] = df["nombre"].fillna(df["nombre2"])
+        df.drop(["nombre2"], axis=1, inplace=True)
+    except KeyError:
+        pass
 
     return df
 
@@ -93,3 +102,20 @@ def return_taxonomia(path_taxonomia=PATH_TAXONOMIA):
     criterio = classify_criteria(taxonomia)
     taxonomia = pd.merge(taxonomia, criterio, left_index=True, right_index=True)
     return taxonomia
+
+
+def return_item_ponderacion(path_taxonomia=PATH_TAXONOMIA) -> dict:
+    taxonomia = read_taxonomia(path_taxonomia)
+    # Fill missing names with "variable" + item count
+    mask_nan = taxonomia["nombre"].isna()
+
+    taxonomia.loc[mask_nan, "nombre"] = (
+        taxonomia.loc[mask_nan, "variable"].str[:3].str.upper()
+        + "_"
+        + taxonomia.loc[mask_nan, "item"].astype(str)
+    )
+    # Extract the ponderation of each item
+    ponderacion = (
+        taxonomia[["nombre", "ponderacion"]].drop_duplicates().reset_index(drop=True)
+    )
+    return dict(zip(ponderacion["nombre"], ponderacion["ponderacion"]))

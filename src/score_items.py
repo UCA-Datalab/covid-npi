@@ -3,6 +3,7 @@ import numpy as np
 import typer
 
 from src.dictionaries import store_dict_scores, load_dict_scores
+from src.taxonomia import PATH_TAXONOMIA, return_item_ponderacion
 
 
 def compute_proportion(df: pd.DataFrame, item: str):
@@ -167,7 +168,7 @@ def score_items(df: pd.DataFrame):
     return df_item
 
 
-def ponderate_items(df_item: pd.DataFrame):
+def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
 
     list_item = df_item.columns.tolist()
     list_item.remove("fecha")
@@ -175,37 +176,52 @@ def ponderate_items(df_item: pd.DataFrame):
     dict_ponderado = {}
     for item in list_item:
         dict_ponderado.update({item: compute_proportion(df_item, item)})
-    df_ponderado = pd.DataFrame.from_dict(dict_ponderado)
+    df_afectado = pd.DataFrame.from_dict(dict_ponderado)
 
-    df_ponderado = df_ponderado.reset_index().rename(columns={"index": "fecha"})
+    df_afectado = df_afectado.reset_index().rename(columns={"index": "fecha"})
 
-    return df_ponderado
+    return df_afectado
 
 
-def return_dict_score_items(dict_scores: dict, verbose: bool = True) -> dict:
+def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
+    ponderacion = return_item_ponderacion(path_taxonomia=path_taxonomia)
+    pon = np.array(list(ponderacion.values()))
+    score = (df_afectado[ponderacion.keys()] * pon).sum(axis=1).div(pon.sum())
+    return score
+
+
+def return_dict_score_items(
+    dict_scores: dict, path_taxonomia=PATH_TAXONOMIA, verbose: bool = True
+) -> tuple:
     dict_items = {}
-    dict_items_ponderados = {}
+    dict_items_afectado = {}
 
     for provincia, df_sub in dict_scores.items():
         if verbose:
             print(provincia)
         df_item = score_items(df_sub)
-        df_ponderado = ponderate_items(df_item)
+        df_afectado = apply_porcentaje_afectado_to_items(df_item)
+        df_afectado["TOTAL"] = score_ponderada(
+            df_afectado, path_taxonomia=path_taxonomia
+        )
         dict_items.update({provincia: df_item.set_index("fecha")})
-        dict_items_ponderados.update({provincia: df_ponderado.set_index("fecha")})
+        dict_items_afectado.update({provincia: df_afectado.set_index("fecha")})
 
-    return dict_items, dict_items_ponderados
+    return dict_items, dict_items_afectado
 
 
 def main(
     path_score_medidas: str = "output/score_medidas",
     path_output: str = "output/score_items",
-    path_output_ponderado: str = "output/score_items_ponderado",
+    path_output_ponderado: str = "output/score_items_afectado",
+    path_taxonomia: str = PATH_TAXONOMIA,
 ):
     dict_scores = load_dict_scores(path_score_medidas)
-    dict_items, dict_items_ponderados = return_dict_score_items(dict_scores)
+    dict_items, dict_items_afectado = return_dict_score_items(
+        dict_scores, path_taxonomia=path_taxonomia
+    )
     store_dict_scores(dict_items, path_output=path_output)
-    store_dict_scores(dict_items_ponderados, path_output=path_output_ponderado)
+    store_dict_scores(dict_items_afectado, path_output=path_output_ponderado)
 
 
 if __name__ == "__main__":
