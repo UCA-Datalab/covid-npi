@@ -4,3 +4,4 @@ username = ""
 password = ""
 database = ""
 chunks = 10
+date_min = "21-06-2020"
