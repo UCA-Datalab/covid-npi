@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import typer
 
+from covidnpi.utils.dictionaries import store_dict_medidas
 from covidnpi.utils.taxonomia import return_all_medidas
 
 DICT_PORCENTAJE = {
@@ -236,42 +237,6 @@ def read_npi_and_build_dict(
 
     # Construimos el diccionario de medidas y lo guardamos
     dict_medidas = return_dict_medidas(df_pivot)
-    return dict_medidas
-
-
-def store_dict_medidas(dict_medidas, path_output: str = "../output/medidas"):
-    if not os.path.exists(path_output):
-        os.mkdir(path_output)
-
-    for provincia, df_medida in dict_medidas.items():
-        path_file = os.path.join(path_output, provincia.split("/")[0] + ".csv")
-        df_medida = df_medida[
-            [
-                "comunidad_autonoma",
-                "provincia",
-                "codigo",
-                "fecha_inicio",
-                "fecha_fin",
-                "fecha_publicacion_oficial",
-                "ambito",
-                "porcentaje_afectado",
-                "porcentaje",
-                "personas",
-                "hora",
-                "nivel_educacion",
-            ]
-        ]
-        df_medida.to_csv(path_file, index=False)
-
-
-def load_dict_medidas(path_medidas: str = "output/medidas"):
-    dict_medidas = {}
-    list_files = os.listdir(path_medidas)
-    for file in list_files:
-        provincia = file.rsplit(".")[0]
-        path_file = os.path.join(path_medidas, file)
-        df = pd.read_csv(path_file)
-        dict_medidas.update({provincia: df})
     return dict_medidas
 
 

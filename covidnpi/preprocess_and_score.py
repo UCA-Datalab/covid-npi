@@ -1,8 +1,9 @@
 import os
 import typer
 
-from covidnpi.utils.preprocess import read_npi_and_build_dict, store_dict_medidas
-from covidnpi.score.score_medidas import return_dict_score_medidas, store_dict_scores
+from covidnpi.utils.dictionaries import store_dict_scores, store_dict_medidas
+from covidnpi.utils.preprocess import read_npi_and_build_dict
+from covidnpi.score.score_medidas import return_dict_score_medidas
 from covidnpi.score.score_items import return_dict_score_items
 
 
@@ -37,7 +38,7 @@ def main(
     path_medidas = os.path.join(path_output, "medidas")
     store_dict_medidas(dict_medidas, path_output=path_medidas)
     print(
-        f"Las medidas preprocesadas han sido guardadas en {path_medidas}\n"
+        f"Las medidas preprocesadas han sido guardadas en {path_medidas}\n...\n"
         f"Ahora puntuamos cada medida"
     )
 
@@ -46,7 +47,7 @@ def main(
     store_dict_scores(dict_scores, path_output=path_score_medidas)
     print(
         f"La puntuación de cada medida por provincia ha sido guardada en "
-        f"{path_score_medidas}\nPasamos a puntuar los items"
+        f"{path_score_medidas}\n...\nPasamos a puntuar los items"
     )
 
     dict_items, dict_items_afectado = return_dict_score_items(
