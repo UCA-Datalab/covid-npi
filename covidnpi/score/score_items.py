@@ -213,7 +213,7 @@ def return_dict_score_items(
     verbose: bool = True,
 ) -> tuple:
     dict_items = {}
-    dict_items_afectado = {}
+    dict_ambito = {}
 
     for provincia, df_sub in dict_scores.items():
         if verbose:
@@ -222,23 +222,23 @@ def return_dict_score_items(
         df_afectado = apply_porcentaje_afectado_to_items(df_item)
         df_afectado = score_ponderada(df_afectado, path_taxonomia=path_taxonomia)
         dict_items.update({provincia: df_item.set_index("fecha")})
-        dict_items_afectado.update({provincia: df_afectado.set_index("fecha")})
+        dict_ambito.update({provincia: df_afectado.set_index("fecha")})
 
-    return dict_items, dict_items_afectado
+    return dict_items, dict_ambito
 
 
 def main(
     path_score_medidas: str = "output/score_medidas",
     path_output: str = "output/score_items",
-    path_output_ponderado: str = "output/score_items_afectado",
+    path_output_ponderado: str = "output/score_ambito",
     path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
 ):
     dict_scores = load_dict_scores(path_score_medidas)
-    dict_items, dict_items_afectado = return_dict_score_items(
+    dict_items, dict_ambito = return_dict_score_items(
         dict_scores, path_taxonomia=path_taxonomia
     )
     store_dict_scores(dict_items, path_output=path_output)
-    store_dict_scores(dict_items_afectado, path_output=path_output_ponderado)
+    store_dict_scores(dict_ambito, path_output=path_output_ponderado)
 
 
 if __name__ == "__main__":
