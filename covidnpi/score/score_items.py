@@ -52,10 +52,13 @@ def compute_proportion(df: pd.DataFrame, item: str):
 
 
 def score_items(df: pd.DataFrame):
+    # "fecha" and "porcentaje_afectado" must be columns
+    # If they are index, convert to columns
     try:
         df_item = df[["fecha", "porcentaje_afectado"]].copy()
     except KeyError:
-        df_item = df.reset_index()[["fecha", "porcentaje_afectado"]].copy()
+        df = df.reset_index().copy()
+        df_item = df[["fecha", "porcentaje_afectado"]].copy()
 
     # Deporte exterior
     df_item["DEX_afor"] = df[["AF.1", "AF.6", "AF.7"]].max(axis=1)
