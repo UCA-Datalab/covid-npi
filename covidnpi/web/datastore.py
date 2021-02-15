@@ -7,6 +7,7 @@ from covidnpi.utils.config import load_config
 from covidnpi.web.mongo import load_mongo
 
 from datetime import date
+import typer
 
 
 def store_outputs_in_mongo(
@@ -31,7 +32,13 @@ def store_outputs_in_mongo(
         df = df.reindex(list_dates, fill_value=0)
         provincia = file.split(".")[0]
         dict_provincia = {}
+        print(f"\n{provincia}")
         for ambito in list_ambito:
+            print(f"  {ambito}")
             series = df[ambito].values.tolist()
             dict_provincia.update({ambito: series})
         mongo.insert_new_dict("score", {provincia: dict_provincia})
+
+
+if __name__=="__main__":
+    typer.run(store_outputs_in_mongo)
