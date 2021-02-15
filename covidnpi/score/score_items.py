@@ -184,6 +184,11 @@ def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
         dict_ponderado.update({item: compute_proportion(df_item, item)})
     df_afectado = pd.DataFrame.from_dict(dict_ponderado)
 
+    # Fill missing dates with 0's
+    idx = pd.date_range(df_afectado.index.min(), df_afectado.index.max())
+    df_afectado = df_afectado.reindex(idx, fill_value=0)
+
+    # "fecha" to column
     df_afectado = df_afectado.reset_index().rename(columns={"index": "fecha"})
 
     return df_afectado
