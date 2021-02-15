@@ -1,13 +1,12 @@
 import os
+from datetime import date
 
 import pandas as pd
-
-from covidnpi.utils.taxonomia import return_taxonomia
-from covidnpi.utils.config import load_config
-from covidnpi.web.mongo import load_mongo
-
-from datetime import date
 import typer
+
+from covidnpi.utils.config import load_config
+from covidnpi.utils.taxonomia import return_taxonomia
+from covidnpi.web.mongo import load_mongo
 
 
 def store_outputs_in_mongo(

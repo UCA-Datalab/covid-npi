@@ -5,6 +5,21 @@ from covidnpi.web.mongo import load_mongo
 def return_ambits_by_province(
     province: str, ambits: tuple, path_config: str = "covidnpi/config.toml"
 ):
+    """Loads the scores stored in mongo for a given combination of province and ambits
+
+    Parameters
+    ----------
+    province : str
+    ambits : str
+    path_config : str, optional
+
+    Returns
+    -------
+    dict_plot : dict
+        {ambit: {x, y}}
+        x are dates in string format, y are the score values
+
+    """
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("scores")
@@ -15,14 +30,51 @@ def return_ambits_by_province(
     dict_plot = {}
 
     for ambit in ambits:
-        y = dict_provincia[ambit]
+        try:
+            y = dict_provincia[ambit]
+        except KeyError:
+            raise KeyError(f"Ambito '{ambit}' no existe")
+        except TypeError:
+            raise KeyError(f"Provincia '{province}' no encontrada")
         dict_plot.update({ambit: {"x": x, "y": y}})
 
     return dict_plot
 
 
-if __name__ == "__main__":
-    dict_plot = return_ambits_by_province(
-        "madrid", ("comercio", "movilidad"), path_config="config.toml"
-    )
-    print(dict_plot)
+def return_provinces_by_ambit(
+    ambit: str, provinces: tuple, path_config: str = "covidnpi/config.toml"
+):
+    """Loads the scores stored in mongo for a given combination of provinces and ambit
+
+    Parameters
+    ----------
+    ambit : str
+    provinces : str
+    path_config : str, optional
+
+    Returns
+    -------
+    dict_plot : dict
+        {province: {x, y}}
+        x are dates in string format, y are the score values
+
+    """
+    cfg_mongo = load_config(path_config, key="mongo")
+    mongo = load_mongo(cfg_mongo)
+    col = mongo.get_col("scores")
+
+    x = col.find_one({"provincia": "fechas"})["x"]
+
+    dict_plot = {}
+
+    for province in provinces:
+        dict_provincia = col.find_one({"provincia": province})
+        try:
+            y = dict_provincia[ambit]
+        except KeyError:
+            raise KeyError(f"Ambito '{ambit}' no existe")
+        except TypeError:
+            raise KeyError(f"Provincia '{province}' no encontrada")
+        dict_plot.update({province: {"x": x, "y": y}})
+
+    return dict_plot
