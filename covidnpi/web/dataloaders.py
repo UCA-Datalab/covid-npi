@@ -7,9 +7,10 @@ def return_ambits_by_province(
 ):
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
+    col = mongo.get_col("scores")
 
-    x = mongo.get_col("fechas")["x"]
-    dict_provincia = mongo.get_col("scores")[province]
+    x = col.find_one({"provincia": "fechas"})["x"]
+    dict_provincia = col.find_one({"provincia": province})
 
     dict_plot = {}
 
