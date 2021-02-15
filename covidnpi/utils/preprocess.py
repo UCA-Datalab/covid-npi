@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 import typer
 
-from src.taxonomia import return_all_medidas
-
+from covidnpi.utils.taxonomia import return_all_medidas
 
 DICT_PORCENTAJE = {
     "cantalejo": 2,
@@ -83,8 +82,10 @@ def gen_cod(prefix, maximo, missing=()):
     return [prefix + "." + str(n) for n in lista]
 
 
-def filter_relevant_medidas(df: pd.DataFrame):
-    all_medidas = return_all_medidas()
+def filter_relevant_medidas(
+    df: pd.DataFrame, path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx"
+):
+    all_medidas = return_all_medidas(path_taxonomia=path_taxonomia)
     mask_medidas = df["codigo"].isin(all_medidas)
     df_new = df[mask_medidas]
     dropped = sorted(df.loc[~mask_medidas, "codigo"].astype(str).unique())
@@ -213,6 +214,31 @@ def return_dict_medidas(df: pd.DataFrame) -> dict:
     return dict_medidas
 
 
+def read_npi_and_build_dict(
+    path_data: str = "datos_NPI_2",
+    path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
+):
+    # Read all files and combine them
+    df = read_npi_folder(path_data)
+
+    # Filtramos las medidas relevantes
+    df_filtered = filter_relevant_medidas(df, path_taxonomia=path_taxonomia)
+
+    # Renombramos la columna unidad
+    df_renamed = rename_unidad(df_filtered)
+
+    # Formateamos "porcentaje afectado"
+    df_renamed = format_porcentaje_afectado(df_renamed)
+
+    # Pivotamos la columna "unidad" y le asignamos a cada categoría
+    # su correspondiente "valor"
+    df_pivot = pivot_unidad_valor(df_renamed)
+
+    # Construimos el diccionario de medidas y lo guardamos
+    dict_medidas = return_dict_medidas(df_pivot)
+    return dict_medidas
+
+
 def store_dict_medidas(dict_medidas, path_output: str = "../output/medidas"):
     if not os.path.exists(path_output):
         os.mkdir(path_output)
@@ -249,25 +275,24 @@ def load_dict_medidas(path_medidas: str = "output/medidas"):
     return dict_medidas
 
 
-def main(path_data: str = "datos_NPI_2", path_output: str = "output/medidas"):
-    # Read all files and combine them
-    df = read_npi_folder(path_data)
+def main(
+    path_data: str = "datos_NPI_2",
+    path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
+    path_output: str = "output/medidas",
+):
+    """Reads the raw data, in path_data, preprocess it and stores the results in
+    path_output
 
-    # Filtramos las medidas relevantes
-    df_filtered = filter_relevant_medidas(df)
+    Parameters
+    ----------
+    path_data : str, optional
+    path_taxonomia : str, optional
+    path_output : str, optional
 
-    # Renombramos la columna unidad
-    df_renamed = rename_unidad(df_filtered)
-
-    # Formateamos "porcentaje afectado"
-    df_renamed = format_porcentaje_afectado(df_renamed)
-
-    # Pivotamos la columna "unidad" y le asignamos a cada categoría
-    # su correspondiente "valor"
-    df_pivot = pivot_unidad_valor(df_renamed)
-
-    # Construimos el diccionario de medidas y lo guardamos
-    dict_medidas = return_dict_medidas(df_pivot)
+    """
+    dict_medidas = read_npi_and_build_dict(
+        path_data=path_data, path_taxonomia=path_taxonomia
+    )
     store_dict_medidas(dict_medidas, path_output=path_output)
 
 

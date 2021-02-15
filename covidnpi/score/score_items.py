@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import typer
 
-from src.dictionaries import store_dict_scores, load_dict_scores
-from src.taxonomia import PATH_TAXONOMIA, return_item_ponderacion
+from covidnpi.utils.dictionaries import store_dict_scores, load_dict_scores
+from covidnpi.utils.taxonomia import return_item_ponderacion
 
 
 def compute_proportion(df: pd.DataFrame, item: str):
@@ -183,7 +183,9 @@ def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
     return df_afectado
 
 
-def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
+def score_ponderada(
+    df_afectado: pd.DataFrame, path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx"
+):
     ponderacion = return_item_ponderacion(path_taxonomia=path_taxonomia)
     list_ambito = ponderacion["ambito"].unique()
     for ambito in list_ambito:
@@ -195,7 +197,9 @@ def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
 
 
 def return_dict_score_items(
-    dict_scores: dict, path_taxonomia=PATH_TAXONOMIA, verbose: bool = True
+    dict_scores: dict,
+    path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx",
+    verbose: bool = True,
 ) -> tuple:
     dict_items = {}
     dict_items_afectado = {}
@@ -216,7 +220,7 @@ def main(
     path_score_medidas: str = "output/score_medidas",
     path_output: str = "output/score_items",
     path_output_ponderado: str = "output/score_items_afectado",
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
 ):
     dict_scores = load_dict_scores(path_score_medidas)
     dict_items, dict_items_afectado = return_dict_score_items(

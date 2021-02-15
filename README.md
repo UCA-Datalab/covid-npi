@@ -31,3 +31,16 @@
        pip install --user ipykernel
        python -m ipykernel install --user --name=covid-npi
        ```
+
+## Preprocess and score items
+
+With the environment active, run the following command:
+
+```
+python covidnpi/preprocess_and_score.py
+```
+
+To see an explanation of this script, run instead:
+```
+python covidnpi/preprocess_and_score.py --help
+```

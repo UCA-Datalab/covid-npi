@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 import typer
 
-from src.dictionaries import store_dict_scores
-from src.preprocess import load_dict_medidas
-from src.taxonomia import return_taxonomia, return_all_medidas
+from covidnpi.utils.dictionaries import store_dict_scores
+from covidnpi.utils.preprocess import load_dict_medidas
+from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
 
 # Define NaN globally to build conditions with NaN
 nan = np.nan

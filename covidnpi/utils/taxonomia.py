@@ -1,9 +1,7 @@
 import pandas as pd
 
-PATH_TAXONOMIA = "datos_NPI/Taxonomía_07022021.xlsx"
 
-
-def read_taxonomia(path_taxonomia=PATH_TAXONOMIA):
+def read_taxonomia(path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx"):
     xl = pd.ExcelFile(path_taxonomia)
 
     list_sheet = xl.sheet_names
@@ -47,7 +45,7 @@ def read_taxonomia(path_taxonomia=PATH_TAXONOMIA):
     return df
 
 
-def return_all_medidas(path_taxonomia=PATH_TAXONOMIA):
+def return_all_medidas(path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx"):
     """Returns a list of the relevant medidas"""
 
     df = read_taxonomia(path_taxonomia=path_taxonomia)
@@ -99,14 +97,16 @@ def classify_criteria(taxonomia):
     return classified
 
 
-def return_taxonomia(path_taxonomia=PATH_TAXONOMIA):
+def return_taxonomia(path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx"):
     taxonomia = read_taxonomia(path_taxonomia)
     criterio = classify_criteria(taxonomia)
     taxonomia = pd.merge(taxonomia, criterio, left_index=True, right_index=True)
     return taxonomia
 
 
-def return_item_ponderacion(path_taxonomia=PATH_TAXONOMIA) -> pd.DataFrame:
+def return_item_ponderacion(
+    path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx",
+) -> pd.DataFrame:
     taxonomia = read_taxonomia(path_taxonomia)
     # Fill missing names with "variable" + item count
     mask_nan = taxonomia["nombre"].isna()
@@ -118,7 +118,8 @@ def return_item_ponderacion(path_taxonomia=PATH_TAXONOMIA) -> pd.DataFrame:
     )
     # Extract the ponderation of each item
     ponderacion = (
-        taxonomia[["ambito", "nombre", "ponderacion"]].drop_duplicates().reset_index(
-            drop=True)
+        taxonomia[["ambito", "nombre", "ponderacion"]]
+        .drop_duplicates()
+        .reset_index(drop=True)
     )
     return ponderacion
