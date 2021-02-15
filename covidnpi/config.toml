@@ -1,0 +1,6 @@
+[mongo]
+url = "mongodb://zappa.uca.es:27017/"
+username = ""
+password = ""
+database = ""
+chunks = 10
