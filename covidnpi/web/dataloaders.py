@@ -7,3 +7,21 @@ def return_ambits_by_province(
 ):
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
+
+    x = mongo.get_col("fechas")["x"]
+    dict_provincia = mongo.get_col("scores")[province]
+
+    dict_plot = {}
+
+    for ambit in ambits:
+        y = dict_provincia[ambit]
+        dict_plot.update({ambit: {"x": x, "y": y}})
+
+    return dict_plot
+
+
+if __name__ == "__main__":
+    dict_plot = return_ambits_by_province(
+        "madrid", ("comercio", "movilidad"), path_config="config.toml"
+    )
+    print(dict_plot)
