@@ -50,17 +50,17 @@ def main(
         f"{path_score_medidas}\n...\nPasamos a puntuar los items"
     )
 
-    dict_items, dict_items_afectado = return_dict_score_items(
+    dict_items, dict_ambito = return_dict_score_items(
         dict_scores, path_taxonomia=path_taxonomia
     )
     path_score_items = os.path.join(path_output, "score_items")
-    path_score_items_afectado = os.path.join(path_output, "score_items_afectado")
+    path_score_ambito = os.path.join(path_output, "score_ambito")
     store_dict_scores(dict_items, path_output=path_score_items)
-    store_dict_scores(dict_items_afectado, path_output=path_score_items_afectado)
+    store_dict_scores(dict_ambito, path_output=path_score_ambito)
     print(
         f"La puntuación de cada item por provincia ha sido guardada en "
         f"{path_score_items}\nY también calculada por porcentaje afectado, en "
-        f"{path_score_items_afectado}"
+        f"{path_score_ambito}"
     )
 
 
