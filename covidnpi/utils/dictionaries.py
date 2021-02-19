@@ -51,7 +51,7 @@ def store_dict_scores(dict_scores, path_output: str = "output/score_medidas"):
 
     for provincia, df_score in dict_scores.items():
         path_file = os.path.join(path_output, provincia.split("/")[0] + ".csv")
-        df_score.to_csv(path_file, float_format='%.3f')
+        df_score.to_csv(path_file, float_format="%.3f")
 
 
 def load_dict_scores(path_scores: str = "output/score_medidas"):
