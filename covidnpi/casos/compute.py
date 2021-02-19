@@ -77,6 +77,8 @@ def return_casos_of_provincia_normed(
         Code of the province (example: "M" for "Madrid")
     per_inhabitants : int, optional
         Normalization value, N, by default 100,000
+    path_config : str, optional
+        Path to the config file, by default "covidnpi/config.toml"
 
     Returns
     -------
