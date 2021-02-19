@@ -6,6 +6,10 @@ database = ""
 chunks = 10
 date_min = "21-06-2020"
 
+[casos]
+movavg = 7
+link = "https://cnecovid.isciii.es/covid19/resources/casos_tecnica_provincia.csv"
+
 
 [postal_to_code]
 1 = "VI"

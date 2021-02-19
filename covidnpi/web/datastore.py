@@ -4,12 +4,18 @@ from datetime import date
 import pandas as pd
 import typer
 
+from covidnpi.casos.compute import (
+    load_casos_df,
+    return_casos_of_provincia_normed,
+    moving_average,
+    compute_crecimiento,
+)
 from covidnpi.utils.config import load_config
 from covidnpi.utils.taxonomia import return_taxonomia
 from covidnpi.web.mongo import load_mongo
 
 
-def store_outputs_in_mongo(
+def store_scores_in_mongo(
     path_output: str = "output/score_ambito",
     path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx",
     path_config: str = "covidnpi/config.toml",
@@ -40,5 +46,53 @@ def store_outputs_in_mongo(
         mongo.insert_new_dict("scores", dict_provincia)
 
 
+def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
+    cfg_mongo = load_config(path_config, key="mongo")
+    mongo = load_mongo(cfg_mongo)
+
+    cfg_casos = load_config(path_config, key="casos")
+
+    casos = load_casos_df(link=cfg_casos["link"])
+    list_code = casos["provincia_iso"].dropna().unique()
+
+    dict_provincia = {}
+
+    for code in list_code:
+        try:
+            series = return_casos_of_provincia_normed(
+                casos, code, path_config=path_config
+            )
+            print(f"{code}")
+        except KeyError:
+            print(f"{code} missing from poblacion")
+            continue
+        num = moving_average(series, cfg_casos["movavg"])
+        growth = compute_crecimiento(series, cfg_casos["movavg"])
+        dict_provincia.update(
+            {
+                code: {
+                    "x": num.index.tolist(),
+                    "casos": num.values.tolist(),
+                    "crecimiento": growth.values.tolist(),
+                }
+            }
+        )
+
+    mongo.insert_new_dict("casos", dict_provincia)
+
+
+def main(
+    path_output: str = "output/score_ambito",
+    path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx",
+    path_config: str = "covidnpi/config.toml",
+):
+    print("\n-----\nStoring scores in mongo\n-----\n")
+    store_scores_in_mongo(
+        path_output=path_output, path_taxonomia=path_taxonomia, path_config=path_config
+    )
+    print("\n-----\nStoring number of cases in mongo\n-----\n")
+    store_casos_in_mongo(path_config=path_config)
+
+
 if __name__ == "__main__":
-    typer.run(store_outputs_in_mongo)
+    typer.run(main)
