@@ -28,21 +28,15 @@ def store_scores_in_mongo(
     taxonomia = return_taxonomia(path_taxonomia=path_taxonomia)
     list_ambito = taxonomia["ambito"].unique().tolist()
 
-    list_dates = pd.date_range(cfg_mongo["date_min"], date.today())
-    mongo.insert_new_dict(
-        "scores",
-        {"provincia": "fechas", "x": [d.strftime("%d-%m-%Y") for d in list_dates]},
-    )
-
     for file in os.listdir(path_output):
         path_file = os.path.join(path_output, file)
         df = pd.read_csv(path_file, index_col="fecha")
-        df = df.reindex(list_dates, fill_value=0)
         provincia = file.split(".")[0]
         try:
             dict_provincia = {
                 "provincia": provincia,
                 "code": provincia_to_code[provincia],
+                "fechas": df.index.tolist()
             }
         except KeyError:
             print(f"\nProvincia '{provincia}' code not found\n")

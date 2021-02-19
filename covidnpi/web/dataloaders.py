@@ -24,8 +24,8 @@ def return_ambits_by_province(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("scores")
 
-    x = col.find_one({"provincia": "fechas"})["x"]
     dict_provincia = col.find_one({"code": code})
+    x = dict_provincia["fechas"]
 
     dict_plot = {}
 
@@ -63,13 +63,12 @@ def return_provinces_by_ambit(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("scores")
 
-    x = col.find_one({"provincia": "fechas"})["x"]
-
     dict_plot = {}
 
     for code in codes:
         dict_provincia = col.find_one({"code": code})
         try:
+            x = dict_provincia["fechas"]
             y = dict_provincia[ambit]
         except KeyError:
             raise KeyError(f"Ambito '{ambit}' no existe")
