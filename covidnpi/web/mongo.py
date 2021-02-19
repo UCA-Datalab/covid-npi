@@ -46,6 +46,11 @@ class MongoSingleton(metaclass=SingletonMeta):
     def get_col(self, collection: str):
         return self.client[self.database][collection]
 
+    def remove_collection(self, collection):
+        mydb = self.client[self.database]
+        mycol = mydb[collection]
+        mycol.remove()
+
 
 def load_mongo(cfg_mongo: dict) -> MongoSingleton:
     """Load a mongo class object"""

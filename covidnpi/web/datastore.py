@@ -22,6 +22,8 @@ def store_scores_in_mongo(
 ):
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
+    # Remove collection
+    mongo.remove_collection("scores")
 
     provincia_to_code = load_config(path_config, key="provincia_to_code")
 
@@ -52,6 +54,8 @@ def store_scores_in_mongo(
 def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
+    # Remove collection
+    mongo.remove_collection("casos")
 
     cfg_casos = load_config(path_config, key="casos")
 
