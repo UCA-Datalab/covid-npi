@@ -71,7 +71,8 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
         dict_provincia.update(
             {
                 code: {
-                    "x": num.index.tolist(),
+                    "code": code,
+                    "fechas": num.index.tolist(),
                     "casos": num.values.tolist(),
                     "crecimiento": growth.values.tolist(),
                 }
