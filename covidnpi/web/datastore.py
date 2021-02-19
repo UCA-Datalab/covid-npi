@@ -46,6 +46,7 @@ def store_scores_in_mongo(
             }
         except KeyError:
             print(f"\nProvincia '{provincia}' code not found\n")
+            continue
         print(f"\n{provincia}")
         for ambito in list_ambito:
             print(f"  {ambito}")
