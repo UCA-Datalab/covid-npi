@@ -131,5 +131,7 @@ def compute_crecimiento(series: pd.Series, days: int) -> pd.Series:
     x = moving_average(series, days)
     idx = x.index
     g = np.divide(x.values, x.shift(days).values)
+    # Replace infs with NaN
+    g[g == np.inf] = np.nan
     g = pd.Series(g, index=idx)
     return g
