@@ -38,7 +38,7 @@ def store_scores_in_mongo(
             dict_provincia = {
                 "provincia": provincia,
                 "code": provincia_to_code[provincia],
-                "fechas": df.index.tolist()
+                "fechas": df.index.tolist(),
             }
         except KeyError:
             print(f"\nProvincia '{provincia}' code not found\n")
@@ -76,12 +76,10 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
         growth = compute_crecimiento(series, cfg_casos["movavg"])
         dict_provincia.update(
             {
-                code: {
-                    "code": code,
-                    "fechas": num.index.tolist(),
-                    "casos": num.values.tolist(),
-                    "crecimiento": growth.values.tolist(),
-                }
+                "code": code,
+                "fechas": num.index.tolist(),
+                "casos": num.values.tolist(),
+                "crecimiento": growth.values.tolist(),
             }
         )
         mongo.insert_new_dict("casos", dict_provincia)
