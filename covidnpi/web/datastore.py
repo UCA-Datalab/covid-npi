@@ -23,6 +23,8 @@ def store_scores_in_mongo(
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
 
+    provincia_to_code = load_config(path_config, key="provincia_to_code")
+
     taxonomia = return_taxonomia(path_taxonomia=path_taxonomia)
     list_ambito = taxonomia["ambito"].unique().tolist()
 
@@ -37,7 +39,7 @@ def store_scores_in_mongo(
         df = pd.read_csv(path_file, index_col="fecha")
         df = df.reindex(list_dates, fill_value=0)
         provincia = file.split(".")[0]
-        dict_provincia = {"provincia": provincia}
+        dict_provincia = {"provincia": provincia, "code": provincia_to_code[provincia]}
         print(f"\n{provincia}")
         for ambito in list_ambito:
             print(f"  {ambito}")
