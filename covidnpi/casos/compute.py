@@ -6,7 +6,7 @@ import pandas as pd
 
 from covidnpi.utils.config import load_config
 
-warnings.filterwarnings("RuntimeWarning")
+warnings.filterwarnings("ignore", category=RuntimeWarning) 
 
 
 def _dateparse(x):
