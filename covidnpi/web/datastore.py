@@ -85,8 +85,7 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
                 }
             }
         )
-
-    mongo.insert_new_dict("casos", dict_provincia)
+        mongo.insert_new_dict("casos", dict_provincia)
 
 
 def main(
