@@ -50,6 +50,7 @@ def read_npi_data(path_com: str) -> pd.DataFrame:
                 .str.encode("ascii", errors="ignore")
                 .str.decode("utf-8")
                 .str.lower()
+                .str.replace(" ", "_")
             )
         except AttributeError:
             print(f"{path_com} column '{col}' has all NaNs")
