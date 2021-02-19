@@ -62,9 +62,8 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
     casos = load_casos_df(link=cfg_casos["link"])
     list_code = casos["provincia_iso"].dropna().unique()
 
-    dict_provincia = {}
-
     for code in list_code:
+        dict_provincia = {}
         try:
             series = return_casos_of_provincia_normed(
                 casos, code, path_config=path_config
