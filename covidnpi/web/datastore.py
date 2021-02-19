@@ -39,7 +39,13 @@ def store_scores_in_mongo(
         df = pd.read_csv(path_file, index_col="fecha")
         df = df.reindex(list_dates, fill_value=0)
         provincia = file.split(".")[0]
-        dict_provincia = {"provincia": provincia, "code": provincia_to_code[provincia]}
+        try:
+            dict_provincia = {
+                "provincia": provincia,
+                "code": provincia_to_code[provincia],
+            }
+        except KeyError:
+            print(f"\nProvincia '{provincia}' code not found\n")
         print(f"\n{provincia}")
         for ambito in list_ambito:
             print(f"  {ambito}")
