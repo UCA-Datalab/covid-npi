@@ -3,7 +3,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 
-from covidnpi.casos.dictionaries import CODE_TO_POBLACION
+from covidnpi.utils.config import load_config
 
 
 def _dateparse(x):
@@ -61,7 +61,10 @@ def return_casos_of_provincia(casos: pd.DataFrame, code: str) -> pd.Series:
 
 
 def return_casos_of_provincia_normed(
-    casos: pd.DataFrame, code: str, per_inhabitants: int = 100000
+    casos: pd.DataFrame,
+    code: str,
+    per_inhabitants: int = 100000,
+    path_config: str = "covidnpi/config.toml",
 ) -> pd.Series:
     """Return the series of cases of COVID per date, per N inhabitants,
     for a province
@@ -82,7 +85,8 @@ def return_casos_of_provincia_normed(
 
     """
     series = return_casos_of_provincia(casos, code)
-    pob = CODE_TO_POBLACION[code]
+    code_to_poblacion = load_config(path_config, "code_to_poblacion")
+    pob = code_to_poblacion[code]
     return per_inhabitants * series / pob
 
 
