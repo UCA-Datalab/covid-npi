@@ -60,8 +60,10 @@ def return_casos_of_provincia(casos: pd.DataFrame, code: str) -> pd.Series:
     return series
 
 
-def return_casos_of_provincia_normed(casos: pd.DataFrame, code: str) -> pd.Series:
-    """Return the series of cases of COVID per date, per 1000 inhabitants,
+def return_casos_of_provincia_normed(
+    casos: pd.DataFrame, code: str, per_inhabitants: int = 100000
+) -> pd.Series:
+    """Return the series of cases of COVID per date, per N inhabitants,
     for a province
 
     Parameters
@@ -70,16 +72,18 @@ def return_casos_of_provincia_normed(casos: pd.DataFrame, code: str) -> pd.Serie
         The dataframe returned by load_casos_df
     code : str
         Code of the province (example: "M" for "Madrid")
+    per_inhabitants : int, optional
+        Normalization value, N, by default 100,000
 
     Returns
     -------
     pandas.Series
-        Cases of COVID per date, per 1000 inhabitants
+        Cases of COVID per date, per N inhabitants
 
     """
     series = return_casos_of_provincia(casos, code)
     pob = CODE_TO_POBLACION[code]
-    return 1000 * series / pob
+    return per_inhabitants * series / pob
 
 
 def moving_average(x: pd.Series, w: int) -> pd.Series:
