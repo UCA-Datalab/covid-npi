@@ -1,3 +1,17 @@
+[mongo]
+url = "mongodb://zappa.uca.es:27038/"
+username = ""
+password = ""
+database = ""
+chunks = 10
+date_min = "21-06-2020"
+
+
+[casos]
+movavg = 7
+link = "https://cnecovid.isciii.es/covid19/resources/casos_tecnica_provincia.csv"
+
+
 [postal_to_code]
 1 = "VI"
 2 = "AB"
@@ -106,6 +120,60 @@ ZA = "Zamora"
 Z = "Zaragoza"
 CE = "Ceuta"
 ML = "Melilla"
+
+[provincia_to_code]
+alava = "VI"
+albacete = "AB"
+alicante = "A"
+almeria = "AL"
+avila = "AV"
+badajoz = "BA"
+mallorca = "PM"
+barcelona = "B"
+burgos = "BU"
+caceres = "CC"
+cadiz = "CA"
+castellon = "CS"
+ciudad_real = "CR"
+cordoba = "CO"
+coruna_la = "C"
+cuenca = "CU"
+girona = "GI"
+granada = "GR"
+guadalajara = "GU"
+guipuzcoa = "SS"
+huelva = "H"
+huesca = "HU"
+jaen = "J"
+leon = "LE"
+lleida = "L"
+rioja_la = "LO"
+lugo = "LU"
+madrid = "M"
+malaga = "MA"
+murcia = "MU"
+navarra = "NA"
+orense = "OR"
+asturias = "O"
+palencia = "P"
+gran_canaria = "GC"
+pontevedra = "PO"
+salamanca = "SA"
+santa_cruz_de_tenerife = "TF"
+cantabria = "S"
+segovia = "SG"
+sevilla = "SE"
+soria = "SO"
+tarragona = "T"
+teruel = "TE"
+toledo = "TO"
+valencia = "V"
+valladolid = "VA"
+vizcaya = "BI"
+zamora = "ZA"
+zaragoza = "Z"
+ceuta = "CE"
+melilla = "ML"
 
 
 [code_to_poblacion]

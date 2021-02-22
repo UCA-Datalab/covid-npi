@@ -18,6 +18,17 @@ DICT_PORCENTAJE = {
 }
 
 
+def clean_pandas_str(series: pd.Series):
+    series_cleaned = (
+        series.str.normalize("NFKD")
+        .str.encode("ascii", errors="ignore")
+        .str.decode("utf-8")
+        .str.lower()
+        .str.replace(" ", "_")
+    )
+    return series_cleaned
+
+
 def read_npi_data(path_com: str) -> pd.DataFrame:
     """Read the data contained in a xlsm file"""
     col_rename = {
@@ -44,13 +55,7 @@ def read_npi_data(path_com: str) -> pd.DataFrame:
         "nivel_educacion",
     ]:
         try:
-            df[col] = (
-                df[col]
-                .str.normalize("NFKD")
-                .str.encode("ascii", errors="ignore")
-                .str.decode("utf-8")
-                .str.lower()
-            )
+            df[col] = clean_pandas_str(df[col])
         except AttributeError:
             print(f"{path_com} column '{col}' has all NaNs")
         except KeyError:
