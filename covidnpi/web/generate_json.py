@@ -24,7 +24,7 @@ def json_code_to_provincia(code_to_provincia: dict, path_json: str):
         list_json.append({"value": value, "text": text})
 
     with open(path_json, "w") as outfile:
-        json.dump(list_json, outfile)
+        json.dump(list_json, outfile, ensure_ascii=False)
 
 
 def json_ambitos(path_taxonomia: str, path_json: str):
@@ -54,7 +54,7 @@ def json_ambitos(path_taxonomia: str, path_json: str):
         list_json.append({"value": ambitos_clean[i], "text": raw})
 
     with open(path_json, "w") as outfile:
-        json.dump(list_json, outfile)
+        json.dump(list_json, outfile, ensure_ascii=False)
 
 
 def generate_json(
