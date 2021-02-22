@@ -44,7 +44,8 @@ def json_ambitos(path_config: str, path_json: str):
     col = mongo.get_col("scores")
     dict_provincia = col.find_one({"code": "M"})
     list_ambitos = [v for v in dict_provincia.values()]
-    list_ambitos.remove("M")
+    list_ambitos.remove("code")
+    list_ambitos.remove("provincia")
     list_ambitos.remove("fechas")
 
     list_json = []
