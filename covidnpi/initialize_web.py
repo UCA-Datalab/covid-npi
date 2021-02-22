@@ -33,7 +33,6 @@ def main(
         path_output=path_output, path_taxonomia=path_taxonomia, path_config=path_config
     )
     generate_json(
-        path_taxonomia=path_taxonomia,
         path_config=path_config,
         path_json_ambitos=path_json_ambitos,
         path_json_provincia=path_json_provincia,

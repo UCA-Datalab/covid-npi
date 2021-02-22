@@ -4,7 +4,7 @@ import typer
 
 from covidnpi.utils.config import load_config
 from covidnpi.utils.preprocess import clean_pandas_str
-from covidnpi.utils.taxonomia import read_taxonomia
+from covidnpi.web.mongo import load_mongo
 
 
 def json_code_to_provincia(code_to_provincia: dict, path_json: str):
@@ -27,38 +27,36 @@ def json_code_to_provincia(code_to_provincia: dict, path_json: str):
         json.dump(list_json, outfile, ensure_ascii=False)
 
 
-def json_ambitos(path_taxonomia: str, path_json: str):
+def json_ambitos(path_config: str, path_json: str):
     """Stores the ambits in json format with the style:
     [{value: deporte_exterior, text: Deporte exterior}, ...]
 
     Parameters
     ----------
-    path_taxonomia : str
-        Path to taxonomia file
+    path_config : str
+        Path to config toml file
     path_json : str
         Path where the json is stored, must end in a file with json format
 
     """
-    taxonomia = read_taxonomia(path_taxonomia=path_taxonomia)
-    ambitos_raw = (
-        taxonomia["ambito"]
-        .drop_duplicates()
-        .reset_index(drop=True)
-        .str.replace("_", " ")
-        .str.capitalize()
-    )
-    ambitos_clean = clean_pandas_str(ambitos_raw)
+    cfg_mongo = load_config(path_config, "mongo")
+    mongo = load_mongo(cfg_mongo)
+    col = mongo.get_col("scores")
+    dict_provincia = col.find_one({"code": "M"})
+    list_ambitos = [v for v in dict_provincia.values]
+    list_ambitos.remove("M")
+    list_ambitos.remove("fechas")
 
     list_json = []
-    for i, raw in ambitos_raw.iteritems():
-        list_json.append({"value": ambitos_clean[i], "text": raw})
+    for value in list_ambitos:
+        text = value.replace("_", " ").capitalize()
+        list_json.append({"value": value, "text": text})
 
     with open(path_json, "w") as outfile:
         json.dump(list_json, outfile, ensure_ascii=False)
 
 
 def generate_json(
-    path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
     path_config: str = "covidnpi/config.toml",
     path_json_provincia: str = "output/provincias.json",
     path_json_ambitos: str = "output/ambitos.json",
@@ -67,8 +65,6 @@ def generate_json(
 
     Parameters
     ----------
-    path_taxonomia : str, optional
-        Path to taxonomia xlsx file
     path_config : str, optional
         Path to the config toml file
     path_json_provincia : str, optional
@@ -81,7 +77,7 @@ def generate_json(
     code_to_provincia = load_config(path_config, key="code_to_provincia")
     json_code_to_provincia(code_to_provincia, path_json=path_json_provincia)
     print(f"\n-----\nStoring ambits json in {path_json_ambitos}\n-----")
-    json_ambitos(path_taxonomia, path_json_ambitos)
+    json_ambitos(path_config, path_json_ambitos)
 
 
 if __name__ == "__main__":
