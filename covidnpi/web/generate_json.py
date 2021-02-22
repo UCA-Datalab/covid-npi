@@ -3,7 +3,6 @@ import json
 import typer
 
 from covidnpi.utils.config import load_config
-from covidnpi.utils.preprocess import clean_pandas_str
 from covidnpi.web.mongo import load_mongo
 
 
