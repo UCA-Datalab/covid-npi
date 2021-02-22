@@ -29,7 +29,13 @@ def json_code_to_provincia(code_to_provincia: dict, path_json: str):
 
 def json_ambitos(path_taxonomia: str, path_json: str):
     taxonomia = read_taxonomia(path_taxonomia=path_taxonomia)
-    ambitos_raw = taxonomia["ambito"].drop_duplicates().reset_index(drop=True)
+    ambitos_raw = (
+        taxonomia["ambito"]
+        .drop_duplicates()
+        .reset_index(drop=True)
+        .str.replace("_", " ")
+        .str.capitalize()
+    )
     ambitos_clean = clean_pandas_str(ambitos_raw)
 
     list_json = []
@@ -44,7 +50,7 @@ def main(
     path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
     path_config: str = "covidnpi/config.toml",
     path_json_provincia: str = "provincias.json",
-    path_json_medidas: str = "medidas.json",
+    path_json_medidas: str = "ambitos.json",
 ):
     code_to_provincia = load_config(path_config, key="code_to_provincia")
     json_code_to_provincia(code_to_provincia, path_json=path_json_provincia)
