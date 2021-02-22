@@ -8,8 +8,8 @@ def main(
     path_output: str = "output/score_ambito",
     path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx",
     path_config: str = "covidnpi/config.toml",
-    path_json_provincia: str = "provincias.json",
-    path_json_ambitos: str = "ambitos.json",
+    path_json_provincia: str = "output/provincias.json",
+    path_json_ambitos: str = "output/ambitos.json",
 ):
     """Runs all the process needed to initalize the web:
     - Store the data in mongo
