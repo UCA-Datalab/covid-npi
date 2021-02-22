@@ -4,7 +4,7 @@ import typer
 
 from covidnpi.utils.config import load_config
 from covidnpi.utils.preprocess import clean_pandas_str
-from covidnpi.utils.taxonomia import return_taxonomia
+from covidnpi.utils.taxonomia import read_taxonomia
 
 
 def json_code_to_provincia(code_to_provincia: dict, path_json: str):
@@ -28,7 +28,7 @@ def json_code_to_provincia(code_to_provincia: dict, path_json: str):
 
 
 def json_ambitos(path_taxonomia: str, path_json: str):
-    taxonomia = return_taxonomia(path_taxonomia=path_taxonomia)
+    taxonomia = read_taxonomia(path_taxonomia=path_taxonomia)
     ambitos_raw = taxonomia["ambito"].drop_duplicates().reset_index(drop=True)
     ambitos_clean = clean_pandas_str(ambitos_raw)
 
