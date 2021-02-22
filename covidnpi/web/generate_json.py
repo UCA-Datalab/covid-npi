@@ -29,8 +29,8 @@ def json_code_to_provincia(code_to_provincia: dict, path_json: str):
 
 def json_ambitos(path_taxonomia: str, path_json: str):
     taxonomia = return_taxonomia(path_taxonomia=path_taxonomia)
-    ambitos_raw = taxonomia["ambito"].drop_duplicates().reset_index()
-    ambitos_clean = clean_pandas_str(ambitos_raw)
+    ambitos_raw = taxonomia["ambito"].drop_duplicates().reset_index(drop=True)
+    ambitos_clean = clean_pandas_str(ambitos_raw[])
 
     list_json = []
     for i, raw in ambitos_raw.iteritems():
