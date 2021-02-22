@@ -60,8 +60,8 @@ def json_ambitos(path_taxonomia: str, path_json: str):
 def generate_json(
     path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
     path_config: str = "covidnpi/config.toml",
-    path_json_provincia: str = "provincias.json",
-    path_json_ambitos: str = "ambitos.json",
+    path_json_provincia: str = "output/provincias.json",
+    path_json_ambitos: str = "output/ambitos.json",
 ):
     """Generates and stores both provinces and ambits json
 
