@@ -84,11 +84,23 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
         mongo.insert_new_dict("casos", dict_provincia)
 
 
-def main(
+def datastore(
     path_output: str = "output/score_ambito",
     path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx",
     path_config: str = "covidnpi/config.toml",
 ):
+    """Stores the data contained in the output folder in mongo
+
+    Parameters
+    ----------
+    path_output : str, optional
+        Path where the output of the preprocess_and_score script is located
+    path_taxonomia : str, optional
+        Path to taxonomia xlsx file
+    path_config : str, optional
+        Path to the config toml file
+
+    """
     print("\n-----\nStoring scores in mongo\n-----\n")
     store_scores_in_mongo(
         path_output=path_output, path_taxonomia=path_taxonomia, path_config=path_config
@@ -98,4 +110,4 @@ def main(
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    typer.run(datastore)

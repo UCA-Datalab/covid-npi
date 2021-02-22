@@ -28,6 +28,17 @@ def json_code_to_provincia(code_to_provincia: dict, path_json: str):
 
 
 def json_ambitos(path_taxonomia: str, path_json: str):
+    """Stores the ambits in json format with the style:
+    [{value: deporte_exterior, text: Deporte exterior}, ...]
+
+    Parameters
+    ----------
+    path_taxonomia : str
+        Path to taxonomia file
+    path_json : str
+        Path where the json is stored, must end in a file with json format
+
+    """
     taxonomia = read_taxonomia(path_taxonomia=path_taxonomia)
     ambitos_raw = (
         taxonomia["ambito"]
@@ -46,16 +57,32 @@ def json_ambitos(path_taxonomia: str, path_json: str):
         json.dump(list_json, outfile)
 
 
-def main(
+def generate_json(
     path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
     path_config: str = "covidnpi/config.toml",
     path_json_provincia: str = "provincias.json",
-    path_json_medidas: str = "ambitos.json",
+    path_json_ambitos: str = "ambitos.json",
 ):
+    """Generates and stores both provinces and ambits json
+
+    Parameters
+    ----------
+    path_taxonomia : str, optional
+        Path to taxonomia xlsx file
+    path_config : str, optional
+        Path to the config toml file
+    path_json_provincia : str, optional
+        Path where the provinces json is stored, must end in a file with json format
+    path_json_ambitos : str, optional
+        Path where the ambits json is stored, must end in a file with json format
+
+    """
+    print(f"\n-----\nStoring provinces json in {path_json_provincia}\n-----")
     code_to_provincia = load_config(path_config, key="code_to_provincia")
     json_code_to_provincia(code_to_provincia, path_json=path_json_provincia)
-    json_ambitos(path_taxonomia, path_json_medidas)
+    print(f"\n-----\nStoring ambits json in {path_json_ambitos}\n-----")
+    json_ambitos(path_taxonomia, path_json_ambitos)
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    typer.run(generate_json)
