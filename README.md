@@ -1,4 +1,4 @@
-# covid-npi
+# COVID NPI
 
 ## Set up
 ### Create the environment using Conda
@@ -44,3 +44,17 @@ To see an explanation of this script, run instead:
 ```
 python covidnpi/preprocess_and_score.py --help
 ```
+
+## Web
+
+See [the README on covidnpi/web](covidnpi/web) to learn how to load the data from mongo.
+
+
+## Credits
+
+**Authors:**
+- [David Gómez-Ullate](https://github.com/dgullate), [UCADatalab](http://datalab.uca.es/)
+- [Leopoldo Gutiérrez](https://github.com/leoguga), [UCADatalab](http://datalab.uca.es/)
+- [Daniel Precioso](https://github.com/daniprec), [UCADatalab](http://datalab.uca.es/)
+             
+**Last update**: 24th february 2021
