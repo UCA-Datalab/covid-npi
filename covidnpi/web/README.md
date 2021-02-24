@@ -63,7 +63,7 @@ dict_plot = return_provinces_by_ambit(ambit, provinces, path_config=path_config)
 
 To load the cumulative incidence in a given province:
 ````python
-from covidnpi.web.dataloaders import return_casos_of_province
+from covidnpi.web.dataloaders import return_incidence_of_province
 
 # Parameters to define
 # province : The code of the province, in uppercase
@@ -71,7 +71,7 @@ province = "M"
 # path_config : Path to your config file
 path_config = "config.toml"
 
-dict_plot = return_casos_of_province(province, path_config=path_config)
+dict_plot = return_incidence_of_province(province, path_config=path_config)
 # Output dict_plot will have the following format
 # {"x": [...], "y": [...]}
 # where x are dates and y are floats
@@ -79,7 +79,7 @@ dict_plot = return_casos_of_province(province, path_config=path_config)
 
 To load the growth ratio in a given province:
 ````python
-from covidnpi.web.dataloaders import return_crecimiento_of_province
+from covidnpi.web.dataloaders import return_growth_of_province
 
 # Parameters to define
 # province : The code of the province, in uppercase
@@ -87,7 +87,7 @@ province = "M"
 # path_config : Path to your config file
 path_config = "config.toml"
 
-dict_plot = return_crecimiento_of_province(province, path_config=path_config)
+dict_plot = return_growth_of_province(province, path_config=path_config)
 # Output dict_plot will have the following format
 # {"x": [...], "y": [...]}
 # where x are dates and y are floats

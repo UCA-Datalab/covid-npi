@@ -133,7 +133,7 @@ def moving_average(x: pd.Series, w: int) -> pd.Series:
     return x_movavg
 
 
-def compute_crecimiento(series: pd.Series, days: int) -> pd.Series:
+def compute_growth_rate(series: pd.Series, days: int) -> pd.Series:
     """Computes the growth of COVID, comparing intervals of time
 
     Parameters

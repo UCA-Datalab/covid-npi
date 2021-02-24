@@ -79,7 +79,7 @@ def return_provinces_by_ambit(
     return dict_plot
 
 
-def return_casos_of_province(code: str, path_config: str = "covidnpi/config.toml"):
+def return_incidence_of_province(code: str, path_config: str = "covidnpi/config.toml"):
     """Loads the number of cases stored in mongo for a given province
 
     Parameters
@@ -103,7 +103,7 @@ def return_casos_of_province(code: str, path_config: str = "covidnpi/config.toml
     return dict_plot
 
 
-def return_crecimiento_of_province(
+def return_growth_of_province(
     code: str, path_config: str = "covidnpi/config.toml"
 ):
     """Loads the growth of cases stored in mongo for a given province

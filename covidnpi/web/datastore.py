@@ -7,7 +7,7 @@ from covidnpi.casos.compute import (
     load_casos_df,
     return_casos_of_provincia_normed,
     cumulative_incidence,
-    compute_crecimiento,
+    compute_growth_rate,
 )
 from covidnpi.utils.config import load_config
 from covidnpi.utils.taxonomia import return_taxonomia
@@ -72,7 +72,7 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
             print(f"{code} missing from poblacion")
             continue
         num = cumulative_incidence(series, cfg_casos["movavg"])
-        growth = compute_crecimiento(series, cfg_casos["movavg"])
+        growth = compute_growth_rate(series, cfg_casos["movavg"])
         dict_provincia.update(
             {
                 "code": code,
