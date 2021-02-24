@@ -146,7 +146,7 @@ def compute_crecimiento(series: pd.Series, days: int) -> pd.Series:
     Returns
     -------
     pandas.Series
-        Growth of COVID cases per date
+        Growth of COVID cases per date (in percentage)
 
     """
     x = moving_average(series, days)
@@ -155,4 +155,6 @@ def compute_crecimiento(series: pd.Series, days: int) -> pd.Series:
     # Replace infs with NaN
     g[g == np.inf] = np.nan
     g = pd.Series(g, index=idx)
+    # Center around 0 and change to percentage
+    g = (g - 1) * 100
     return g
