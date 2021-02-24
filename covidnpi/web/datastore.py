@@ -6,7 +6,7 @@ import typer
 from covidnpi.casos.compute import (
     load_casos_df,
     return_casos_of_provincia_normed,
-    moving_average,
+    cumulative_incidence,
     compute_crecimiento,
 )
 from covidnpi.utils.config import load_config
@@ -71,7 +71,7 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
         except KeyError:
             print(f"{code} missing from poblacion")
             continue
-        num = moving_average(series, cfg_casos["movavg"])
+        num = cumulative_incidence(series, cfg_casos["movavg"])
         growth = compute_crecimiento(series, cfg_casos["movavg"])
         dict_provincia.update(
             {

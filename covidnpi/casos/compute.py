@@ -6,7 +6,7 @@ import pandas as pd
 
 from covidnpi.utils.config import load_config
 
-warnings.filterwarnings("ignore", category=RuntimeWarning) 
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 def _dateparse(x):
@@ -95,6 +95,26 @@ def return_casos_of_provincia_normed(
     return per_inhabitants * series / pob
 
 
+def cumulative_incidence(x: pd.Series, w: int) -> pd.Series:
+    """Computes the cumulative incidence of a series
+
+    Parameters
+    ----------
+    x : pandas.Series
+    w : int
+        Size of the acumulation
+
+    Returns
+    -------
+    pandas.Series
+
+    """
+    idx = x.index
+    x_cum = np.convolve(x, np.ones(w), "valid")
+    x_cum = pd.Series(x_cum, index=idx[(w - 1) :])
+    return x_cum
+
+
 def moving_average(x: pd.Series, w: int) -> pd.Series:
     """Computes the moving average of a series
 
@@ -109,9 +129,7 @@ def moving_average(x: pd.Series, w: int) -> pd.Series:
     pandas.Series
 
     """
-    idx = x.index
-    x_movavg = np.convolve(x, np.ones(w), "valid") / w
-    x_movavg = pd.Series(x_movavg, index=idx[(w - 1) :])
+    x_movavg = cumulative_incidence(x, w) / w
     return x_movavg
 
 
