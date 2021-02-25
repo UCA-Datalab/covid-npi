@@ -1,15 +1,17 @@
 import os
+
 import typer
 
+from covidnpi.score.score_items import return_dict_score_items
+from covidnpi.score.score_medidas import return_dict_score_medidas
 from covidnpi.utils.dictionaries import store_dict_scores, store_dict_medidas
 from covidnpi.utils.preprocess import read_npi_and_build_dict
-from covidnpi.score.score_medidas import return_dict_score_medidas
-from covidnpi.score.score_items import return_dict_score_items
+from covidnpi.utils.taxonomia import PATH_TAXONOMIA
 
 
 def main(
     path_raw: str = "datos_NPI_2",
-    path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
+    path_taxonomia: str = PATH_TAXONOMIA,
     path_output: str = "output",
 ):
     """Reads the raw data stored in path_raw, preprocess and scores it, while storing
@@ -21,7 +23,7 @@ def main(
     path_raw : str, optional
         Path to raw data, by default "datos_NPI_2"
     path_taxonomia : str, optional
-        Path to taxonomia xlsx file, by default "datos_NPI/Taxonomía_07022021.xlsx"
+        Path to taxonomia xlsx file, by default `PATH_TAXONOMIA`
     path_output : str, optional
         Output folder, by default "output"
 

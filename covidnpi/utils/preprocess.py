@@ -5,7 +5,7 @@ import pandas as pd
 import typer
 
 from covidnpi.utils.dictionaries import store_dict_medidas
-from covidnpi.utils.taxonomia import return_all_medidas
+from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
 
 DICT_PORCENTAJE = {
     "cantalejo": 2,
@@ -89,7 +89,7 @@ def gen_cod(prefix, maximo, missing=()):
 
 
 def filter_relevant_medidas(
-    df: pd.DataFrame, path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx"
+    df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOMIA
 ):
     all_medidas = return_all_medidas(path_taxonomia=path_taxonomia)
     mask_medidas = df["codigo"].isin(all_medidas)
@@ -222,7 +222,7 @@ def return_dict_medidas(df: pd.DataFrame) -> dict:
 
 def read_npi_and_build_dict(
     path_data: str = "datos_NPI_2",
-    path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
+    path_taxonomia: str = PATH_TAXONOMIA,
 ):
     # Read all files and combine them
     df = read_npi_folder(path_data)
@@ -247,7 +247,7 @@ def read_npi_and_build_dict(
 
 def main(
     path_data: str = "datos_NPI_2",
-    path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
+    path_taxonomia: str = PATH_TAXONOMIA,
     path_output: str = "output/medidas",
 ):
     """Reads the raw data, in path_data, preprocess it and stores the results in

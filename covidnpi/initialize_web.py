@@ -1,12 +1,13 @@
 import typer
 
+from covidnpi.utils.taxonomia import PATH_TAXONOMIA
 from covidnpi.web.datastore import datastore
 from covidnpi.web.generate_json import generate_json
 
 
 def main(
     path_output: str = "output/score_ambito",
-    path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx",
+    path_taxonomia=PATH_TAXONOMIA,
     path_config: str = "covidnpi/config.toml",
     path_json_provincia: str = "output/provincias.json",
     path_json_ambitos: str = "output/ambitos.json",
