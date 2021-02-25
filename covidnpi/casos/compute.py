@@ -34,6 +34,9 @@ def load_casos_df(
 
     casos = pd.read_csv(link, parse_dates=["fecha"], date_parser=_dateparse)
 
+    # Correct some abbreviations
+    casos["provincia_iso"] = casos["provincia_iso"].replace({"ME": "ML", "NC": "NA"})
+
     return casos
 
 
