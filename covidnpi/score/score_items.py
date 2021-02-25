@@ -207,7 +207,7 @@ def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
 
 def return_dict_score_items(
     dict_scores: dict,
-    path_taxonomia=PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMIA,
     verbose: bool = True,
 ) -> tuple:
     dict_items = {}

@@ -3,7 +3,7 @@ import pandas as pd
 PATH_TAXONOMIA = "datos_NPI/Taxonomía_07022021.xlsx"
 
 
-def read_taxonomia(path_taxonomia=PATH_TAXONOMIA):
+def read_taxonomia(path_taxonomia: str = PATH_TAXONOMIA) -> pd.DataFrame:
     xl = pd.ExcelFile(path_taxonomia)
 
     list_sheet = xl.sheet_names
@@ -47,7 +47,7 @@ def read_taxonomia(path_taxonomia=PATH_TAXONOMIA):
     return df
 
 
-def return_all_medidas(path_taxonomia=PATH_TAXONOMIA):
+def return_all_medidas(path_taxonomia: str = PATH_TAXONOMIA):
     """Returns a list of the relevant medidas"""
 
     df = read_taxonomia(path_taxonomia=path_taxonomia)
@@ -63,7 +63,7 @@ def return_all_medidas(path_taxonomia=PATH_TAXONOMIA):
     return sorted(list_codigos)
 
 
-def classify_criteria(taxonomia):
+def classify_criteria(taxonomia: pd.DataFrame):
     """Parses "Criterio" column into three categories:
     "alto", "medio", "bajo"
     """
@@ -99,7 +99,7 @@ def classify_criteria(taxonomia):
     return classified
 
 
-def return_taxonomia(path_taxonomia=PATH_TAXONOMIA):
+def return_taxonomia(path_taxonomia: str = PATH_TAXONOMIA):
     taxonomia = read_taxonomia(path_taxonomia)
     criterio = classify_criteria(taxonomia)
     taxonomia = pd.merge(taxonomia, criterio, left_index=True, right_index=True)
@@ -107,7 +107,7 @@ def return_taxonomia(path_taxonomia=PATH_TAXONOMIA):
 
 
 def return_item_ponderacion(
-    path_taxonomia=PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMIA,
 ) -> pd.DataFrame:
     taxonomia = read_taxonomia(path_taxonomia)
     # Fill missing names with "variable" + item count

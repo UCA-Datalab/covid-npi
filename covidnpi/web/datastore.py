@@ -16,7 +16,7 @@ from covidnpi.web.mongo import load_mongo
 
 def store_scores_in_mongo(
     path_output: str = "output/score_ambito",
-    path_taxonomia=PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMIA,
     path_config: str = "covidnpi/config.toml",
 ):
     cfg_mongo = load_config(path_config, key="mongo")
@@ -86,7 +86,7 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
 
 def datastore(
     path_output: str = "output/score_ambito",
-    path_taxonomia=PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMIA,
     path_config: str = "covidnpi/config.toml",
 ):
     """Stores the data contained in the output folder in mongo
