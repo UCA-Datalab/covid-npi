@@ -67,6 +67,9 @@ def read_npi_data(path_com: str) -> pd.DataFrame:
         df["comunidad_autonoma"].value_counts().index[0]
     )
 
+    # La Rioja no rellena la columna provincia, asi que nos toca rellenarla
+    if "Medidas_RIO" in path_com:
+        df["provincia"] = df["provincia"].fillna("rioja_la")
     return df
 
 
@@ -88,9 +91,7 @@ def gen_cod(prefix, maximo, missing=()):
     return [prefix + "." + str(n) for n in lista]
 
 
-def filter_relevant_medidas(
-    df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOMIA
-):
+def filter_relevant_medidas(df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOMIA):
     all_medidas = return_all_medidas(path_taxonomia=path_taxonomia)
     mask_medidas = df["codigo"].isin(all_medidas)
     df_new = df[mask_medidas]
