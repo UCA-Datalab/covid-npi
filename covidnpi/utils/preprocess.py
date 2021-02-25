@@ -17,6 +17,12 @@ DICT_PORCENTAJE = {
     "pesqueradeduero": 0.1,
 }
 
+DICT_FILL_PROVINCIA = {
+    "CEU": "ceuta",
+    "MEL": "melilla",
+    "RIO": "rioja_la",
+}
+
 
 def clean_pandas_str(series: pd.Series):
     series_cleaned = (
@@ -67,9 +73,10 @@ def read_npi_data(path_com: str) -> pd.DataFrame:
         df["comunidad_autonoma"].value_counts().index[0]
     )
 
-    # La Rioja no rellena la columna provincia, asi que nos toca rellenarla
-    if "Medidas_RIO" in path_com:
-        df["provincia"] = df["provincia"].fillna("rioja_la")
+    # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
+    for key, value in DICT_FILL_PROVINCIA.items():
+        if f"Medidas_{key}" in path_com:
+            df["provincia"] = df["provincia"].fillna(value)
     return df
 
 
