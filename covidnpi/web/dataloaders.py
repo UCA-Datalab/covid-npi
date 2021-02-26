@@ -99,7 +99,7 @@ def return_incidence_of_province(code: str, path_config: str = "covidnpi/config.
     col = mongo.get_col("casos")
 
     x = col.find_one({"code": code})
-    dict_plot = {"x": x["fechas"], "y": x["casos"], "y_max": 1000, "y_min": 0}
+    dict_plot = {"x": x["fechas"], "y": x["casos"], "y_max": 800, "y_min": 0}
     return dict_plot
 
 
