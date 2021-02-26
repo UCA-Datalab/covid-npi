@@ -73,10 +73,11 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
             continue
         num = cumulative_incidence(series, cfg_casos["movavg"]).fillna(0)
         growth = compute_growth_rate(series, cfg_casos["movavg"]).fillna(0)
+        fechas = [d.strftime("%Y-%m-%d") for d in num.index.tolist()]
         dict_provincia.update(
             {
                 "code": code,
-                "fechas": num.index.tolist(),
+                "fechas": fechas,
                 "casos": num.values.tolist(),
                 "crecimiento": growth.values.tolist(),
             }
