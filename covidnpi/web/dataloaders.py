@@ -36,7 +36,7 @@ def return_ambits_by_province(
             raise KeyError(f"Ambito '{ambit}' no existe")
         except TypeError:
             raise KeyError(f"Provincia '{code}' no encontrada")
-        dict_plot.update({ambit: {"x": x, "y": y}})
+        dict_plot.update({ambit: {"x": x, "y": y, "y_max": 1, "y_min": 0}})
 
     return dict_plot
 
@@ -74,7 +74,7 @@ def return_provinces_by_ambit(
             raise KeyError(f"Ambito '{ambit}' no existe")
         except TypeError:
             raise KeyError(f"Provincia '{code}' no encontrada")
-        dict_plot.update({code: {"x": x, "y": y}})
+        dict_plot.update({code: {"x": x, "y": y, "y_max": 1, "y_min": 0}})
 
     return dict_plot
 
@@ -99,13 +99,11 @@ def return_incidence_of_province(code: str, path_config: str = "covidnpi/config.
     col = mongo.get_col("casos")
 
     x = col.find_one({"code": code})
-    dict_plot = {"x": x["fechas"], "y": x["casos"]}
+    dict_plot = {"x": x["fechas"], "y": x["casos"], "y_max": 1000, "y_min": 0}
     return dict_plot
 
 
-def return_growth_of_province(
-    code: str, path_config: str = "covidnpi/config.toml"
-):
+def return_growth_of_province(code: str, path_config: str = "covidnpi/config.toml"):
     """Loads the growth of cases stored in mongo for a given province
 
     Parameters
@@ -125,5 +123,5 @@ def return_growth_of_province(
     col = mongo.get_col("casos")
 
     x = col.find_one({"code": code})
-    dict_plot = {"x": x["fechas"], "y": x["crecimiento"]}
+    dict_plot = {"x": x["fechas"], "y": x["crecimiento"], "y_max": 200, "y_min": -200}
     return dict_plot
