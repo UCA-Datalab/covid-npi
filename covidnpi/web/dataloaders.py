@@ -123,5 +123,5 @@ def return_growth_of_province(code: str, path_config: str = "covidnpi/config.tom
     col = mongo.get_col("casos")
 
     x = col.find_one({"code": code})
-    dict_plot = {"x": x["fechas"], "y": x["crecimiento"], "y_max": 200, "y_min": -200}
+    dict_plot = {"x": x["fechas"], "y": x["crecimiento"], "y_max": 200, "y_min": -100}
     return dict_plot
