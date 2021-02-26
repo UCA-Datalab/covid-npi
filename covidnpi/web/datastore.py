@@ -71,8 +71,8 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
         except KeyError:
             print(f"[!] {code} missing from poblacion")
             continue
-        num = cumulative_incidence(series, cfg_casos["movavg"])
-        growth = compute_growth_rate(series, cfg_casos["movavg"])
+        num = cumulative_incidence(series, cfg_casos["movavg"]).fillna(0)
+        growth = compute_growth_rate(series, cfg_casos["movavg"]).fillna(0)
         dict_provincia.update(
             {
                 "code": code,
