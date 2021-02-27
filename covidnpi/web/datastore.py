@@ -1,3 +1,4 @@
+import datetime as dt
 import os
 
 import pandas as pd
@@ -28,10 +29,15 @@ def store_scores_in_mongo(
 
     taxonomia = return_taxonomia(path_taxonomia=path_taxonomia)
     list_ambito = taxonomia["ambito"].unique().tolist()
+    # Get the minimum date in datetime format
+    date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
 
     for file in os.listdir(path_output):
         path_file = os.path.join(path_output, file)
         df = pd.read_csv(path_file, index_col="fecha")
+        # Filter dates previous to the minimum date
+        mask_date = pd.to_datetime(df.index, format="%Y-%m-%d") >= date_min
+        df = df[mask_date]
         provincia = file.split(".")[0]
         try:
             dict_provincia = {
@@ -60,6 +66,8 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
 
     casos = load_casos_df(link=cfg_casos["link"])
     list_code = casos["provincia_iso"].dropna().unique()
+    # Get the minimum date in datetime format
+    date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
 
     for code in list_code:
         dict_provincia = {}
@@ -67,6 +75,9 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
             series = return_casos_of_provincia_normed(
                 casos, code, path_config=path_config
             )
+            # Filter dates previous to the minimum date
+            mask_date = series.index >= date_min
+            series = series[mask_date]
             print(f"{code}")
         except KeyError:
             print(f"[!] {code} missing from poblacion")
