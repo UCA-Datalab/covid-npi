@@ -20,6 +20,19 @@ def store_scores_in_mongo(
     path_taxonomia: str = PATH_TAXONOMIA,
     path_config: str = "covidnpi/config.toml",
 ):
+    """Store NPI scores in mongo server
+
+    Parameters
+    ----------
+    path_output : str, optional
+        Path containing the outputs, that we want to store in mongo
+    path_taxonomia : str, optional
+        Path to taxonomia file
+    path_config : str, optional
+        Config file contains the route and credentials of mongo server
+
+    """
+
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
     # Remove collection
@@ -57,6 +70,14 @@ def store_scores_in_mongo(
 
 
 def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
+    """Store incidence and growth rate in mongo
+
+        Parameters
+        ----------
+        path_config : str, optional
+            Config file contains the route and credentials of mongo server
+
+        """
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
     # Remove collection
