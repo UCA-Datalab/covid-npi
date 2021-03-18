@@ -28,9 +28,35 @@ def load_mobility_report(
         path_csv, parse_dates=["date"], dayfirst=False, chunksize=5e5, low_memory=False
     ):
         df_list += [chunk.query(f"country_region_code == '{country}'")]
-    df = pd.concat(df_list)
+    mob = pd.concat(df_list)
     del df_list
 
     # Codes of each province
-    df["code"] = df["iso_3166_2_code"].str.replace(f"{country}-", "")
-    return df
+    mob["code"] = mob["iso_3166_2_code"].str.replace(f"{country}-", "")
+    return mob
+
+
+def return_reports_of_provincia(mob: pd.DataFrame, code: str) -> dict:
+    """Returns a dictionary containing all the reports for a given province
+
+    Parameters
+    ----------
+    mob : pandas.DataFrame
+        Mobility report dataframe
+    code : str
+        Province code
+
+    Returns
+    -------
+    dict
+        Contains pandas.Series
+
+    """
+    df = mob.query(f"code == '{code}'").set_index("date")
+    list_reports = [col for col in mob.columns if "percent" in col]
+    dict_reports = {}
+    for col in list_reports:
+        name = col.capitalize().replace("_", " ")
+        series = df[col]
+        dict_reports.update({name: series})
+    return dict_reports
