@@ -56,7 +56,7 @@ def return_reports_of_provincia(mob: pd.DataFrame, code: str) -> dict:
     list_reports = [col for col in mob.columns if "percent" in col]
     dict_reports = {}
     for col in list_reports:
-        name = col.capitalize().replace("_", " ")
+        name = col.split("_", 1)[0]
         series = df[col]
         dict_reports.update({name: series})
     return dict_reports
