@@ -227,7 +227,8 @@ def return_dict_medidas(df: pd.DataFrame) -> dict:
             .copy()
             .reset_index(drop=True)
         )
-        dict_medidas.update({provincia: df_sub})
+        if not df_sub.empty:
+            dict_medidas.update({provincia: df_sub})
 
     return dict_medidas
 
