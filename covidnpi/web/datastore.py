@@ -7,9 +7,8 @@ import typer
 from covidnpi.casos.compute import (
     load_casos_df,
     return_casos_of_provincia_normed,
-    cumulative_incidence,
-    compute_growth_rate,
 )
+from covidnpi.utils.series import cumulative_incidence, compute_growth_rate
 from covidnpi.utils.config import load_config
 from covidnpi.utils.taxonomia import return_taxonomia, PATH_TAXONOMIA
 from covidnpi.web.mongo import load_mongo
