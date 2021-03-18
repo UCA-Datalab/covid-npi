@@ -182,7 +182,11 @@ def pivot_unidad_valor(df: pd.DataFrame) -> pd.DataFrame:
     df_cat = df[["unidad", "valor"]].pivot(columns="unidad", values="valor")
     df_cat = df_cat.loc[:, df_cat.columns.notnull()].reset_index(drop=True)
 
-    df = df.join(df_cat).drop(["unidad", "valor"], axis=1)
+    df = (
+        df.join(df_cat)
+        .drop(["unidad", "valor"], axis=1)
+        .rename({"hora_(en_formato_24h)": "hora"}, axis=1)
+    )
 
     df = format_hora(df)
     return df
