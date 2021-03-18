@@ -52,8 +52,7 @@ def return_casos_of_provincia(casos: pd.DataFrame, code: str) -> pd.Series:
 
     Returns
     -------
-    pandas.Series
-        Total c+ases of COVID per date
+    pandas.Series        Total c+ases of COVID per date
 
     """
     # Query target province

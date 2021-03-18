@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import typer
 
-from covidnpi.casos.compute import (
+from covidnpi.utils.casos import (
     load_casos_df,
     return_casos_of_provincia_normed,
 )
