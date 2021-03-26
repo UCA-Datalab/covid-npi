@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import typer
+import xlrd
 
 from covidnpi.utils.dictionaries import store_dict_medidas
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
@@ -44,7 +45,12 @@ def read_npi_data(path_com: str) -> pd.DataFrame:
         "Comunidad_autónoma": "comunidad_autonoma",
     }
 
-    df = pd.read_excel(path_com, sheet_name="base").rename(col_rename, axis=1)
+    try:
+        df = pd.read_excel(path_com, sheet_name="base")
+    except xlrd.biffh.XLRDError:
+        df = pd.read_excel(path_com, sheet_name="base-regional-provincias")
+
+    df = df.rename(col_rename, axis=1)
 
     drop_cols = [col for col in df.columns if col.startswith("Unnamed")]
     df = df.drop(drop_cols, axis=1)
