@@ -86,7 +86,7 @@ def clean_pandas_str(series: pd.Series):
 
 def read_npi_data(
     path_com: str,
-    col_rename: dict[str, str] = DICT_COL_RENAME,
+    col_rename: dict = DICT_COL_RENAME,
     list_col_text: list = LIST_COL_TEXT,
 ) -> pd.DataFrame:
     """Read the data contained in a xlsm file"""
