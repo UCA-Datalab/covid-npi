@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import typer
+import xlrd
 
 from covidnpi.utils.dictionaries import store_dict_medidas
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
@@ -23,6 +24,54 @@ DICT_FILL_PROVINCIA = {
     "RIO": "rioja_la",
 }
 
+DICT_COL_RENAME = {
+    "cod_con": "codigo",
+    "unidad de medida": "unidad",
+    "% afectado (si subprovincial; mín 25%)": "porcentaje_afectado",
+    "Comunidad_autónoma": "comunidad_autonoma",
+}
+
+LIST_COL_TEXT = [
+    "ambito",
+    "comunidad_autonoma",
+    "provincia",
+    "unidad",
+    "nivel_educacion",
+]
+
+DICT_UNIDAD_RENAME = {
+    "hora (en formato 24h)": "hora",
+    "hora (formato 24h)": "hora",
+    "hora_(en_formato_24h)": "hora",
+    "hora_(formato_24h)": "hora",
+    "horario": "hora",
+    "horas": "hora",
+    "pesonas": "personas",
+    "personas ": "personas",
+    "personas exterior": "personas",
+    "a partir de personas": "personas",
+    "personas por grupo": "personas",
+    "mesas": "personas",
+    "porcentaje de puestos": "porcentaje",
+    "porcentaje plazas en pie": "porcentaje",
+    "aforo": "porcentaje",
+    "p": "porcentaje",
+    "grupos convivencia": np.nan,
+    "m2": np.nan,
+    "metros": np.nan,
+}
+
+DICT_ADD_PROVINCE = {
+    "palencia": "cyl",
+    "soria": "cyl",
+    "valencia": "comunidad_valenciana",
+    "castellon": "comunidad_valenciana",
+    "gran_canaria": "canarias",
+    "alava": "pais_vasco",
+    "guipuzcoa": "pais_vasco",
+    "vizcaya": "pais_vasco",
+}
+
 
 def clean_pandas_str(series: pd.Series):
     series_cleaned = (
@@ -35,16 +84,19 @@ def clean_pandas_str(series: pd.Series):
     return series_cleaned
 
 
-def read_npi_data(path_com: str) -> pd.DataFrame:
+def read_npi_data(
+    path_com: str,
+    col_rename: dict[str, str] = DICT_COL_RENAME,
+    list_col_text: list = LIST_COL_TEXT,
+) -> pd.DataFrame:
     """Read the data contained in a xlsm file"""
-    col_rename = {
-        "cod_con": "codigo",
-        "unidad de medida": "unidad",
-        "% afectado (si subprovincial; mín 25%)": "porcentaje_afectado",
-        "Comunidad_autónoma": "comunidad_autonoma",
-    }
 
-    df = pd.read_excel(path_com, sheet_name="base").rename(col_rename, axis=1)
+    try:
+        df = pd.read_excel(path_com, sheet_name="base")
+    except xlrd.biffh.XLRDError:
+        df = pd.read_excel(path_com, sheet_name="base-regional-provincias")
+
+    df = df.rename(col_rename, axis=1)
 
     drop_cols = [col for col in df.columns if col.startswith("Unnamed")]
     df = df.drop(drop_cols, axis=1)
@@ -53,13 +105,7 @@ def read_npi_data(path_com: str) -> pd.DataFrame:
     df.loc[df["unidad"] == "p", "valor"] = df.loc[df["unidad"] == "p", "valor"] * 100
 
     # Preprocesar texto
-    for col in [
-        "ambito",
-        "comunidad_autonoma",
-        "provincia",
-        "unidad",
-        "nivel_educacion",
-    ]:
+    for col in list_col_text:
         try:
             df[col] = clean_pandas_str(df[col])
         except AttributeError:
@@ -85,7 +131,10 @@ def read_npi_folder(path_data: str) -> pd.DataFrame:
 
     for file in os.listdir(path_data):
         path_file = os.path.join(path_data, file)
-        df = read_npi_data(path_file)
+        try:
+            df = read_npi_data(path_file)
+        except IsADirectoryError:
+            continue
         list_df += [df]
 
     df = pd.concat(list_df).reset_index(drop=True)
@@ -107,34 +156,16 @@ def filter_relevant_medidas(df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOM
     return df_new
 
 
-def rename_unidad(df):
+def rename_unidad(df, rename: dict = DICT_UNIDAD_RENAME):
     df = df.copy()
 
-    rename = {
-        "hora (en formato 24h)": "hora",
-        "hora (formato 24h)": "hora",
-        "horario": "hora",
-        "horas": "hora",
-        "pesonas": "personas",
-        "personas ": "personas",
-        "personas exterior": "personas",
-        "a partir de personas": "personas",
-        "personas por grupo": "personas",
-        "mesas": "personas",
-        "porcentaje de puestos": "porcentaje",
-        "porcentaje plazas en pie": "porcentaje",
-        "aforo": "porcentaje",
-        "p": "porcentaje",
-        "grupos convivencia": np.nan,
-        "m2": np.nan,
-        "metros": np.nan,
-    }
     df["unidad"] = df["unidad"].replace(rename)
     return df
 
 
 def format_hora(df):
     df = df.copy()
+    # Join all the columns named "hora"
     hora = (
         df.query("codigo == 'RH.5'")["hora"].fillna(0).astype(str).str[:2].astype(int)
     )
@@ -182,31 +213,16 @@ def pivot_unidad_valor(df: pd.DataFrame) -> pd.DataFrame:
     df_cat = df[["unidad", "valor"]].pivot(columns="unidad", values="valor")
     df_cat = df_cat.loc[:, df_cat.columns.notnull()].reset_index(drop=True)
 
-    df = (
-        df.join(df_cat)
-        .drop(["unidad", "valor"], axis=1)
-        .rename({"hora_(en_formato_24h)": "hora"}, axis=1)
-    )
+    df = df.join(df_cat).drop(["unidad", "valor"], axis=1)
 
     df = format_hora(df)
     return df
 
 
-def return_dict_provincia(df: pd.DataFrame) -> dict:
+def return_dict_provincia(df: pd.DataFrame, dict_add: dict = DICT_ADD_PROVINCE) -> dict:
     df_ccaa = df.groupby(["comunidad_autonoma", "provincia"]).size().reset_index()
 
     dict_provincia = dict(zip(df_ccaa["provincia"], df_ccaa["comunidad_autonoma"]))
-
-    dict_add = {
-        "palencia": "cyl",
-        "soria": "cyl",
-        "valencia": "comunidad_valenciana",
-        "castellon": "comunidad_valenciana",
-        "gran_canaria": "canarias",
-        "alava": "pais_vasco",
-        "guipuzcoa": "pais_vasco",
-        "vizcaya": "pais_vasco",
-    }
 
     dict_provincia.update(dict_add)
     return dict_provincia
