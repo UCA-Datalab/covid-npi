@@ -91,7 +91,10 @@ def read_npi_folder(path_data: str) -> pd.DataFrame:
 
     for file in os.listdir(path_data):
         path_file = os.path.join(path_data, file)
-        df = read_npi_data(path_file)
+        try:
+            df = read_npi_data(path_file)
+        except IsADirectoryError:
+            continue
         list_df += [df]
 
     df = pd.concat(list_df).reset_index(drop=True)
