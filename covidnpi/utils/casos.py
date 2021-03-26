@@ -52,7 +52,8 @@ def return_casos_of_provincia(casos: pd.DataFrame, code: str) -> pd.Series:
 
     Returns
     -------
-    pandas.Series        Total c+ases of COVID per date
+    pandas.Series
+        Total cases of COVID per date
 
     """
     # Query target province
@@ -60,7 +61,10 @@ def return_casos_of_provincia(casos: pd.DataFrame, code: str) -> pd.Series:
     series = casos_sub.set_index("fecha")["num_casos"]
 
     # Fill missing dates with NaN
-    idx = pd.date_range(series.index.min(), series.index.max())
+    try:
+        idx = pd.date_range(series.index.min(), series.index.max())
+    except ValueError:
+        raise KeyError(f"{code} is not a valid province code")
     series = series.reindex(idx, fill_value=np.nan)
     return series
 
