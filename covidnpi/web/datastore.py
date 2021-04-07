@@ -77,8 +77,6 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
     """
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
-    # Remove collection
-    mongo.remove_collection("casos")
 
     cfg_casos = load_config(path_config, key="casos")
 
@@ -111,7 +109,7 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
                 "crecimiento": growth.values.tolist(),
             }
         )
-        mongo.insert_new_dict("casos", dict_provincia)
+        mongo.update_dict("casos", "code", code, dict_provincia)
 
 
 def datastore(
