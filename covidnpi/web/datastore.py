@@ -115,7 +115,13 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
                 "crecimiento": growth.values.tolist(),
             }
         )
-        mongo.update_dict("casos", "code", code, dict_provincia)
+        try:
+            col = mongo.get_col("casos")
+            dict_provincia = col.find_one({"code": code})
+            _ = dict_provincia["fechas"]
+            mongo.update_dict("casos", "code", code, dict_provincia)
+        except TypeError:
+            _ = mongo.insert_new_dict("casos", dict_provincia)
 
 
 def datastore(
