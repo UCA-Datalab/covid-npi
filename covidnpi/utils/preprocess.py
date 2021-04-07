@@ -212,10 +212,14 @@ def format_porcentaje_afectado(df: pd.DataFrame):
         # If values are below 1, multiply by 100 to get percentages
         try:
             porc = porc.astype(float)
-            if porc.max() <= 1:
-                porc = (porc * 100).astype(float)
         except TypeError:
             print(f"porcentaje_afectado of {provincia} is not a float!")
+        except ValueError:
+            porc = pd.to_numeric(porc, errors="coerce")
+            print("String values encountered in 'porcentaje_afectado', and set to NaN")
+        finally:
+            if porc.max() <= 1:
+                porc = (porc * 100).astype(float)
         df.loc[mask_provincia, "porcentaje_afectado"] = porc
     # Round to one decimal
     df["porcentaje_afectado"] = df["porcentaje_afectado"].astype(float).round(1)
