@@ -34,8 +34,6 @@ def store_scores_in_mongo(
 
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
-    # Remove collection
-    mongo.remove_collection("scores")
 
     provincia_to_code = load_config(path_config, key="provincia_to_code")
 
@@ -65,18 +63,18 @@ def store_scores_in_mongo(
             print(f"  {ambito}")
             series = df[ambito].values.tolist()
             dict_provincia.update({ambito: series})
-        mongo.insert_new_dict("scores", dict_provincia)
+        mongo.update_dict("scores", "provincia", provincia, dict_provincia)
 
 
 def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
     """Store incidence and growth rate in mongo
 
-        Parameters
-        ----------
-        path_config : str, optional
-            Config file contains the route and credentials of mongo server
+    Parameters
+    ----------
+    path_config : str, optional
+        Config file contains the route and credentials of mongo server
 
-        """
+    """
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
     # Remove collection

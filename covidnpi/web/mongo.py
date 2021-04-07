@@ -36,12 +36,19 @@ class MongoSingleton(metaclass=SingletonMeta):
     def set_database(self, database: str) -> None:
         self.database = database
 
-    def insert_new_dict(self, collection: str, new_dict):
+    def insert_new_dict(self, collection: str, new_dict: dict):
         mydb = self.client[self.database]
         mycol = mydb[collection]
         x = mycol.insert_one(new_dict)
         print(x.inserted_id)
         return x
+
+    def update_dict(
+        self, collection: str, id_key: str, id_value: str, new_dict: dict
+    ):
+        mydb = self.client[self.database]
+        mycol = mydb[collection]
+        mycol.update({id_key: id_value}, new_dict)
 
     def get_col(self, collection: str):
         return self.client[self.database][collection]
