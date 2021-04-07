@@ -178,7 +178,7 @@ def rename_unidad(df, rename: dict = DICT_UNIDAD_RENAME):
     # If any value contains the exact word, change value to word
     list_rename = set(rename.values())
     for word in list_rename:
-        if np.isnan(word):
+        if len(word) == 0:
             continue
         mask_word = df["unidad"].fillna("NA").str.contains(word, case=False)
         df.loc[mask_word, "unidad"] = word
