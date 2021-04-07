@@ -217,7 +217,8 @@ def format_porcentaje_afectado(df: pd.DataFrame):
         except ValueError:
             porc = pd.to_numeric(porc, errors="coerce")
             print(
-                f"String values encountered in 'porcentaje_afectado' of {provincia}, "
+                f" [Warning] String values encountered in 'porcentaje_afectado' of"
+                f" {provincia}, "
                 "and set to NaN"
             )
         finally:
