@@ -250,7 +250,11 @@ def pivot_unidad_valor(
     df_cat = df[["unidad", "valor"]].pivot(columns="unidad", values="valor")
     df_cat = df_cat.loc[:, df_cat.columns.notnull()].reset_index(drop=True)
     for col in list_float:
-        df_cat[col] = df_cat[col].astype(float)
+        try:
+            df_cat[col] = df_cat[col].astype(float)
+        except ValueError:
+            df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
+            print(f" [Warning] Column {col} could not be safely converted to float")
 
     df = df.join(df_cat).drop(["unidad", "valor"], axis=1)
 
