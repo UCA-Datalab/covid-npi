@@ -101,7 +101,7 @@ def read_npi_data(
             pass
     else:
         xl = pd.ExcelFile(path_com)
-        raise IndexError(f"File {path_com} does not have base sheet:\n{xl.sheet_names}")
+        raise KeyError(f"File {path_com} does not have base sheet:\n{xl.sheet_names}")
 
     df = df.rename(col_rename, axis=1)
 
@@ -122,9 +122,12 @@ def read_npi_data(
     # Para el codigo hacemos mas
     df["codigo"] = df["codigo"].fillna(df["cod_gen"]).replace({" ": ""})
     # Rellenamos NaNs en comunidad autonoma
-    df["comunidad_autonoma"] = df["comunidad_autonoma"].fillna(
-        df["comunidad_autonoma"].value_counts().index[0]
-    )
+    try:
+        df["comunidad_autonoma"] = df["comunidad_autonoma"].fillna(
+            df["comunidad_autonoma"].value_counts().index[0]
+        )
+    except KeyError:
+        raise KeyError(f"'comunidad_autonoma' not in {path_com}:\n{df.columns}")
 
     # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
     for key, value in DICT_FILL_PROVINCIA.items():
