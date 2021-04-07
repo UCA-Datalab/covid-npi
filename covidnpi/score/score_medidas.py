@@ -157,8 +157,11 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     condicion_alto = dict_condicion["alto"]
     condicion_medio = dict_condicion["medio"]
 
-    mask_alto = df.query(condicion_alto).index
-    mask_medio = df.query(condicion_medio).index
+    try:
+        mask_alto = df.query(condicion_alto).index
+        mask_medio = df.query(condicion_medio).index
+    except TypeError:
+        raise TypeError(f"Column with unproper type: {df.dtypes}")
 
     df_score.loc[mask_medio, "score_medida"] = 0.6
     df_score.loc[mask_alto, "score_medida"] = 1
