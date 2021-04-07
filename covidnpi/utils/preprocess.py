@@ -80,6 +80,7 @@ DICT_ADD_PROVINCE = {
 }
 
 DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": ""}
+DICT_CCAA_RENAME = {"autonomico": np.nan}
 
 
 def clean_pandas_str(series: pd.Series):
@@ -98,6 +99,7 @@ def read_npi_data(
     path_com: str,
     col_rename: dict = DICT_COL_RENAME,
     province_rename: dict = DICT_PROVINCE_RENAME,
+    ccaa_rename: dict = DICT_CCAA_RENAME,
     list_col_text: list = LIST_COL_TEXT,
 ) -> pd.DataFrame:
     """Read the data contained in a xlsm file"""
@@ -132,6 +134,7 @@ def read_npi_data(
     df["codigo"] = df["codigo"].fillna(df["cod_gen"]).replace({" ": ""})
     # Rellenamos NaNs en comunidad autonoma
     try:
+        df["comunidad_autonoma"] = df["comunidad_autonoma"].replace(ccaa_rename)
         df["comunidad_autonoma"] = df["comunidad_autonoma"].fillna(
             df["comunidad_autonoma"].value_counts().index[0]
         )
