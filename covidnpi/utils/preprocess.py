@@ -227,11 +227,12 @@ def format_porcentaje_afectado(df: pd.DataFrame):
         except TypeError:
             print(f"porcentaje_afectado of {provincia} is not a float!")
         except ValueError:
+            porc_old = porc.copy()
             porc = pd.to_numeric(porc, errors="coerce")
+            error = porc_old[porc.isna()].dropna().unique()
             print(
                 f" [Warning] String values encountered in 'porcentaje_afectado' of"
-                f" {provincia}, "
-                "and set to NaN"
+                f" {provincia}, and set to NaN: {error}"
             )
         finally:
             if porc.max() <= 1:
@@ -253,14 +254,14 @@ def pivot_unidad_valor(
         try:
             df_cat[col] = df_cat[col].astype(float)
         except ValueError:
-            wasna = df_cat[col].isna()
+            df_old = df_cat[col].copy()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
-            error = df_cat.loc[df_cat[col].isna() and ~wasna, col].unique()
+            error = df_old[df_cat[col].isna()].dropna().unique()
             print(f" [Warning] Column {col} contains string - Set to NaN: {error}")
         except TypeError:
-            wasna = df_cat[col].isna()
+            df_old = df_cat[col].copy()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
-            error = df_cat.loc[df_cat[col].isna() and ~wasna, col].unique()
+            error = df_old[df_cat[col].isna()].dropna().unique()
             print(
                 f" [Warning] Column {col} contains datetime.datetime - "
                 f"Set to NaN: {error}"
