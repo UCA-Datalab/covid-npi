@@ -42,7 +42,7 @@ def return_ambits_by_province(
             raise KeyError(f"Provincia '{code}' no encontrada")
         dict_ambit = {"x": x, "y": y, "y_max": 1, "y_min": 0}
         dict_ambit.update(DICT_DATES)
-        dict_plot.update({ambit: ambit})
+        dict_plot.update({ambit: dict_ambit})
 
     return dict_plot
 
