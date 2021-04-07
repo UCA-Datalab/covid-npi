@@ -87,6 +87,7 @@ def clean_pandas_str(series: pd.Series):
         .str.decode("utf-8")
         .str.lower()
         .str.replace(" ", "_")
+        .str.replace("_$", "")
     )
     return series_cleaned
 
