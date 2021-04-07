@@ -66,6 +66,8 @@ DICT_UNIDAD_RENAME = {
     "NA": np.nan,
 }
 
+LIST_UNIDAD_FLOAT = ["personas", "porcentaje"]
+
 DICT_ADD_PROVINCE = {
     "palencia": "cyl",
     "soria": "cyl",
@@ -240,11 +242,15 @@ def format_porcentaje_afectado(df: pd.DataFrame):
     return df
 
 
-def pivot_unidad_valor(df: pd.DataFrame) -> pd.DataFrame:
+def pivot_unidad_valor(
+    df: pd.DataFrame, list_float: tuple = LIST_UNIDAD_FLOAT
+) -> pd.DataFrame:
     """Pivot the column unidad so that we get one column per category"""
     # Pasamos las categorias de la columna "unidad" a columnas con valor "valor"
     df_cat = df[["unidad", "valor"]].pivot(columns="unidad", values="valor")
     df_cat = df_cat.loc[:, df_cat.columns.notnull()].reset_index(drop=True)
+    for col in list_float:
+        df_cat[col] = df_cat[col].astype(float)
 
     df = df.join(df_cat).drop(["unidad", "valor"], axis=1)
 
