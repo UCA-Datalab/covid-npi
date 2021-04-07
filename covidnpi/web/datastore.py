@@ -63,7 +63,13 @@ def store_scores_in_mongo(
             print(f"  {ambito}")
             series = df[ambito].values.tolist()
             dict_provincia.update({ambito: series})
-        mongo.update_dict("scores", "provincia", provincia, dict_provincia)
+        try:
+            col = mongo.get_col("scores")
+            dict_provincia = col.find_one({"provincia": provincia})
+            _ = dict_provincia["fechas"]
+            mongo.update_dict("scores", "provincia", provincia, dict_provincia)
+        except TypeError:
+            _ = mongo.insert_new_dict("scores", dict_provincia)
 
 
 def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
