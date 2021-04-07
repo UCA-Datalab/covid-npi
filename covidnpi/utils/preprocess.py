@@ -27,6 +27,8 @@ DICT_FILL_PROVINCIA = {
 }
 
 DICT_COL_RENAME = {
+    "Ámbito": "ambito",
+    "Comunidad_Autónoma": "comunidad_autonoma",
     "cod_con": "codigo",
     "unidad de medida": "unidad",
     "% afectado (si subprovincial; mín 25%)": "porcentaje_afectado",
@@ -101,7 +103,7 @@ def read_npi_data(
             pass
     else:
         xl = pd.ExcelFile(path_com)
-        raise KeyError(f"File {path_com} does not have base sheet:\n{xl.sheet_names}")
+        raise KeyError(f"File {path_com} does not have base sheet: {xl.sheet_names}")
 
     df = df.rename(col_rename, axis=1)
 
@@ -127,7 +129,7 @@ def read_npi_data(
             df["comunidad_autonoma"].value_counts().index[0]
         )
     except KeyError:
-        raise KeyError(f"'comunidad_autonoma' not in {path_com}:\n{df.columns}")
+        raise KeyError(f"'comunidad_autonoma' not in {path_com}: {df.columns}")
 
     # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
     for key, value in DICT_FILL_PROVINCIA.items():
