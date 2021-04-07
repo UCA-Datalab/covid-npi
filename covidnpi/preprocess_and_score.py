@@ -7,11 +7,13 @@ from covidnpi.score.score_medidas import return_dict_score_medidas
 from covidnpi.utils.dictionaries import store_dict_scores, store_dict_medidas
 from covidnpi.utils.preprocess import read_npi_and_build_dict
 from covidnpi.utils.taxonomia import PATH_TAXONOMIA
+from covidnpi.utils.mobility import mobility_report_to_csv
 
 
 def main(
     path_raw: str = "datos_NPI_2",
     path_taxonomia: str = PATH_TAXONOMIA,
+    path_config: str = "config.toml",
     path_output: str = "output",
 ):
     """Reads the raw data stored in path_raw, preprocess and scores it, while storing
@@ -24,6 +26,8 @@ def main(
         Path to raw data, by default "datos_NPI_2"
     path_taxonomia : str, optional
         Path to taxonomia xlsx file, by default `PATH_TAXONOMIA`
+    path_config : str, optional
+        Path to config file, by default 'config.toml'
     path_output : str, optional
         Output folder, by default "output"
 
@@ -62,8 +66,12 @@ def main(
     print(
         f"La puntuación de cada item por provincia ha sido guardada en "
         f"{path_score_items}\nY también calculada por porcentaje afectado, en "
-        f"{path_score_ambito}"
+        f"{path_score_ambito}\n...\nPasamos a guardar la informacion de movilidad"
     )
+
+    path_mobility = os.path.join(path_output, "mobility")
+    mobility_report_to_csv(path_config=path_config, path_output=path_mobility)
+    print(f"La informacion de movilidad ha sido guardada en {path_mobility}\n")
 
 
 if __name__ == "__main__":

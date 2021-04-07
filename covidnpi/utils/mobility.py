@@ -1,4 +1,13 @@
+import os
+
 import pandas as pd
+
+from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
+from covidnpi.utils.config import load_config
+from covidnpi.utils.series import (
+    cumulative_incidence,
+    compute_growth_rate,
+)
 
 URL_MOBILITY = "https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv"
 
@@ -60,3 +69,36 @@ def return_reports_of_provincia(mob: pd.DataFrame, code: str) -> dict:
         series = df[col]
         dict_reports.update({name: series})
     return dict_reports
+
+
+def mobility_report_to_csv(
+    path_config: str = "../config.toml", path_output: str = "../output/mobility"
+):
+    """Stores the Google mobility reports in csv format"""
+
+    if not os.path.exists(path_output):
+        os.mkdir(path_output)
+
+    mob = load_mobility_report()
+    casos = load_casos_df()
+    code_to_provincia = load_config(path_config, "code_to_provincia")
+
+    for code in mob["code"].unique():
+        try:
+            provincia = code_to_provincia[code]
+            print(f"{code} - {provincia}")
+        except KeyError:
+            print(f"Omitted {code}")
+            continue
+        dict_reports = return_reports_of_provincia(mob, code)
+        series_casos = return_casos_of_provincia_normed(
+            casos, code, path_config=path_config
+        )
+        series_ia7 = cumulative_incidence(series_casos, 7)
+        series_growth = compute_growth_rate(series_casos, 7)
+
+        # Store data
+        df_store = pd.DataFrame(dict_reports).assign(
+            ia7=series_ia7, growth_rate=series_growth
+        )
+        df_store.to_csv(os.path.join(path_output, f"{code}.csv"))
