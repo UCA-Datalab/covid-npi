@@ -129,7 +129,10 @@ def read_npi_data(
             df["comunidad_autonoma"].value_counts().index[0]
         )
     except KeyError:
-        raise KeyError(f"'comunidad_autonoma' not in {path_com}: {df.columns}")
+        raise KeyError(
+            f"'comunidad_autonoma' not in {path_com}: "
+            f"{', '.join(df.columns.tolist())}"
+        )
 
     # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
     for key, value in DICT_FILL_PROVINCIA.items():
