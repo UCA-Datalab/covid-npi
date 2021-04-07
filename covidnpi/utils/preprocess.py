@@ -8,7 +8,7 @@ import xlrd
 from covidnpi.utils.dictionaries import store_dict_medidas
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
 
-LIST_BASE_SHEET = ["base", "base-regional-provincias"]
+LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE"]
 
 DICT_PORCENTAJE = {
     "cantalejo": 2,
