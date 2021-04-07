@@ -216,7 +216,10 @@ def format_porcentaje_afectado(df: pd.DataFrame):
             print(f"porcentaje_afectado of {provincia} is not a float!")
         except ValueError:
             porc = pd.to_numeric(porc, errors="coerce")
-            print("String values encountered in 'porcentaje_afectado', and set to NaN")
+            print(
+                f"String values encountered in 'porcentaje_afectado' of {provincia}, "
+                "and set to NaN"
+            )
         finally:
             if porc.max() <= 1:
                 porc = (porc * 100).astype(float)
