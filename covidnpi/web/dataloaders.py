@@ -40,8 +40,9 @@ def return_ambits_by_province(
             raise KeyError(f"Ambito '{ambit}' no existe")
         except TypeError:
             raise KeyError(f"Provincia '{code}' no encontrada")
-        dict_plot.update({ambit: {"x": x, "y": y, "y_max": 1, "y_min": 0}})
-        dict_plot.update(DICT_DATES)
+        dict_ambit = {"x": x, "y": y, "y_max": 1, "y_min": 0}
+        dict_ambit.update(DICT_DATES)
+        dict_plot.update({ambit: ambit})
 
     return dict_plot
 
@@ -79,8 +80,9 @@ def return_provinces_by_ambit(
             raise KeyError(f"Ambito '{ambit}' no existe")
         except TypeError:
             raise KeyError(f"Provincia '{code}' no encontrada")
-        dict_plot.update({code: {"x": x, "y": y, "y_max": 1, "y_min": 0}})
-        dict_plot.update(DICT_DATES)
+        dict_code = {"x": x, "y": y, "y_max": 1, "y_min": 0}
+        dict_code.update(DICT_DATES)
+        dict_plot.update({code: dict_code})
 
     return dict_plot
 
