@@ -253,11 +253,18 @@ def pivot_unidad_valor(
         try:
             df_cat[col] = df_cat[col].astype(float)
         except ValueError:
+            wasna = df_cat[col].isna()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
-            print(f" [Warning] Column {col} contains string. Set to NaN")
+            error = df_cat.loc[df_cat[col].isna() & ~wasna, col].unique()
+            print(f" [Warning] Column {col} contains string - Set to NaN: {error}")
         except TypeError:
+            wasna = df_cat[col].isna()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
-            print(f" [Warning] Column {col} contains datetime.datetime. Set to NaN")
+            error = df_cat.loc[df_cat[col].isna() & ~wasna, col].unique()
+            print(
+                f" [Warning] Column {col} contains datetime.datetime - "
+                f"Set to NaN: {error}"
+            )
 
     df = df.join(df_cat).drop(["unidad", "valor"], axis=1)
 
