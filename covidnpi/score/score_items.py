@@ -1,3 +1,5 @@
+import datetime as dt
+
 import numpy as np
 import pandas as pd
 import typer
@@ -170,6 +172,9 @@ def score_items(df: pd.DataFrame):
             * (df["TR.9"] == 0),
         ]
     )
+
+    # Truncate up to today
+    df_item = df_item[df_item["fecha"] <= dt.datetime.today()]
 
     return df_item
 

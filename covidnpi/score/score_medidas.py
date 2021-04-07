@@ -1,3 +1,4 @@
+import datetime as dt
 from datetime import date
 
 import numpy as np
@@ -34,6 +35,9 @@ def extend_fecha(df: pd.DataFrame) -> pd.DataFrame:
         .sort_values(["fecha", "provincia"], axis=0)
         .reset_index(drop=True)
     )
+
+    # Truncate up to today
+    df_extended = df_extended[df_extended["fecha"] <= dt.datetime.today()]
     return df_extended
 
 
