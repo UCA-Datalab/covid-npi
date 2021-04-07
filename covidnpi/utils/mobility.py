@@ -82,6 +82,8 @@ def mobility_report_to_csv(
     mob = load_mobility_report()
     casos = load_casos_df()
     code_to_provincia = load_config(path_config, "code_to_provincia")
+    provincia_to_code = load_config(path_config, "provincia_to_code")
+    code_to_filename = {v: k for k, v in provincia_to_code.items()}
 
     for code in mob["code"].unique():
         try:
@@ -101,4 +103,5 @@ def mobility_report_to_csv(
         df_store = pd.DataFrame(dict_reports).assign(
             ia7=series_ia7, growth_rate=series_growth
         )
-        df_store.to_csv(os.path.join(path_output, f"{code}.csv"))
+        filename = code_to_filename[code]
+        df_store.to_csv(os.path.join(path_output, f"{filename}.csv"))
