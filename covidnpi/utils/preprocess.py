@@ -8,6 +8,8 @@ import xlrd
 from covidnpi.utils.dictionaries import store_dict_medidas
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
 
+LIST_BASE_SHEET = ["base", "base-regional-provincias"]
+
 DICT_PORCENTAJE = {
     "cantalejo": 2,
     "carrascaldelrio": 0.1,
@@ -91,10 +93,15 @@ def read_npi_data(
 ) -> pd.DataFrame:
     """Read the data contained in a xlsm file"""
 
-    try:
-        df = pd.read_excel(path_com, sheet_name="base")
-    except xlrd.biffh.XLRDError:
-        df = pd.read_excel(path_com, sheet_name="base-regional-provincias")
+    for sheet in LIST_BASE_SHEET:
+        try:
+            df = pd.read_excel(path_com, sheet_name=sheet)
+            break
+        except xlrd.biffh.XLRDError:
+            pass
+    else:
+        xl = pd.ExcelFile(path_com)
+        raise IndexError(f"File {path_com} does not have base sheet:\n{xl.sheet_names}")
 
     df = df.rename(col_rename, axis=1)
 
