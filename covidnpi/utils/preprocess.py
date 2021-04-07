@@ -174,6 +174,13 @@ def filter_relevant_medidas(df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOM
 def rename_unidad(df, rename: dict = DICT_UNIDAD_RENAME):
     df = df.copy()
 
+    # If any value contains the exact word, change value to word
+    list_rename = set(rename.values())
+    for word in list_rename:
+        mask_word = df["unidad"].str.lower().str.contains(word)
+        df.loc[mask_word, "unidad"] = word
+
+    # Rename the rest
     df["unidad"] = df["unidad"].replace(rename)
     return df
 
