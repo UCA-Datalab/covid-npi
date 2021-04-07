@@ -16,12 +16,10 @@ def extend_fecha(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     # Reemplazamos ESTADO DE ALARMA por su fecha
     df.loc[df["fecha_fin"] == "ESTADO DE ALARMA", "fecha_fin"] = "2021-05-09"
-    # Si no hay fecha de inicio se coge la fecha de publicacion, y sino la fecha mas
-    # baja encontrada
+    # Si no hay fecha de inicio se coge la fecha de publicacion, y sino la fecha de
+    # inicio de la cuarentena
     df["fecha_inicio"] = (
-        df["fecha_inicio"]
-        .fillna(df["fecha_publicacion_oficial"])
-        .fillna(df["fecha_inicio"].min())
+        df["fecha_inicio"].fillna(df["fecha_publicacion_oficial"]).fillna("2020-03-15")
     )
     # Llenamos los NaN de fecha_fin con el día de hoy
     df["fecha_fin"] = df["fecha_fin"].fillna(pd.Timestamp(date.today()))
