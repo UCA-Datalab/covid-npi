@@ -79,6 +79,8 @@ DICT_ADD_PROVINCE = {
     "vizcaya": "pais_vasco",
 }
 
+DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": np.nan}
+
 
 def clean_pandas_str(series: pd.Series):
     series_cleaned = (
@@ -95,6 +97,7 @@ def clean_pandas_str(series: pd.Series):
 def read_npi_data(
     path_com: str,
     col_rename: dict = DICT_COL_RENAME,
+    province_rename: dict = DICT_PROVINCE_RENAME,
     list_col_text: list = LIST_COL_TEXT,
 ) -> pd.DataFrame:
     """Read the data contained in a xlsm file"""
@@ -137,6 +140,8 @@ def read_npi_data(
             f"'comunidad_autonoma' not in {path_com}: "
             f"{', '.join(df.columns.tolist())}"
         )
+    # Remplazamos nombres de provincia
+    df["provincia"] = df["provincia"].replace(province_rename)
 
     # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
     for key, value in DICT_FILL_PROVINCIA.items():
