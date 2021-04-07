@@ -79,7 +79,7 @@ DICT_ADD_PROVINCE = {
     "vizcaya": "pais_vasco",
 }
 
-DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": np.nan}
+DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": ""}
 
 
 def clean_pandas_str(series: pd.Series):
@@ -141,7 +141,9 @@ def read_npi_data(
             f"{', '.join(df.columns.tolist())}"
         )
     # Remplazamos nombres de provincia
-    df["provincia"] = df["provincia"].replace(province_rename)
+    df["provincia"] = (
+        df["provincia"].fillna("").replace(province_rename).replace({"": np.nan})
+    )
 
     # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
     for key, value in DICT_FILL_PROVINCIA.items():
@@ -245,7 +247,18 @@ def format_porcentaje_afectado(df: pd.DataFrame):
                 porc = (porc * 100).astype(float)
         df.loc[mask_provincia, "porcentaje_afectado"] = porc
     # Round to one decimal
-    df["porcentaje_afectado"] = df["porcentaje_afectado"].astype(float).round(1)
+    try:
+        df["porcentaje_afectado"] = df["porcentaje_afectado"].astype(float).round(1)
+    except ValueError:
+        df_old = df["porcentaje_afectado"].copy()
+        df["porcentaje_afectado"] = pd.to_numeric(
+            df["porcentaje_afectado"], errors="coerce"
+        ).round(1)
+        error = df_old[df["porcentaje_afectado"].isna()].dropna().unique()
+        print(
+            f" [Warning] String values encountered in 'porcentaje_afectado'"
+            f", and set to NaN: {error}"
+        )
     return df
 
 
