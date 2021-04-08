@@ -204,9 +204,17 @@ def rename_unidad(df, rename: dict = DICT_UNIDAD_RENAME):
 def format_hora(df):
     df = df.copy()
     # Join all the columns named "hora"
-    hora = (
-        df.query("codigo == 'RH.5'")["hora"].fillna(0).astype(str).str[:2].astype(int)
-    )
+    df_sub = df.query("codigo == 'RH.5'")["hora"].fillna(0).astype(str).str[:2]
+    try:
+        hora = df_sub.astype(int)
+    except ValueError:
+        hora = pd.to_numeric(df_sub, errors="coerce")
+        error = df_sub[hora.isna()].dropna().unique()
+        print(
+            f" [Warning] String values encountered in 'hora', and set to NaN: {error}"
+        )
+        hora = hora.fillna(0).astype(int)
+
     hora[hora <= 6] = hora[hora <= 6] + 24
     df["hora"] = hora.astype(int)
     return df
