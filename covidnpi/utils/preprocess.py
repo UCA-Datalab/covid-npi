@@ -201,6 +201,14 @@ def rename_unidad(df, rename: dict = DICT_UNIDAD_RENAME):
     return df
 
 
+def _raise_warning(df: pd.DataFrame, list_idx: list, col: str):
+    """Prints the rows that produces warnings, showing CCAA and the value that fails"""
+    list_msg = [""] * len(list_idx)
+    for j, idx in enumerate(list_idx):
+        list_msg[j] = f"    {df.loc[idx, 'comunidad_autonoma']} ... {df.loc[idx, col]}"
+    [print(msg) for msg in set(list_msg)]
+
+
 def format_hora(df):
     df = df.copy()
     # Join all the columns named "hora"
@@ -209,10 +217,9 @@ def format_hora(df):
         hora = df_sub.astype(int)
     except ValueError:
         hora = pd.to_numeric(df_sub, errors="coerce")
-        error = df_sub[hora.isna()].dropna().unique()
-        print(
-            f" [Warning] String values encountered in 'hora', and set to NaN: {error}"
-        )
+        list_idx = df_sub[hora.isna()].dropna().index.tolist()
+        print(" [Warning] String values encountered in 'hora', and set to NaN:")
+        _raise_warning(df, list_idx, "hora")
         hora = hora.fillna(0).astype(int)
 
     hora[hora <= 6] = hora[hora <= 6] + 24
@@ -250,26 +257,26 @@ def format_porcentaje_afectado(df: pd.DataFrame):
             porc = pd.to_numeric(porc, errors="coerce")
             error = porc_old[porc.isna()].dropna().unique()
             print(
-                f" [Warning] String values encountered in 'porcentaje_afectado' of"
-                f" {provincia}, and set to NaN: {error}"
+                f" [Warning] String values encountered in 'porcentaje_afectado', "
+                f"and set to NaN:"
             )
+            [print("    ", provincia, "...", msg) for msg in error]
         finally:
             if porc.max() <= 1:
                 porc = (porc * 100).astype(float)
         df.loc[mask_provincia, "porcentaje_afectado"] = porc
     # Round to one decimal
     try:
-        df["porcentaje_afectado"] = df["porcentaje_afectado"].astype(float).round(1)
+        new_col = df["porcentaje_afectado"].astype(float).round(1)
     except ValueError:
-        df_old = df["porcentaje_afectado"].copy()
-        df["porcentaje_afectado"] = pd.to_numeric(
-            df["porcentaje_afectado"], errors="coerce"
-        ).round(1)
-        error = df_old[df["porcentaje_afectado"].isna()].dropna().unique()
+        new_col = pd.to_numeric(df["porcentaje_afectado"], errors="coerce")
+        list_idx = df[new_col.isna()]["porcentaje_afectado"].dropna().index.tolist()
         print(
-            f" [Warning] String values encountered in 'porcentaje_afectado'"
-            f", and set to NaN: {error}"
+            " [Warning] String values encountered in 'porcentaje_afectado', "
+            "and set to NaN:"
         )
+        _raise_warning(df, list_idx, "porcentaje_afectado")
+    df["porcentaje_afectado"] = new_col.round(1)
     return df
 
 
@@ -279,23 +286,24 @@ def pivot_unidad_valor(
     """Pivot the column unidad so that we get one column per category"""
     # Pasamos las categorias de la columna "unidad" a columnas con valor "valor"
     df_cat = df[["unidad", "valor"]].pivot(columns="unidad", values="valor")
-    df_cat = df_cat.loc[:, df_cat.columns.notnull()].reset_index(drop=True)
+    df_cat = df_cat.loc[:, df_cat.columns.notnull()]
     for col in list_float:
         try:
             df_cat[col] = df_cat[col].astype(float)
         except ValueError:
             df_old = df_cat[col].copy()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
-            error = df_old[df_cat[col].isna()].dropna().unique()
-            print(f" [Warning] Column {col} contains string - Set to NaN: {error}")
+            list_idx = df_old[df_cat[col].isna()].dropna().index.tolist()
+            print(f" [Warning] Column {col} contains string - Set to NaN:")
+            _raise_warning(df, list_idx, "valor")
         except TypeError:
             df_old = df_cat[col].copy()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
-            error = df_old[df_cat[col].isna()].dropna().unique()
+            list_idx = df_old[df_cat[col].isna()].dropna().index.tolist()
             print(
-                f" [Warning] Column {col} contains datetime.datetime - "
-                f"Set to NaN: {error}"
+                f" [Warning] Column {col} contains datetime.datetime - " f"Set to NaN:"
             )
+            _raise_warning(df, list_idx, "valor")
 
     df = df.join(df_cat).drop(["unidad", "valor"], axis=1)
 
