@@ -205,7 +205,7 @@ def _raise_warning(df: pd.DataFrame, list_idx: list, col: str):
     """Prints the rows that produces warnings, showing CCAA and the value that fails"""
     list_msg = [""] * len(list_idx)
     for j, idx in enumerate(list_idx):
-        list_msg[j] = f"    {df.loc[idx, 'comunidad_autonoma']} ... {df.loc[idx, col]}"
+        list_msg[j] = f"     {df.loc[idx, 'comunidad_autonoma']} ... {df.loc[idx, col]}"
     [print(msg) for msg in set(list_msg)]
 
 
