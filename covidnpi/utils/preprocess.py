@@ -294,14 +294,14 @@ def pivot_unidad_valor(
             df_old = df_cat[col].copy()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
             list_idx = df_old[df_cat[col].isna()].dropna().index.tolist()
-            print(f" [Warning] Column {col} contains string - Set to NaN:")
+            print(f" [Warning] Column '{col}' contains string - Set to NaN:")
             _raise_warning(df, list_idx, "valor")
         except TypeError:
             df_old = df_cat[col].copy()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
             list_idx = df_old[df_cat[col].isna()].dropna().index.tolist()
             print(
-                f" [Warning] Column {col} contains datetime.datetime - " f"Set to NaN:"
+                f" [Warning] Column '{col}' contains datetime.datetime - " f"Set to NaN:"
             )
             _raise_warning(df, list_idx, "valor")
 
