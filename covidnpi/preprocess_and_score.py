@@ -11,7 +11,7 @@ from covidnpi.utils.mobility import mobility_report_to_csv
 
 
 def main(
-    path_raw: str = "datos_NPI_2",
+    path_raw: str = "datos_NPI",
     path_taxonomia: str = PATH_TAXONOMIA,
     path_config: str = "config.toml",
     path_output: str = "output",
