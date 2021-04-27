@@ -97,12 +97,21 @@ def clean_pandas_str(series: pd.Series):
 
 def read_npi_data(
     path_com: str,
-    col_rename: dict = DICT_COL_RENAME,
-    province_rename: dict = DICT_PROVINCE_RENAME,
-    ccaa_rename: dict = DICT_CCAA_RENAME,
-    list_col_text: list = LIST_COL_TEXT,
+    col_rename: dict = None,
+    province_rename: dict = None,
+    ccaa_rename: dict = None,
+    list_col_text: list = None,
 ) -> pd.DataFrame:
     """Read the data contained in a xlsm file"""
+
+    if col_rename is None:
+        col_rename = DICT_COL_RENAME
+    if province_rename is None:
+        province_rename = DICT_PROVINCE_RENAME
+    if ccaa_rename is None:
+        ccaa_rename = DICT_CCAA_RENAME
+    if list_col_text is None:
+        list_col_text = LIST_COL_TEXT
 
     for sheet in LIST_BASE_SHEET:
         try:
@@ -164,6 +173,9 @@ def read_npi_folder(path_data: str) -> pd.DataFrame:
             df = read_npi_data(path_file)
         except IsADirectoryError:
             continue
+        except KeyError:
+            print(f"  [Warning] File {file} could not be opened as province")
+            continue
         list_df += [df]
 
     df = pd.concat(list_df).reset_index(drop=True)
@@ -185,7 +197,10 @@ def filter_relevant_medidas(df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOM
     return df_new
 
 
-def rename_unidad(df, rename: dict = DICT_UNIDAD_RENAME):
+def rename_unidad(df, rename: dict = None):
+    if rename is None:
+        rename = DICT_UNIDAD_RENAME
+
     df = df.copy()
 
     # If any value contains the exact word, change value to word
@@ -280,10 +295,11 @@ def format_porcentaje_afectado(df: pd.DataFrame):
     return df
 
 
-def pivot_unidad_valor(
-    df: pd.DataFrame, list_float: tuple = LIST_UNIDAD_FLOAT
-) -> pd.DataFrame:
+def pivot_unidad_valor(df: pd.DataFrame, list_float: tuple = None) -> pd.DataFrame:
     """Pivot the column unidad so that we get one column per category"""
+    if list_float is None:
+        list_float = LIST_UNIDAD_FLOAT
+
     # Pasamos las categorias de la columna "unidad" a columnas con valor "valor"
     df_cat = df[["unidad", "valor"]].pivot(columns="unidad", values="valor")
     df_cat = df_cat.loc[:, df_cat.columns.notnull()]
@@ -301,7 +317,8 @@ def pivot_unidad_valor(
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
             list_idx = df_old[df_cat[col].isna()].dropna().index.tolist()
             print(
-                f" [Warning] Column '{col}' contains datetime.datetime - " f"Set to NaN:"
+                f" [Warning] Column '{col}' contains datetime.datetime - "
+                f"Set to NaN:"
             )
             _raise_warning(df, list_idx, "valor")
 
@@ -311,7 +328,9 @@ def pivot_unidad_valor(
     return df
 
 
-def return_dict_provincia(df: pd.DataFrame, dict_add: dict = DICT_ADD_PROVINCE) -> dict:
+def return_dict_provincia(df: pd.DataFrame, dict_add: dict = None) -> dict:
+    if dict_add is None:
+        dict_add = DICT_ADD_PROVINCE
     df_ccaa = df.groupby(["comunidad_autonoma", "provincia"]).size().reset_index()
 
     dict_provincia = dict(zip(df_ccaa["provincia"], df_ccaa["comunidad_autonoma"]))
@@ -367,7 +386,7 @@ def read_npi_and_build_dict(
 
 
 def main(
-    path_data: str = "datos_NPI_2",
+    path_data: str = "datos_NPI",
     path_taxonomia: str = PATH_TAXONOMIA,
     path_output: str = "output/medidas",
 ):
