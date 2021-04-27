@@ -131,3 +131,6 @@ dmypy.json
 # ml extensions
 *.xml
 *.iml
+
+# Output
+output/*
