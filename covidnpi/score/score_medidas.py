@@ -11,33 +11,37 @@ from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
 # Define NaN globally to build conditions with NaN
 nan = np.nan
 
+DICT_FECHA_RENAME = {"06/112020": "2020-11-06", "ESTADO DE ALARMA": "2021-05-09"}
 
-def extend_fecha(df: pd.DataFrame) -> pd.DataFrame:
+# Define column names
+INICIO = "fecha_inicio"
+FIN = "fecha_fin"
+PUBLICACION = "fecha_publicacion_oficial"
+FECHA = "fecha"
+PROVINCIA = "provincia"
+
+
+def extend_fecha(df: pd.DataFrame, dict_rename: dict = None) -> pd.DataFrame:
     """Get a row for each date and restriction"""
+    if dict_rename is None:
+        dict_rename = DICT_FECHA_RENAME
     df = df.copy()
-    # Reemplazamos ESTADO DE ALARMA por su fecha
-    df.loc[df["fecha_fin"] == "ESTADO DE ALARMA", "fecha_fin"] = "2021-05-09"
+    # Rename strings
+    for col in [INICIO, FIN]:
+        df[col] = df[col].replace(dict_rename)
     # Si no hay fecha de inicio se coge la fecha de publicacion, y sino la fecha de
     # inicio de la cuarentena
-    df["fecha_inicio"] = (
-        df["fecha_inicio"].fillna(df["fecha_publicacion_oficial"]).fillna("2020-03-15")
-    )
+    df[INICIO] = df[INICIO].fillna(df[PUBLICACION]).fillna("2020-03-15")
     # Llenamos los NaN de fecha_fin con el día de hoy
-    df["fecha_fin"] = df["fecha_fin"].fillna(pd.Timestamp(date.today()))
-    # Correccion
-    df.loc[df["fecha_fin"] == "06/112020", "fecha_fin"] = "2020-11-06"
+    df[FIN] = df[FIN].fillna(pd.Timestamp(date.today()))
     # Extendemos las fechas
-    df["fecha"] = df.apply(
-        lambda x: pd.date_range(x["fecha_inicio"], x["fecha_fin"]), axis=1
-    )
+    df[FECHA] = df.apply(lambda x: pd.date_range(x[INICIO], x[FIN]), axis=1)
     df_extended = (
-        df.explode("fecha")
-        .sort_values(["fecha", "provincia"], axis=0)
-        .reset_index(drop=True)
+        df.explode(FECHA).sort_values([FECHA, PROVINCIA], axis=0).reset_index(drop=True)
     )
 
     # Truncate up to today
-    df_extended = df_extended[df_extended["fecha"] <= dt.datetime.today()]
+    df_extended = df_extended[df_extended[FECHA] <= dt.datetime.today()]
     return df_extended
 
 
@@ -182,11 +186,11 @@ def pivot_df_score(df_score: pd.DataFrame):
     df_medida = df_score[["codigo", "score_medida"]].pivot(
         columns="codigo", values="score_medida"
     )
-    df_medida["fecha"] = df_score["fecha"].reset_index(drop=True)
+    df_medida[FECHA] = df_score[FECHA].reset_index(drop=True)
     df_medida["porcentaje_afectado"] = (
         df_score["porcentaje_afectado"].fillna(100).reset_index(drop=True)
     )
-    df_medida = df_medida.groupby(["fecha", "porcentaje_afectado"]).max()
+    df_medida = df_medida.groupby([FECHA, "porcentaje_afectado"]).max()
 
     return df_medida
 
