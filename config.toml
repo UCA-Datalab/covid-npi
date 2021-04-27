@@ -7,11 +7,13 @@ chunks = 10
 date_min = "21-06-2020"
 
 [npi]
-fillna_date_end = "today"  # "today" or "start"
+fillna_date_end = "today"
+
 
 [casos]
 movavg = 7
 link = "https://cnecovid.isciii.es/covid19/resources/casos_tecnica_provincia.csv"
+
 
 [postal_to_code]
 1 = "VI"

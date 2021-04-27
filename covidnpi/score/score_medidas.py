@@ -21,10 +21,28 @@ FECHA = "fecha"
 PROVINCIA = "provincia"
 
 
-def extend_fecha(df: pd.DataFrame, dict_rename: dict = None) -> pd.DataFrame:
-    """Get a row for each date and restriction"""
+def extend_fecha(
+    df: pd.DataFrame, dict_rename: dict = None, fillna_date_end: str = "today"
+) -> pd.DataFrame:
+    """Get a row for each date and restriction
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+    dict_rename : dict, optional
+    fillna_date_end : str, optional
+        Defines how we fill the NaNs in fecha_fin column, by default "today":
+        - "today": NaNs are changed to today date
+        - "start": NaNs are changed to fecha_inicio date
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    """
     if dict_rename is None:
         dict_rename = DICT_FECHA_RENAME
+    # Do not modify the original dataframe
     df = df.copy()
     # Rename strings
     for col in [INICIO, FIN]:
@@ -32,8 +50,14 @@ def extend_fecha(df: pd.DataFrame, dict_rename: dict = None) -> pd.DataFrame:
     # Si no hay fecha de inicio se coge la fecha de publicacion, y sino la fecha de
     # inicio de la cuarentena
     df[INICIO] = df[INICIO].fillna(df[PUBLICACION]).fillna("2020-03-15")
-    # Llenamos los NaN de fecha_fin con el día de hoy
-    df[FIN] = df[FIN].fillna(pd.Timestamp(date.today()))
+    if "today" in fillna_date_end.lower():
+        # Llenamos los NaN de fecha_fin con el día de hoy
+        df[FIN] = df[FIN].fillna(pd.Timestamp(date.today()))
+    elif "start" in fillna_date_end.lower():
+        # Llenamos los NaN de fecha_fin con fecha_inicio
+        df[FIN] = df[FIN].fillna(df[INICIO])
+    else:
+        raise ValueError(f"fillna_date_end not valid: {fillna_date_end}")
     # Extendemos las fechas
     df[FECHA] = df.apply(lambda x: pd.date_range(x[INICIO], x[FIN]), axis=1)
     df_extended = (
@@ -195,7 +219,24 @@ def pivot_df_score(df_score: pd.DataFrame):
     return df_medida
 
 
-def return_dict_score_medidas(dict_medidas: dict, verbose: bool = True) -> dict:
+def return_dict_score_medidas(
+    dict_medidas: dict, fillna_date_end: str = "today", verbose: bool = True
+) -> dict:
+    """
+
+    Parameters
+    ----------
+    dict_medidas : dict
+    fillna_date_end : str, optional
+        Defines how we fill the NaNs in fecha_fin column, by default "today"
+    verbose : bool, optional
+
+    Returns
+    -------
+    dict
+        Dictionary of scores
+
+    """
     dict_scores = {}
 
     taxonomia = return_taxonomia()
@@ -204,7 +245,7 @@ def return_dict_score_medidas(dict_medidas: dict, verbose: bool = True) -> dict:
     for provincia, df_sub in dict_medidas.items():
         if verbose:
             print(provincia)
-        df_sub_extended = extend_fecha(df_sub)
+        df_sub_extended = extend_fecha(df_sub, fillna_date_end=fillna_date_end)
         df_score = score_medidas(df_sub_extended, taxonomia)
         df_score = pivot_df_score(df_score)
         # Nos aseguramos de que todas las medidas estan en el df
