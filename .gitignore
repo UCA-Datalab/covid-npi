@@ -132,5 +132,6 @@ dmypy.json
 *.xml
 *.iml
 
-# Output
+# Other directories
 output/*
+.idea/*
