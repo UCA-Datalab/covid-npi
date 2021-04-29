@@ -1,5 +1,7 @@
 import logging
 
+import pandas as pd
+
 
 class CustomFormatter(logging.Formatter):
     err_fmt = "[ERROR] %(msg)s"
@@ -48,3 +50,16 @@ console_handler = logging.StreamHandler()
 console_handler.setFormatter(my_formatter)
 
 logger.addHandler(console_handler)
+
+
+def raise_type_warning(
+    df: pd.DataFrame, list_idx: list, col: str, typing: str = "string"
+):
+    """Prints the rows that produces warnings, showing index and the value that fails"""
+    list_msg = [""] * len(list_idx)
+    for j, idx in enumerate(list_idx):
+        list_msg[j] = f"     {idx + 2} ... {df.loc[idx, col]}"
+
+    logger.warning(
+        f"La columna '{col}' contiene {typing} - Pasados a NaN:\n" + "\n".join(list_msg)
+    )
