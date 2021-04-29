@@ -218,8 +218,8 @@ def format_hora(df: pd.DataFrame, date_format: str = "%H:%M:%S") -> pd.DataFrame
         )
         list_idx = df.loc[hora.isna(), "hora"].dropna().index.tolist()
         raise_type_warning(df, list_idx, "hora")
-    # Take time only
-    df["hora"] = hora.dt.time
+    # Take only hour
+    df["hora"] = hora.dt.hour + hora.dt.minute / 60
     return df
 
 
@@ -240,6 +240,7 @@ def format_porcentaje_afectado(df: pd.DataFrame) -> pd.DataFrame:
             .str.encode("ascii", errors="ignore")
             .str.decode("utf-8")
             .replace(DICT_PORCENTAJE)
+            .replace({"nan": np.nan})
         )
     except KeyError:
         _raise_missing_column(df, "porcentaje_afectado")

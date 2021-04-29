@@ -6,6 +6,7 @@ import pandas as pd
 import typer
 
 from covidnpi.utils.dictionaries import store_dict_scores, load_dict_medidas
+from covidnpi.utils.logging import logger
 from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
 
 # Define NaN globally to build conditions with NaN
@@ -19,6 +20,14 @@ FIN = "fecha_fin"
 PUBLICACION = "fecha_publicacion_oficial"
 FECHA = "fecha"
 PROVINCIA = "provincia"
+
+
+def process_hora(df: pd.DataFrame) -> pd.DataFrame:
+    """Para poder hacer las comparaciones de hora de cierre,
+    sumamos 24h a las primeras horas de la mañana"""
+    mask_early = df["hora"] <= 8
+    df.loc[mask_early, "hora"] += 24
+    return df
 
 
 def extend_fecha(
@@ -46,7 +55,10 @@ def extend_fecha(
     df = df.copy()
     # Rename strings
     for col in [INICIO, FIN]:
-        df[col] = df[col].replace(dict_rename)
+        try:
+            df[col] = df[col].replace(dict_rename)
+        except TypeError:
+            continue
     # Si no hay fecha de inicio se coge la fecha de publicacion, y sino la fecha de
     # inicio de la cuarentena
     df[INICIO] = df[INICIO].fillna(df[PUBLICACION]).fillna("2020-03-15")
@@ -196,7 +208,7 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
         mask_alto = df.query(condicion_alto).index
         mask_medio = df.query(condicion_medio).index
     except TypeError:
-        raise TypeError(f"Column with unproper type: {df.dtypes}")
+        raise TypeError(f"Column with unproper type:\n{df.dtypes}")
 
     df_score.loc[mask_medio, "score_medida"] = 0.6
     df_score.loc[mask_alto, "score_medida"] = 1
@@ -220,7 +232,7 @@ def pivot_df_score(df_score: pd.DataFrame):
 
 
 def return_dict_score_medidas(
-    dict_medidas: dict, fillna_date_end: str = "today", verbose: bool = True
+    dict_medidas: dict, fillna_date_end: str = "today"
 ) -> dict:
     """
 
@@ -229,7 +241,6 @@ def return_dict_score_medidas(
     dict_medidas : dict
     fillna_date_end : str, optional
         Defines how we fill the NaNs in fecha_fin column, by default "today"
-    verbose : bool, optional
 
     Returns
     -------
@@ -243,8 +254,8 @@ def return_dict_score_medidas(
     all_medidas = return_all_medidas()
 
     for provincia, df_sub in dict_medidas.items():
-        if verbose:
-            print(provincia)
+        logger.debug(provincia)
+        df_sub = process_hora(df_sub)
         df_sub_extended = extend_fecha(df_sub, fillna_date_end=fillna_date_end)
         df_score = score_medidas(df_sub_extended, taxonomia)
         df_score = pivot_df_score(df_score)
