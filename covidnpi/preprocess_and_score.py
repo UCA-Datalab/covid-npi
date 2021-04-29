@@ -5,7 +5,7 @@ import typer
 from covidnpi.score.score_items import return_dict_score_items
 from covidnpi.score.score_medidas import return_dict_score_medidas
 from covidnpi.utils.config import load_config
-from covidnpi.utils.dictionaries import store_dict_scores, store_dict_medidas
+from covidnpi.utils.dictionaries import store_dict_scores, store_dict_provincia_to_medidas
 from covidnpi.utils.logging import logger
 from covidnpi.utils.mobility import mobility_report_to_csv
 from covidnpi.utils.preprocess import read_npi_and_build_dict
@@ -44,7 +44,7 @@ def main(
         os.mkdir(path_output)
 
     path_medidas = os.path.join(path_output, "medidas")
-    store_dict_medidas(dict_medidas, path_output=path_medidas)
+    store_dict_provincia_to_medidas(dict_medidas, path_output=path_medidas)
     logger.debug(
         f"Las medidas preprocesadas han sido guardadas en {path_medidas}\n...\n"
         f"Ahora puntuamos cada medida"
