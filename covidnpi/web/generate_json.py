@@ -3,6 +3,7 @@ import json
 import typer
 
 from covidnpi.utils.config import load_config
+from covidnpi.utils.logging import logger
 from covidnpi.web.mongo import load_mongo
 
 
@@ -72,10 +73,10 @@ def generate_json(
         Path where the ambits json is stored, must end in a file with json format
 
     """
-    print(f"\n-----\nStoring provinces json in {path_json_provincia}\n-----")
+    logger.debug(f"\n-----\nStoring provinces json in {path_json_provincia}\n-----")
     code_to_provincia = load_config(path_config, key="code_to_provincia")
     json_code_to_provincia(code_to_provincia, path_json=path_json_provincia)
-    print(f"\n-----\nStoring ambits json in {path_json_ambitos}\n-----")
+    logger.debug(f"\n-----\nStoring ambits json in {path_json_ambitos}\n-----")
     json_ambitos(path_config, path_json_ambitos)
 
 

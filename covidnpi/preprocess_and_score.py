@@ -57,7 +57,7 @@ def main(
     )
     path_score_medidas = os.path.join(path_output, "score_medidas")
     store_dict_scores(dict_scores, path_output=path_score_medidas)
-    print(
+    logger.debug(
         f"La puntuación de cada medida por provincia ha sido guardada en "
         f"{path_score_medidas}\n...\nPasamos a puntuar los items"
     )

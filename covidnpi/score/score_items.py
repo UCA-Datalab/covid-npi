@@ -5,6 +5,7 @@ import pandas as pd
 import typer
 
 from covidnpi.utils.dictionaries import store_dict_scores, load_dict_scores
+from covidnpi.utils.logging import logger
 from covidnpi.utils.taxonomia import return_item_ponderacion, PATH_TAXONOMIA
 
 
@@ -220,7 +221,7 @@ def return_dict_score_items(
 
     for provincia, df_sub in dict_scores.items():
         if verbose:
-            print(provincia)
+            logger.debug(provincia)
         df_item = score_items(df_sub)
         df_afectado = apply_porcentaje_afectado_to_items(df_item)
         df_afectado = score_ponderada(df_afectado, path_taxonomia=path_taxonomia)

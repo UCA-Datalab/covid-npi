@@ -8,8 +8,9 @@ from covidnpi.utils.casos import (
     load_casos_df,
     return_casos_of_provincia_normed,
 )
-from covidnpi.utils.series import cumulative_incidence, compute_growth_rate
 from covidnpi.utils.config import load_config
+from covidnpi.utils.logging import logger
+from covidnpi.utils.series import cumulative_incidence, compute_growth_rate
 from covidnpi.utils.taxonomia import return_taxonomia, PATH_TAXONOMIA
 from covidnpi.web.mongo import load_mongo
 
@@ -56,11 +57,11 @@ def store_scores_in_mongo(
                 "fechas": df.index.tolist(),
             }
         except KeyError:
-            print(f"\nProvincia '{provincia}' code not found\n")
+            logger.debug(f"\nProvincia '{provincia}' code not found\n")
             continue
-        print(f"\n{provincia}")
+        logger.debug(f"\n{provincia}")
         for ambito in list_ambito:
-            print(f"  {ambito}")
+            logger.debug(f"  {ambito}")
             series = df[ambito].values.tolist()
             dict_provincia.update({ambito: series})
 
@@ -101,9 +102,9 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
             # Filter dates previous to the minimum date
             mask_date = series.index >= date_min
             series = series[mask_date]
-            print(f"{code}")
+            logger.debug(f"{code}")
         except KeyError:
-            print(f"[!] {code} missing from poblacion")
+            logger.warning(f"{code} missing from poblacion")
             continue
         num = cumulative_incidence(series, cfg_casos["movavg"]).fillna(0)
         growth = compute_growth_rate(series, cfg_casos["movavg"]).fillna(0)
@@ -143,11 +144,11 @@ def datastore(
         Path to the config toml file
 
     """
-    print("\n-----\nStoring scores in mongo\n-----\n")
+    logger.debug("\n-----\nStoring scores in mongo\n-----\n")
     store_scores_in_mongo(
         path_output=path_output, path_taxonomia=path_taxonomia, path_config=path_config
     )
-    print("\n-----\nStoring number of cases in mongo\n-----\n")
+    logger.debug("\n-----\nStoring number of cases in mongo\n-----\n")
     store_casos_in_mongo(path_config=path_config)
 
 
