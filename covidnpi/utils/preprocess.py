@@ -228,6 +228,7 @@ def process_fecha(
             f"el inicio de cuarentena: {', '.join(list_idx)}"
         )
 
+    # Si no hay fecha final, se pone el dia de hoy o la ultima fecha registrada
     list_idx = [str(i + 2) for i in df[df["fecha_fin"].isna()].index]
     if (len(list_idx) > 0) and ("today" in fillna_date_end.lower()):
         # Llenamos los NaN de fecha_fin con el día de hoy
@@ -239,7 +240,7 @@ def process_fecha(
     elif (len(list_idx) > 0) and ("start" in fillna_date_end.lower()):
         # Llenamos los NaN de fecha_fin con fecha_inicio
         df["fecha_fin"] = df["fecha_fin"].fillna(df["fecha_inicio"])
-    elif (len(list_idx) > 0):
+    elif len(list_idx) > 0:
         raise ValueError(f"fillna_date_end not valid: {fillna_date_end}")
     return df
 
