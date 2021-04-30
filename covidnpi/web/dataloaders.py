@@ -1,14 +1,7 @@
-from datetime import date
-
 from covidnpi.utils.config import load_config
 from covidnpi.web.mongo import load_mongo
 
-DICT_DATES = {"x_min": "2020-07-01", "x_max": date.today().strftime("%Y-%m-%d")}
-
-
-def update_dict_dates():
-    """Updates the dictionary to match current date"""
-    DICT_DATES.update({"x_max": date.today().strftime("%Y-%m-%d")})
+DATE_MIN = "2020-07-01"
 
 
 def return_ambits_by_province(
@@ -37,7 +30,6 @@ def return_ambits_by_province(
     x = dict_provincia["fechas"]
 
     dict_plot = {}
-    update_dict_dates()
 
     for ambit in ambits:
         try:
@@ -46,8 +38,14 @@ def return_ambits_by_province(
             raise KeyError(f"Ambito '{ambit}' no existe")
         except TypeError:
             raise KeyError(f"Provincia '{code}' no encontrada")
-        dict_ambit = {"x": x, "y": y, "y_max": 1, "y_min": 0}
-        dict_ambit.update(DICT_DATES)
+        dict_ambit = {
+            "x": x,
+            "y": y,
+            "y_max": 1,
+            "y_min": 0,
+            "x_max": x[-1],
+            "X_min": DATE_MIN,
+        }
         dict_plot.update({ambit: dict_ambit})
 
     return dict_plot
@@ -76,7 +74,6 @@ def return_provinces_by_ambit(
     col = mongo.get_col("scores")
 
     dict_plot = {}
-    update_dict_dates()
 
     for code in codes:
         dict_provincia = col.find_one({"code": code})
@@ -87,8 +84,14 @@ def return_provinces_by_ambit(
             raise KeyError(f"Ambito '{ambit}' no existe")
         except TypeError:
             raise KeyError(f"Provincia '{code}' no encontrada")
-        dict_code = {"x": x, "y": y, "y_max": 1, "y_min": 0}
-        dict_code.update(DICT_DATES)
+        dict_code = {
+            "x": x,
+            "y": y,
+            "y_max": 1,
+            "y_min": 0,
+            "x_max": x[-1],
+            "X_min": DATE_MIN,
+        }
         dict_plot.update({code: dict_code})
 
     return dict_plot
@@ -114,9 +117,14 @@ def return_incidence_of_province(code: str, path_config: str = "covidnpi/config.
     col = mongo.get_col("casos")
 
     x = col.find_one({"code": code})
-    dict_plot = {"x": x["fechas"], "y": x["casos"], "y_max": 800, "y_min": 0}
-    update_dict_dates()
-    dict_plot.update(DICT_DATES)
+    dict_plot = {
+        "x": x["fechas"],
+        "y": x["casos"],
+        "y_max": 800,
+        "y_min": 0,
+        "x_max": x[-1],
+        "X_min": DATE_MIN,
+    }
     return dict_plot
 
 
@@ -140,7 +148,12 @@ def return_growth_of_province(code: str, path_config: str = "covidnpi/config.tom
     col = mongo.get_col("casos")
 
     x = col.find_one({"code": code})
-    dict_plot = {"x": x["fechas"], "y": x["crecimiento"], "y_max": 200, "y_min": -100}
-    update_dict_dates()
-    dict_plot.update(DICT_DATES)
+    dict_plot = {
+        "x": x["fechas"],
+        "y": x["crecimiento"],
+        "y_max": 200,
+        "y_min": -100,
+        "x_max": x[-1],
+        "X_min": DATE_MIN,
+    }
     return dict_plot
