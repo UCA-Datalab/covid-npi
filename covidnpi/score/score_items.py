@@ -1,54 +1,11 @@
-import pandas as pd
+import datetime as dt
+
 import numpy as np
+import pandas as pd
 import typer
 
 from covidnpi.utils.dictionaries import store_dict_scores, load_dict_scores
-from covidnpi.utils.taxonomia import return_item_ponderacion
-
-
-def compute_proportion(df: pd.DataFrame, item: str):
-
-    df_sub = df[["fecha", "porcentaje_afectado", item]].copy()
-
-    # Convertimos los NaNs autonomicos/provinciales a 0
-    mask_autonomico = df_sub["porcentaje_afectado"] == 100
-    df_sub.loc[mask_autonomico, item] = df_sub.loc[mask_autonomico, item].fillna(0)
-
-    # Los otros NaNs, que pertenecen a medidas subprovinciales
-    # no aplicadas, se eliminan
-    df_sub.dropna(inplace=True)
-
-    porcentaje_general = (
-        100
-        - df_sub.query("porcentaje_afectado < 100")
-        .groupby("fecha")["porcentaje_afectado"]
-        .sum()
-    )
-
-    mask_general = df_sub["porcentaje_afectado"] == 100
-    mask_subprov = df_sub["fecha"].isin(porcentaje_general.index)
-
-    try:
-        df_sub.loc[
-            mask_general & mask_subprov, "porcentaje_afectado"
-        ] = porcentaje_general.values
-    except ValueError:
-        for fecha, porcentaje in porcentaje_general.items():
-            mask_fecha = df_sub["fecha"] == fecha
-            mask = mask_fecha & mask_general
-            if mask.sum() > 0:
-                df_sub.loc[mask, "porcentaje_afectado"] = porcentaje
-            else:
-                df_sub = df_sub.append(
-                    {"fecha": fecha, "porcentaje_afectado": porcentaje, item: 0},
-                    ignore_index=True,
-                )
-
-    df_sub["ponderado"] = df_sub["porcentaje_afectado"] * df_sub[item] / 100
-
-    score = df_sub.groupby("fecha")["ponderado"].sum()
-
-    return score
+from covidnpi.utils.logging import logger
 
 
 def score_items(df: pd.DataFrame):
@@ -171,74 +128,34 @@ def score_items(df: pd.DataFrame):
         ]
     )
 
+    # Truncate up to today
+    df_item = df_item[df_item["fecha"] <= dt.datetime.today()]
+
     return df_item
-
-
-def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
-
-    list_item = df_item.columns.tolist()
-    list_item.remove("fecha")
-    list_item.remove("porcentaje_afectado")
-    dict_ponderado = {}
-    for item in list_item:
-        dict_ponderado.update({item: compute_proportion(df_item, item)})
-    df_afectado = pd.DataFrame.from_dict(dict_ponderado)
-
-    # Fill missing dates with 0's
-    idx = pd.date_range(df_afectado.index.min(), df_afectado.index.max())
-    df_afectado = df_afectado.reindex(idx, fill_value=0)
-
-    # "fecha" to column
-    df_afectado = df_afectado.reset_index().rename(columns={"index": "fecha"})
-
-    return df_afectado
-
-
-def score_ponderada(
-    df_afectado: pd.DataFrame, path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx"
-):
-    ponderacion = return_item_ponderacion(path_taxonomia=path_taxonomia)
-    list_ambito = ponderacion["ambito"].unique()
-    for ambito in list_ambito:
-        pon_sub = ponderacion.query(f"ambito == '{ambito}'")
-        pesos = pon_sub["ponderacion"].values
-        items = pon_sub["nombre"]
-        df_afectado[ambito] = (df_afectado[items] * pesos).sum(axis=1).div(pesos.sum())
-    return df_afectado
 
 
 def return_dict_score_items(
     dict_scores: dict,
-    path_taxonomia="datos_NPI/Taxonomía_07022021.xlsx",
     verbose: bool = True,
-) -> tuple:
+) -> dict:
     dict_items = {}
-    dict_items_afectado = {}
 
     for provincia, df_sub in dict_scores.items():
         if verbose:
-            print(provincia)
+            logger.debug(provincia)
         df_item = score_items(df_sub)
-        df_afectado = apply_porcentaje_afectado_to_items(df_item)
-        df_afectado = score_ponderada(df_afectado, path_taxonomia=path_taxonomia)
         dict_items.update({provincia: df_item.set_index("fecha")})
-        dict_items_afectado.update({provincia: df_afectado.set_index("fecha")})
 
-    return dict_items, dict_items_afectado
+    return dict_items
 
 
 def main(
     path_score_medidas: str = "output/score_medidas",
     path_output: str = "output/score_items",
-    path_output_ponderado: str = "output/score_items_afectado",
-    path_taxonomia: str = "datos_NPI/Taxonomía_07022021.xlsx",
 ):
     dict_scores = load_dict_scores(path_score_medidas)
-    dict_items, dict_items_afectado = return_dict_score_items(
-        dict_scores, path_taxonomia=path_taxonomia
-    )
+    dict_items = return_dict_score_items(dict_scores)
     store_dict_scores(dict_items, path_output=path_output)
-    store_dict_scores(dict_items_afectado, path_output=path_output_ponderado)
 
 
 if __name__ == "__main__":

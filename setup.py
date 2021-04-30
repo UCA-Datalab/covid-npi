@@ -24,6 +24,8 @@ setuptools.setup(
         "numpy==1.18.1",
         "pandas==1.0.3",
         "pip==19.3",
+        "pymongo==3.11.0",
+        "toml==0.10.2",
         "typer==0.3.2",
         "xlrd==1.1.0",
     ],

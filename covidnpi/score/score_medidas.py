@@ -1,27 +1,40 @@
-from datetime import date
+import datetime as dt
+import warnings
 
 import numpy as np
 import pandas as pd
 import typer
 
 from covidnpi.utils.dictionaries import store_dict_scores, load_dict_medidas
+from covidnpi.utils.logging import logger
 from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
+
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 # Define NaN globally to build conditions with NaN
 nan = np.nan
 
 
+def process_hora(df: pd.DataFrame) -> pd.DataFrame:
+    """Para poder hacer las comparaciones de hora de cierre,
+    sumamos 24h a las primeras horas de la mañana"""
+    mask_early = df["hora"] <= 8
+    df.loc[mask_early, "hora"] += 24
+    return df
+
+
 def extend_fecha(df: pd.DataFrame) -> pd.DataFrame:
-    """Get a row for each date and restriction"""
-    df = df.copy()
-    # Reemplazamos ESTADO DE ALARMA por su fecha
-    df.loc[df["fecha_fin"] == "ESTADO DE ALARMA", "fecha_fin"] = "2021-05-09"
-    # Si no hay fecha de inicio se coge la fecha de publicacion
-    df["fecha_inicio"] = df["fecha_inicio"].fillna(df["fecha_publicacion_oficial"])
-    # Llenamos los NaN de fecha_fin con el día de hoy
-    df["fecha_fin"] = df["fecha_fin"].fillna(pd.Timestamp(date.today()))
-    # Correccion
-    df.loc[df["fecha_fin"] == "06/112020", "fecha_fin"] = "2020-11-06"
+    """Get a row for each date and restriction
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    """
     # Extendemos las fechas
     df["fecha"] = df.apply(
         lambda x: pd.date_range(x["fecha_inicio"], x["fecha_fin"]), axis=1
@@ -31,6 +44,9 @@ def extend_fecha(df: pd.DataFrame) -> pd.DataFrame:
         .sort_values(["fecha", "provincia"], axis=0)
         .reset_index(drop=True)
     )
+
+    # Truncate up to today
+    df_extended = df_extended[df_extended["fecha"] <= dt.datetime.today()]
     return df_extended
 
 
@@ -157,8 +173,11 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     condicion_alto = dict_condicion["alto"]
     condicion_medio = dict_condicion["medio"]
 
-    mask_alto = df.query(condicion_alto).index
-    mask_medio = df.query(condicion_medio).index
+    try:
+        mask_alto = df.query(condicion_alto).index
+        mask_medio = df.query(condicion_medio).index
+    except TypeError:
+        raise TypeError(f"Column with unproper type:\n{df.dtypes}")
 
     df_score.loc[mask_medio, "score_medida"] = 0.6
     df_score.loc[mask_alto, "score_medida"] = 1
@@ -181,15 +200,29 @@ def pivot_df_score(df_score: pd.DataFrame):
     return df_medida
 
 
-def return_dict_score_medidas(dict_medidas: dict, verbose: bool = True) -> dict:
+def return_dict_score_medidas(
+    dict_medidas: dict
+) -> dict:
+    """
+
+    Parameters
+    ----------
+    dict_medidas : dict
+
+    Returns
+    -------
+    dict
+        Dictionary of scores
+
+    """
     dict_scores = {}
 
     taxonomia = return_taxonomia()
     all_medidas = return_all_medidas()
 
     for provincia, df_sub in dict_medidas.items():
-        if verbose:
-            print(provincia)
+        logger.debug(provincia)
+        df_sub = process_hora(df_sub)
         df_sub_extended = extend_fecha(df_sub)
         df_score = score_medidas(df_sub_extended, taxonomia)
         df_score = pivot_df_score(df_score)
