@@ -6,6 +6,11 @@ from covidnpi.web.mongo import load_mongo
 DICT_DATES = {"x_min": "2020-07-01", "x_max": date.today().strftime("%Y-%m-%d")}
 
 
+def update_dict_dates():
+    """Updates the dictionary to match current date"""
+    DICT_DATES.update({"x_max": date.today().strftime("%Y-%m-%d")})
+
+
 def return_ambits_by_province(
     code: str, ambits: tuple, path_config: str = "covidnpi/config.toml"
 ):
@@ -32,6 +37,7 @@ def return_ambits_by_province(
     x = dict_provincia["fechas"]
 
     dict_plot = {}
+    update_dict_dates()
 
     for ambit in ambits:
         try:
@@ -70,6 +76,7 @@ def return_provinces_by_ambit(
     col = mongo.get_col("scores")
 
     dict_plot = {}
+    update_dict_dates()
 
     for code in codes:
         dict_provincia = col.find_one({"code": code})
@@ -108,6 +115,7 @@ def return_incidence_of_province(code: str, path_config: str = "covidnpi/config.
 
     x = col.find_one({"code": code})
     dict_plot = {"x": x["fechas"], "y": x["casos"], "y_max": 800, "y_min": 0}
+    update_dict_dates()
     dict_plot.update(DICT_DATES)
     return dict_plot
 
@@ -133,5 +141,6 @@ def return_growth_of_province(code: str, path_config: str = "covidnpi/config.tom
 
     x = col.find_one({"code": code})
     dict_plot = {"x": x["fechas"], "y": x["crecimiento"], "y_max": 200, "y_min": -100}
+    update_dict_dates()
     dict_plot.update(DICT_DATES)
     return dict_plot
