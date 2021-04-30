@@ -1,4 +1,5 @@
 import datetime as dt
+import warnings
 from datetime import date
 
 import numpy as np
@@ -8,6 +9,8 @@ import typer
 from covidnpi.utils.dictionaries import store_dict_scores, load_dict_medidas
 from covidnpi.utils.logging import logger
 from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
+
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 # Define NaN globally to build conditions with NaN
 nan = np.nan

@@ -6,7 +6,7 @@ import typer
 import xlrd
 
 from covidnpi.utils.dictionaries import store_dict_provincia_to_medidas
-from covidnpi.utils.logging import logger, raise_type_warning
+from covidnpi.utils.logging import logger, raise_type_warning, raise_value_warning
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE"]
@@ -85,6 +85,8 @@ LIST_COLS_OUTPUT = [
     "hora",
     "nivel_educacion",
 ]
+
+LIST_MEDIDAS_NO_HORA = ["MV.3", "MV.4", "MV.7"]
 
 
 def _raise_missing_column(df: pd.DataFrame, col: str):
@@ -189,6 +191,15 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
 
     df = df.copy()
 
+    # Listamos los valores de unidad que no se corresponden a los esperados
+    list_unidad = df['unidad'].dropna().astype(str).unique()
+    list_unidad = sorted(set(list_unidad) - set(DICT_UNIDAD_RENAME.values()))
+    if len(list_unidad) > 0:
+        logger.warning(
+            f"Valores no esperados encontrados en la columna 'unidad': "
+            f"{', '.join(list_unidad)}"
+        )
+
     # If any value contains the exact word, change value to word
     list_rename = set(rename.values())
     for word in list_rename:
@@ -217,7 +228,13 @@ def format_hora(df: pd.DataFrame, date_format: str = "%H:%M:%S") -> pd.DataFrame
             pd.to_datetime(df["hora"], format=date_format, errors="coerce")
         )
         list_idx = df.loc[hora.isna(), "hora"].dropna().index.tolist()
-        raise_type_warning(df, list_idx, "hora")
+        # Filtramos aquellos warning que no interesan,
+        # porque son medidas que no aplican la columna "hora"
+        list_idx = [
+            idx for idx in list_idx if df["codigo"][idx] not in LIST_MEDIDAS_NO_HORA
+        ]
+        if len(list_idx) > 0:
+            raise_type_warning(df, list_idx, "hora")
     # Take only hour
     df["hora"] = hora.dt.hour + hora.dt.minute / 60
     return df
@@ -234,6 +251,7 @@ def format_porcentaje_afectado(df: pd.DataFrame) -> pd.DataFrame:
             df["porcentaje_afectado"]
             .astype(str)
             .str.lower()
+            .str.replace("%", "")
             .str.replace(" ", "")
             .str.replace(",", ".")
             .str.normalize("NFKD")
@@ -259,8 +277,14 @@ def format_porcentaje_afectado(df: pd.DataFrame) -> pd.DataFrame:
 
     # Avisar si los valores de porcentaje nunca superan 1
     if df["porcentaje_afectado"].dropna().max() <= 1:
-        # porc = (porc * 100).astype(float)
-        logger.warning("Los valores de 'porcentaje_afectado' nunca superan 1")
+        logger.warning(
+            "Los valores de 'porcentaje_afectado' nunca superan 1. "
+            f"Maximo: {df['porcentaje_afectado'].dropna().max()}. Se multiplican por 100"
+        )
+        df["porcentaje_afectado"] = df["porcentaje_afectado"] * 100
+    elif df["porcentaje_afectado"].dropna().min() < 1:
+        list_idx = df.query("porcentaje_afectado < 1").index
+        raise_value_warning(df, list_idx, "porcentaje_afectado")
     # Round to one decimal
     new_col = df["porcentaje_afectado"].astype(float).round(1)
 
@@ -357,19 +381,19 @@ def read_npi_and_build_dict(
     """Reads the folder containing the NPI and returns a dictionary
     {province: limitations}"""
     dict_provincia_to_medidas = {}
-    for file in os.listdir(path_data):
+    for file in sorted(os.listdir(path_data)):
         logger.debug(f"...............\n{file}")
         path_file = os.path.join(path_data, file)
         try:
             df = read_npi_data(path_file)
         except IsADirectoryError:
             logger.error(
-                f"File {file} could not be opened as province\n..............."
+                f"File {file} could not be opened as province\n...............\n"
             )
             continue
         except KeyError:
             logger.error(
-                f"File {file} could not be opened as province\n..............."
+                f"File {file} could not be opened as province\n...............\n"
             )
             continue
         # Filtramos las medidas relevantes

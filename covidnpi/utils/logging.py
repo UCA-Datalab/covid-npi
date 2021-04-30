@@ -63,3 +63,16 @@ def raise_type_warning(
     logger.warning(
         f"La columna '{col}' contiene {typing} - Pasados a NaN:\n" + "\n".join(list_msg)
     )
+
+
+def raise_value_warning(
+    df: pd.DataFrame, list_idx: list, col: str
+):
+    """Prints the rows that produces warnings, showing index and the value that fails"""
+    list_msg = [""] * len(list_idx)
+    for j, idx in enumerate(list_idx):
+        list_msg[j] = f"     {idx + 2} ... {df.loc[idx, col]}"
+
+    logger.warning(
+        f"La columna '{col}' contiene valores sospechosos:\n" + "\n".join(list_msg)
+    )

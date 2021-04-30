@@ -46,7 +46,7 @@ def main(
     path_medidas = os.path.join(path_output, "medidas")
     store_dict_provincia_to_medidas(dict_medidas, path_output=path_medidas)
     logger.debug(
-        f"Las medidas preprocesadas han sido guardadas en {path_medidas}\n...\n"
+        f"Las medidas preprocesadas han sido guardadas en {path_medidas}\n\n...\n\n"
         f"Ahora puntuamos cada medida"
     )
 
@@ -59,7 +59,7 @@ def main(
     store_dict_scores(dict_scores, path_output=path_score_medidas)
     logger.debug(
         f"La puntuación de cada medida por provincia ha sido guardada en "
-        f"{path_score_medidas}\n...\nPasamos a puntuar los items"
+        f"{path_score_medidas}\n\n...\n\nPasamos a puntuar los items"
     )
 
     dict_items, dict_ambito = return_dict_score_items(
@@ -72,7 +72,7 @@ def main(
     logger.debug(
         f"La puntuación de cada item por provincia ha sido guardada en "
         f"{path_score_items}\nY también calculada por porcentaje afectado, en "
-        f"{path_score_ambito}\n...\nPasamos a guardar la informacion de movilidad"
+        f"{path_score_ambito}\n\n...\n\nPasamos a guardar la informacion de movilidad"
     )
 
     path_mobility = os.path.join(path_output, "mobility")
