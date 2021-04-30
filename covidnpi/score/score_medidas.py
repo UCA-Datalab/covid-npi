@@ -1,71 +1,52 @@
 import datetime as dt
-from datetime import date
+import warnings
 
 import numpy as np
 import pandas as pd
 import typer
 
 from covidnpi.utils.dictionaries import store_dict_scores, load_dict_medidas
+from covidnpi.utils.logging import logger
 from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
+
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 # Define NaN globally to build conditions with NaN
 nan = np.nan
 
-DICT_FECHA_RENAME = {"06/112020": "2020-11-06", "ESTADO DE ALARMA": "2021-05-09"}
 
-# Define column names
-INICIO = "fecha_inicio"
-FIN = "fecha_fin"
-PUBLICACION = "fecha_publicacion_oficial"
-FECHA = "fecha"
-PROVINCIA = "provincia"
+def process_hora(df: pd.DataFrame) -> pd.DataFrame:
+    """Para poder hacer las comparaciones de hora de cierre,
+    sumamos 24h a las primeras horas de la mañana"""
+    mask_early = df["hora"] <= 8
+    df.loc[mask_early, "hora"] += 24
+    return df
 
 
-def extend_fecha(
-    df: pd.DataFrame, dict_rename: dict = None, fillna_date_end: str = "today"
-) -> pd.DataFrame:
+def extend_fecha(df: pd.DataFrame) -> pd.DataFrame:
     """Get a row for each date and restriction
 
     Parameters
     ----------
     df : pandas.DataFrame
-    dict_rename : dict, optional
-    fillna_date_end : str, optional
-        Defines how we fill the NaNs in fecha_fin column, by default "today":
-        - "today": NaNs are changed to today date
-        - "start": NaNs are changed to fecha_inicio date
 
     Returns
     -------
     pandas.DataFrame
 
     """
-    if dict_rename is None:
-        dict_rename = DICT_FECHA_RENAME
-    # Do not modify the original dataframe
-    df = df.copy()
-    # Rename strings
-    for col in [INICIO, FIN]:
-        df[col] = df[col].replace(dict_rename)
-    # Si no hay fecha de inicio se coge la fecha de publicacion, y sino la fecha de
-    # inicio de la cuarentena
-    df[INICIO] = df[INICIO].fillna(df[PUBLICACION]).fillna("2020-03-15")
-    if "today" in fillna_date_end.lower():
-        # Llenamos los NaN de fecha_fin con el día de hoy
-        df[FIN] = df[FIN].fillna(pd.Timestamp(date.today()))
-    elif "start" in fillna_date_end.lower():
-        # Llenamos los NaN de fecha_fin con fecha_inicio
-        df[FIN] = df[FIN].fillna(df[INICIO])
-    else:
-        raise ValueError(f"fillna_date_end not valid: {fillna_date_end}")
     # Extendemos las fechas
-    df[FECHA] = df.apply(lambda x: pd.date_range(x[INICIO], x[FIN]), axis=1)
+    df["fecha"] = df.apply(
+        lambda x: pd.date_range(x["fecha_inicio"], x["fecha_fin"]), axis=1
+    )
     df_extended = (
-        df.explode(FECHA).sort_values([FECHA, PROVINCIA], axis=0).reset_index(drop=True)
+        df.explode("fecha")
+        .sort_values(["fecha", "provincia"], axis=0)
+        .reset_index(drop=True)
     )
 
     # Truncate up to today
-    df_extended = df_extended[df_extended[FECHA] <= dt.datetime.today()]
+    df_extended = df_extended[df_extended["fecha"] <= dt.datetime.today()]
     return df_extended
 
 
@@ -196,7 +177,7 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
         mask_alto = df.query(condicion_alto).index
         mask_medio = df.query(condicion_medio).index
     except TypeError:
-        raise TypeError(f"Column with unproper type: {df.dtypes}")
+        raise TypeError(f"Column with unproper type:\n{df.dtypes}")
 
     df_score.loc[mask_medio, "score_medida"] = 0.6
     df_score.loc[mask_alto, "score_medida"] = 1
@@ -210,26 +191,23 @@ def pivot_df_score(df_score: pd.DataFrame):
     df_medida = df_score[["codigo", "score_medida"]].pivot(
         columns="codigo", values="score_medida"
     )
-    df_medida[FECHA] = df_score[FECHA].reset_index(drop=True)
+    df_medida["fecha"] = df_score["fecha"].reset_index(drop=True)
     df_medida["porcentaje_afectado"] = (
         df_score["porcentaje_afectado"].fillna(100).reset_index(drop=True)
     )
-    df_medida = df_medida.groupby([FECHA, "porcentaje_afectado"]).max()
+    df_medida = df_medida.groupby(["fecha", "porcentaje_afectado"]).max()
 
     return df_medida
 
 
 def return_dict_score_medidas(
-    dict_medidas: dict, fillna_date_end: str = "today", verbose: bool = True
+    dict_medidas: dict
 ) -> dict:
     """
 
     Parameters
     ----------
     dict_medidas : dict
-    fillna_date_end : str, optional
-        Defines how we fill the NaNs in fecha_fin column, by default "today"
-    verbose : bool, optional
 
     Returns
     -------
@@ -243,9 +221,9 @@ def return_dict_score_medidas(
     all_medidas = return_all_medidas()
 
     for provincia, df_sub in dict_medidas.items():
-        if verbose:
-            print(provincia)
-        df_sub_extended = extend_fecha(df_sub, fillna_date_end=fillna_date_end)
+        logger.debug(provincia)
+        df_sub = process_hora(df_sub)
+        df_sub_extended = extend_fecha(df_sub)
         df_score = score_medidas(df_sub_extended, taxonomia)
         df_score = pivot_df_score(df_score)
         # Nos aseguramos de que todas las medidas estan en el df

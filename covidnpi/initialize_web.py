@@ -8,7 +8,7 @@ from covidnpi.web.generate_json import generate_json
 def main(
     path_output: str = "output/score_ambito",
     path_taxonomia=PATH_TAXONOMIA,
-    path_config: str = "covidnpi/config.toml",
+    path_config: str = "config.toml",
     path_json_provincia: str = "output/provincias.json",
     path_json_ambitos: str = "output/ambitos.json",
 ):

@@ -40,7 +40,7 @@ class MongoSingleton(metaclass=SingletonMeta):
         mydb = self.client[self.database]
         mycol = mydb[collection]
         x = mycol.insert_one(new_dict)
-        print(x.inserted_id)
+        logger.debug(x.inserted_id)
         return x
 
     def update_dict(

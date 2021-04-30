@@ -1,11 +1,13 @@
 import os
+from datetime import date
 
 import numpy as np
 import pandas as pd
 import typer
 import xlrd
 
-from covidnpi.utils.dictionaries import store_dict_medidas
+from covidnpi.utils.dictionaries import store_dict_provincia_to_medidas
+from covidnpi.utils.logging import logger, raise_type_warning, raise_value_warning
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE"]
@@ -27,12 +29,10 @@ DICT_FILL_PROVINCIA = {
 }
 
 DICT_COL_RENAME = {
-    "Ámbito": "ambito",
-    "Comunidad_Autónoma": "comunidad_autonoma",
     "cod_con": "codigo",
-    "unidad de medida": "unidad",
-    "% afectado (si subprovincial; mín 25%)": "porcentaje_afectado",
-    "Comunidad_autónoma": "comunidad_autonoma",
+    "unidad_de_medida": "unidad",
+    "%_afectado_(si_subprovincial;_min_25%)": "porcentaje_afectado",
+    "%_afectado_(si_subprovincial;_min_10%)": "porcentaje_afectado",
 }
 
 LIST_COL_TEXT = [
@@ -44,20 +44,10 @@ LIST_COL_TEXT = [
 ]
 
 DICT_UNIDAD_RENAME = {
-    "hora (en formato 24h)": "hora",
-    "hora (formato 24h)": "hora",
-    "hora_(en_formato_24h)": "hora",
-    "hora_(formato_24h)": "hora",
     "horario": "hora",
-    "horas": "hora",
     "pesonas": "personas",
     "personas ": "personas",
-    "personas exterior": "personas",
-    "a partir de personas": "personas",
-    "personas por grupo": "personas",
     "mesas": "personas",
-    "porcentaje de puestos": "porcentaje",
-    "porcentaje plazas en pie": "porcentaje",
     "aforo": "porcentaje",
     "p": "porcentaje",
     "grupos convivencia": np.nan,
@@ -82,8 +72,32 @@ DICT_ADD_PROVINCE = {
 DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": ""}
 DICT_CCAA_RENAME = {"autonomico": np.nan}
 
+LIST_MEDIDAS_NO_HORA = ["MV.3", "MV.4", "MV.7"]
+
+DICT_FECHA_RENAME = {"06/112020": "2020-11-06", "ESTADO DE ALARMA": "2021-05-09"}
+
+LIST_COLS_OUTPUT = [
+    "comunidad_autonoma",
+    "provincia",
+    "codigo",
+    "fecha_inicio",
+    "fecha_fin",
+    "ambito",
+    "porcentaje_afectado",
+    "porcentaje",
+    "personas",
+    "hora",
+    "nivel_educacion",
+]
+
+
+def _raise_missing_column(df: pd.DataFrame, col: str):
+    """Raises KeyError related to missing column"""
+    raise KeyError(f"Falta columna '{col}' en columnas: " f"{', '.join(df.columns)}")
+
 
 def clean_pandas_str(series: pd.Series):
+    """Homogenizes a pandas series of string type"""
     series_cleaned = (
         series.str.normalize("NFKD")
         .str.encode("ascii", errors="ignore")
@@ -123,22 +137,21 @@ def read_npi_data(
         xl = pd.ExcelFile(path_com)
         raise KeyError(f"File {path_com} does not have base sheet: {xl.sheet_names}")
 
+    # Homogenize column names
+    df.columns = clean_pandas_str(df.columns)
     df = df.rename(col_rename, axis=1)
-
-    drop_cols = [col for col in df.columns if col.startswith("Unnamed")]
+    # Drop columns named "unnamed"
+    drop_cols = [col for col in df.columns if col.startswith("unnamed")]
     df = df.drop(drop_cols, axis=1)
-
-    # En el caso de "p", se tiene que multiplicar por 100
-    df.loc[df["unidad"] == "p", "valor"] = df.loc[df["unidad"] == "p", "valor"] * 100
 
     # Preprocesar texto
     for col in list_col_text:
         try:
             df[col] = clean_pandas_str(df[col])
         except AttributeError:
-            print(f"{path_com} column '{col}' has all NaNs")
+            logger.warning(f"Columna vacia: '{col}'")
         except KeyError:
-            print(f"{path_com} is missing '{col}'")
+            logger.error(f"Falta columna: '{col }'")
     # Para el codigo hacemos mas
     df["codigo"] = df["codigo"].fillna(df["cod_gen"]).replace({" ": ""})
     # Rellenamos NaNs en comunidad autonoma
@@ -148,10 +161,7 @@ def read_npi_data(
             df["comunidad_autonoma"].value_counts().index[0]
         )
     except KeyError:
-        raise KeyError(
-            f"'comunidad_autonoma' not in {path_com}: "
-            f"{', '.join(df.columns.tolist())}"
-        )
+        _raise_missing_column(df, "comunidad_autonoma")
     # Remplazamos nombres de provincia
     df["provincia"] = (
         df["provincia"].fillna("").replace(province_rename).replace({"": np.nan})
@@ -164,44 +174,92 @@ def read_npi_data(
     return df
 
 
-def read_npi_folder(path_data: str) -> pd.DataFrame:
-    list_df = []
-
-    for file in os.listdir(path_data):
-        path_file = os.path.join(path_data, file)
-        try:
-            df = read_npi_data(path_file)
-        except IsADirectoryError:
-            continue
-        except KeyError:
-            print(f"  [Warning] File {file} could not be opened as province")
-            continue
-        list_df += [df]
-
-    df = pd.concat(list_df).reset_index(drop=True)
-    return df
-
-
-def gen_cod(prefix, maximo, missing=()):
-    """ returns a list of the codes for a given range"""
-    lista = set(range(1, maximo + 1)) - set(missing)
-    return [prefix + "." + str(n) for n in lista]
-
-
-def filter_relevant_medidas(df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOMIA):
+def filter_relevant_medidas(
+    df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOMIA
+) -> pd.DataFrame:
+    """Elimina aquellas medidas del dataframe que no figuran en la taxonomia"""
     all_medidas = return_all_medidas(path_taxonomia=path_taxonomia)
     mask_medidas = df["codigo"].isin(all_medidas)
     df_new = df[mask_medidas]
     dropped = sorted(df.loc[~mask_medidas, "codigo"].astype(str).unique())
-    print("Las medidas ignoradas son:", dropped)
+    logger.debug(f"Las medidas ignoradas son: {', '.join(dropped)}")
     return df_new
 
 
-def rename_unidad(df, rename: dict = None):
+def process_fecha(
+    df: pd.DataFrame, dict_rename: dict = None, fillna_date_end: str = "today"
+) -> pd.DataFrame:
+    """Define una fecha de inicio y una fecha de final para cada medida
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+    dict_rename : dict, optional
+    fillna_date_end : str, optional
+        Defines how we fill the NaNs in fecha_fin column, by default "today":
+        - "today": NaNs are changed to today date
+        - "start": NaNs are changed to fecha_inicio date
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    """
+    if dict_rename is None:
+        dict_rename = DICT_FECHA_RENAME
+    # Do not modify the original dataframe
+    df = df.copy()
+    # Rename strings
+    for col in ["fecha_inicio", "fecha_fin"]:
+        try:
+            df[col] = df[col].replace(dict_rename)
+        except TypeError:
+            continue
+    # Si no hay fecha de inicio se coge la fecha de publicacion, y sino la fecha de
+    # inicio de la cuarentena
+    list_idx = [str(i + 2) for i in df[df["fecha_inicio"].isna()].index]
+    df["fecha_inicio"] = (
+        df["fecha_inicio"].fillna(df["fecha_publicacion_oficial"]).fillna("2020-03-15")
+    )
+    if len(list_idx) > 0:
+        logger.warning(
+            f"Las siguientes filas no tienen fecha de inicio, "
+            f"se toma la fecha de publicacion o en su ausencia, "
+            f"el inicio de cuarentena: {', '.join(list_idx)}"
+        )
+
+    # Si no hay fecha final, se pone el dia de hoy o la ultima fecha registrada
+    list_idx = [str(i + 2) for i in df[df["fecha_fin"].isna()].index]
+    if (len(list_idx) > 0) and ("today" in fillna_date_end.lower()):
+        # Llenamos los NaN de fecha_fin con el día de hoy
+        df["fecha_fin"] = df["fecha_fin"].fillna(pd.Timestamp(date.today()))
+        logger.warning(
+            f"Las siguientes filas no tienen fecha final, "
+            f"se toma el dia de hoy como final: {', '.join(list_idx)}"
+        )
+    elif (len(list_idx) > 0) and ("start" in fillna_date_end.lower()):
+        # Llenamos los NaN de fecha_fin con fecha_inicio
+        df["fecha_fin"] = df["fecha_fin"].fillna(df["fecha_inicio"])
+    elif len(list_idx) > 0:
+        raise ValueError(f"fillna_date_end not valid: {fillna_date_end}")
+    return df
+
+
+def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
+    """Rename the values of column unidad"""
     if rename is None:
         rename = DICT_UNIDAD_RENAME
 
     df = df.copy()
+
+    # Listamos los valores de unidad que no se corresponden a los esperados
+    list_unidad = df["unidad"].dropna().astype(str).unique()
+    list_unidad = sorted(set(list_unidad) - set(DICT_UNIDAD_RENAME.values()))
+    if len(list_unidad) > 0:
+        logger.warning(
+            f"Valores no esperados encontrados en la columna 'unidad': "
+            f"{', '.join(list_unidad)}"
+        )
 
     # If any value contains the exact word, change value to word
     list_rename = set(rename.values())
@@ -216,81 +274,81 @@ def rename_unidad(df, rename: dict = None):
     return df
 
 
-def _raise_warning(df: pd.DataFrame, list_idx: list, col: str):
-    """Prints the rows that produces warnings, showing CCAA and the value that fails"""
-    list_msg = [""] * len(list_idx)
-    for j, idx in enumerate(list_idx):
-        list_msg[j] = f"     {df.loc[idx, 'comunidad_autonoma']} ... {df.loc[idx, col]}"
-    [print(msg) for msg in set(list_msg)]
-
-
-def format_hora(df):
+def format_hora(df: pd.DataFrame, date_format: str = "%H:%M:%S") -> pd.DataFrame:
+    """Formats the hora column, to datetime"""
+    # We do not want to modify the original dataframe
     df = df.copy()
-    # Join all the columns named "hora"
-    df_sub = df.query("codigo == 'RH.5'")["hora"].fillna(0).astype(str).str[:2]
+    # If "hora" is empty, return original
+    if df["hora"].isnull().all():
+        return df
+    # Convert to date format
     try:
-        hora = df_sub.astype(int)
-    except ValueError:
-        hora = pd.to_numeric(df_sub, errors="coerce")
-        list_idx = df_sub[hora.isna()].dropna().index.tolist()
-        print(" [Warning] String values encountered in 'hora', and set to NaN:")
-        _raise_warning(df, list_idx, "hora")
-        hora = hora.fillna(0).astype(int)
-
-    hora[hora <= 6] = hora[hora <= 6] + 24
-    df["hora"] = hora.astype(int)
+        hora = pd.to_datetime(df["hora"], format=date_format, errors="raise")
+    except (TypeError, ValueError) as e:
+        hora = pd.Series(
+            pd.to_datetime(df["hora"], format=date_format, errors="coerce")
+        )
+        list_idx = df.loc[hora.isna(), "hora"].dropna().index.tolist()
+        # Filtramos aquellos warning que no interesan,
+        # porque son medidas que no aplican la columna "hora"
+        list_idx = [
+            idx for idx in list_idx if df["codigo"][idx] not in LIST_MEDIDAS_NO_HORA
+        ]
+        if len(list_idx) > 0:
+            raise_type_warning(df, list_idx, "hora")
+    # Take only hour
+    df["hora"] = hora.dt.hour + hora.dt.minute / 60
     return df
 
 
-def format_porcentaje_afectado(df: pd.DataFrame):
+def format_porcentaje_afectado(df: pd.DataFrame) -> pd.DataFrame:
+    """Formats the column porcentaje_afectado"""
     df = df.copy()
-    list_provincia = df["provincia"].unique()
-    # Loop through provincias
-    for provincia in list_provincia:
-        mask_provincia = df["provincia"] == provincia
-        porc = df.loc[mask_provincia, "porcentaje_afectado"].copy()
-        # If the column is a string, convert city names to values
-        try:
-            porc = (
-                porc.str.lower()
-                .str.replace(" ", "")
-                .str.replace(",", ".")
-                .str.normalize("NFKD")
-                .str.encode("ascii", errors="ignore")
-                .str.decode("utf-8")
-                .replace(DICT_PORCENTAJE)
-            )
-        except AttributeError:
-            pass
-        # If values are below 1, multiply by 100 to get percentages
-        try:
-            porc = porc.astype(float)
-        except TypeError:
-            print(f"porcentaje_afectado of {provincia} is not a float!")
-        except ValueError:
-            porc_old = porc.copy()
-            porc = pd.to_numeric(porc, errors="coerce")
-            error = porc_old[porc.isna()].dropna().unique()
-            print(
-                f" [Warning] String values encountered in 'porcentaje_afectado', "
-                f"and set to NaN:"
-            )
-            [print("    ", provincia, "...", msg) for msg in error]
-        finally:
-            if porc.max() <= 1:
-                porc = (porc * 100).astype(float)
-        df.loc[mask_provincia, "porcentaje_afectado"] = porc
-    # Round to one decimal
+    # En algunos casos aparece el nombre de una zona en lugar del porcentaje
+    # Convertimos esos casos a su porcentaje correspondiente
+    # Tambien reemplazamos "," por "."
     try:
-        new_col = df["porcentaje_afectado"].astype(float).round(1)
-    except ValueError:
-        new_col = pd.to_numeric(df["porcentaje_afectado"], errors="coerce")
-        list_idx = df[new_col.isna()]["porcentaje_afectado"].dropna().index.tolist()
-        print(
-            " [Warning] String values encountered in 'porcentaje_afectado', "
-            "and set to NaN:"
+        df["porcentaje_afectado"] = (
+            df["porcentaje_afectado"]
+            .astype(str)
+            .str.lower()
+            .str.replace("%", "")
+            .str.replace(" ", "")
+            .str.replace(",", ".")
+            .str.normalize("NFKD")
+            .str.encode("ascii", errors="ignore")
+            .str.decode("utf-8")
+            .replace(DICT_PORCENTAJE)
+            .replace({"nan": np.nan})
         )
-        _raise_warning(df, list_idx, "porcentaje_afectado")
+    except KeyError:
+        _raise_missing_column(df, "porcentaje_afectado")
+
+    # Convertimos a float y mostramos los casos donde salta error (que se dejan como NaN)
+    try:
+        df["porcentaje_afectado"] = df["porcentaje_afectado"].astype(float)
+    except TypeError:
+        logger.warning(f"porcentaje_afectado is not a float!")
+    except ValueError:
+        porc_old = df["porcentaje_afectado"].copy()
+        porc = pd.to_numeric(df["porcentaje_afectado"], errors="coerce")
+        list_idx = porc_old[porc.isna()].dropna().index.tolist()
+        raise_type_warning(df, list_idx, "porcentaje_afectado")
+        df["porcentaje_afectado"] = porc
+
+    # Avisar si los valores de porcentaje nunca superan 1
+    if df["porcentaje_afectado"].dropna().max() <= 1:
+        logger.warning(
+            "Los valores de 'porcentaje_afectado' nunca superan 1. "
+            f"Maximo: {df['porcentaje_afectado'].dropna().max()}. Se multiplican por 100"
+        )
+        df["porcentaje_afectado"] = df["porcentaje_afectado"] * 100
+    elif df["porcentaje_afectado"].dropna().min() < 1:
+        list_idx = df.query("porcentaje_afectado < 1").index
+        raise_value_warning(df, list_idx, "porcentaje_afectado")
+    # Round to one decimal
+    new_col = df["porcentaje_afectado"].astype(float).round(1)
+
     df["porcentaje_afectado"] = new_col.round(1)
     return df
 
@@ -310,17 +368,12 @@ def pivot_unidad_valor(df: pd.DataFrame, list_float: tuple = None) -> pd.DataFra
             df_old = df_cat[col].copy()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
             list_idx = df_old[df_cat[col].isna()].dropna().index.tolist()
-            print(f" [Warning] Column '{col}' contains string - Set to NaN:")
-            _raise_warning(df, list_idx, "valor")
+            raise_type_warning(df, list_idx, "valor")
         except TypeError:
             df_old = df_cat[col].copy()
             df_cat[col] = pd.to_numeric(df_cat[col], errors="coerce")
             list_idx = df_old[df_cat[col].isna()].dropna().index.tolist()
-            print(
-                f" [Warning] Column '{col}' contains datetime.datetime - "
-                f"Set to NaN:"
-            )
-            _raise_warning(df, list_idx, "valor")
+            raise_type_warning(df, list_idx, "valor", typing="fecha")
 
     df = df.join(df_cat).drop(["unidad", "valor"], axis=1)
 
@@ -328,23 +381,45 @@ def pivot_unidad_valor(df: pd.DataFrame, list_float: tuple = None) -> pd.DataFra
     return df
 
 
-def return_dict_provincia(df: pd.DataFrame, dict_add: dict = None) -> dict:
+def select_columns(df: pd.DataFrame, list_cols: list = None) -> pd.DataFrame:
+    """Returns the dataframe having only the selected columns.
+    If one is missing, fill it with NaNs"""
+    if list_cols is None:
+        list_cols = LIST_COLS_OUTPUT
+    try:
+        df = df[list_cols]
+    except KeyError:
+        cols_missing = list(set(list_cols) - set(df.columns))
+        for col in cols_missing:
+            df[col] = np.nan
+        logger.warning(
+            "Faltan columnas (se han rellenado con NaN): " + ", ".join(cols_missing)
+        )
+    return df
+
+
+def return_dict_provincia_to_ccaa(df: pd.DataFrame, dict_add: dict = None) -> dict:
+    """Generates a dictionary where each key is a province and its value is the CCAA"""
     if dict_add is None:
         dict_add = DICT_ADD_PROVINCE
     df_ccaa = df.groupby(["comunidad_autonoma", "provincia"]).size().reset_index()
 
-    dict_provincia = dict(zip(df_ccaa["provincia"], df_ccaa["comunidad_autonoma"]))
+    dict_provincia_to_ccaa = dict(
+        zip(df_ccaa["provincia"], df_ccaa["comunidad_autonoma"])
+    )
 
-    dict_provincia.update(dict_add)
-    return dict_provincia
+    dict_provincia_to_ccaa.update(dict_add)
+    return dict_provincia_to_ccaa
 
 
-def return_dict_medidas(df: pd.DataFrame) -> dict:
-    dict_provincia = return_dict_provincia(df)
+def return_dict_provincia_to_medidas(df: pd.DataFrame) -> dict:
+    """Generates a dictionary where each key is a province and its value is
+    the dataframe containing the limitations applied in it"""
+    dict_provincia_to_ccaa = return_dict_provincia_to_ccaa(df)
 
-    dict_medidas = {}
+    dict_provincia_to_medidas = {}
 
-    for provincia, ccaa in dict_provincia.items():
+    for provincia, ccaa in dict_provincia_to_ccaa.items():
         df_sub = (
             df.query(
                 f"(provincia == '{provincia}') |"
@@ -355,34 +430,51 @@ def return_dict_medidas(df: pd.DataFrame) -> dict:
             .reset_index(drop=True)
         )
         if not df_sub.empty:
-            dict_medidas.update({provincia: df_sub})
+            dict_provincia_to_medidas.update({provincia: df_sub})
 
-    return dict_medidas
+    return dict_provincia_to_medidas
 
 
 def read_npi_and_build_dict(
-    path_data: str = "datos_NPI_2",
+    path_data: str = "datos_NPI",
     path_taxonomia: str = PATH_TAXONOMIA,
 ):
-    # Read all files and combine them
-    df = read_npi_folder(path_data)
-
-    # Filtramos las medidas relevantes
-    df_filtered = filter_relevant_medidas(df, path_taxonomia=path_taxonomia)
-
-    # Renombramos la columna unidad
-    df_renamed = rename_unidad(df_filtered)
-
-    # Formateamos "porcentaje afectado"
-    df_renamed = format_porcentaje_afectado(df_renamed)
-
-    # Pivotamos la columna "unidad" y le asignamos a cada categoría
-    # su correspondiente "valor"
-    df_pivot = pivot_unidad_valor(df_renamed)
-
-    # Construimos el diccionario de medidas y lo guardamos
-    dict_medidas = return_dict_medidas(df_pivot)
-    return dict_medidas
+    """Reads the folder containing the NPI and returns a dictionary
+    {province: limitations}"""
+    dict_provincia_to_medidas = {}
+    for file in sorted(os.listdir(path_data)):
+        logger.debug(f"...............\n{file}")
+        path_file = os.path.join(path_data, file)
+        try:
+            df = read_npi_data(path_file)
+        except IsADirectoryError:
+            logger.error(
+                f"File {file} could not be opened as province\n...............\n"
+            )
+            continue
+        except KeyError:
+            logger.error(
+                f"File {file} could not be opened as province\n...............\n"
+            )
+            continue
+        # Filtramos las medidas relevantes
+        df_filtered = filter_relevant_medidas(df, path_taxonomia=path_taxonomia)
+        # Corregimos las fechas
+        df_filtered = process_fecha(df_filtered)
+        # Renombramos la columna unidad
+        df_renamed = rename_unidad(df_filtered)
+        # Formateamos "porcentaje afectado"
+        df_renamed = format_porcentaje_afectado(df_renamed)
+        # Pivotamos la columna "unidad" y le asignamos a cada categoría
+        # su correspondiente "valor"
+        df_pivot = pivot_unidad_valor(df_renamed)
+        # Tomamos sólo las columnas que nos interesan
+        df_output = select_columns(df_pivot)
+        # Construimos el diccionario de medidas y lo guardamos
+        dict_update = return_dict_provincia_to_medidas(df_output)
+        dict_provincia_to_medidas.update(dict_update)
+        logger.debug(f"...............\n")
+    return dict_provincia_to_medidas
 
 
 def main(
@@ -400,10 +492,10 @@ def main(
     path_output : str, optional
 
     """
-    dict_medidas = read_npi_and_build_dict(
+    dict_provincia_to_medidas = read_npi_and_build_dict(
         path_data=path_data, path_taxonomia=path_taxonomia
     )
-    store_dict_medidas(dict_medidas, path_output=path_output)
+    store_dict_provincia_to_medidas(dict_provincia_to_medidas, path_output=path_output)
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import pandas as pd
 
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.config import load_config
+from covidnpi.utils.logging import logger
 from covidnpi.utils.series import (
     cumulative_incidence,
     compute_growth_rate,
@@ -88,9 +89,9 @@ def mobility_report_to_csv(
     for code in mob["code"].unique():
         try:
             provincia = code_to_provincia[code]
-            print(f"{code} - {provincia}")
+            logger.debug(f"{code} - {provincia}")
         except KeyError:
-            print(f"Omitted {code}")
+            logger.debug(f"Omitted {code}")
             continue
         dict_reports = return_reports_of_provincia(mob, code)
         series_casos = return_casos_of_provincia_normed(
