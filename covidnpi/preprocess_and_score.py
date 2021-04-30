@@ -5,7 +5,10 @@ import typer
 from covidnpi.score.score_items import return_dict_score_items
 from covidnpi.score.score_medidas import return_dict_score_medidas
 from covidnpi.utils.config import load_config
-from covidnpi.utils.dictionaries import store_dict_scores, store_dict_provincia_to_medidas
+from covidnpi.utils.dictionaries import (
+    store_dict_scores,
+    store_dict_provincia_to_medidas,
+)
 from covidnpi.utils.logging import logger
 from covidnpi.utils.mobility import mobility_report_to_csv
 from covidnpi.utils.preprocess import read_npi_and_build_dict
@@ -52,9 +55,7 @@ def main(
 
     config = load_config(path_config, "npi")
 
-    dict_scores = return_dict_score_medidas(
-        dict_medidas, fillna_date_end=config["fillna_date_end"]
-    )
+    dict_scores = return_dict_score_medidas(dict_medidas)
     path_score_medidas = os.path.join(path_output, "score_medidas")
     store_dict_scores(dict_scores, path_output=path_score_medidas)
     logger.debug(

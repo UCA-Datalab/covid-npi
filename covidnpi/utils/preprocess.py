@@ -1,4 +1,5 @@
 import os
+from datetime import date
 
 import numpy as np
 import pandas as pd
@@ -71,13 +72,16 @@ DICT_ADD_PROVINCE = {
 DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": ""}
 DICT_CCAA_RENAME = {"autonomico": np.nan}
 
+LIST_MEDIDAS_NO_HORA = ["MV.3", "MV.4", "MV.7"]
+
+DICT_FECHA_RENAME = {"06/112020": "2020-11-06", "ESTADO DE ALARMA": "2021-05-09"}
+
 LIST_COLS_OUTPUT = [
     "comunidad_autonoma",
     "provincia",
     "codigo",
     "fecha_inicio",
     "fecha_fin",
-    "fecha_publicacion_oficial",
     "ambito",
     "porcentaje_afectado",
     "porcentaje",
@@ -85,8 +89,6 @@ LIST_COLS_OUTPUT = [
     "hora",
     "nivel_educacion",
 ]
-
-LIST_MEDIDAS_NO_HORA = ["MV.3", "MV.4", "MV.7"]
 
 
 def _raise_missing_column(df: pd.DataFrame, col: str):
@@ -184,6 +186,64 @@ def filter_relevant_medidas(
     return df_new
 
 
+def process_fecha(
+    df: pd.DataFrame, dict_rename: dict = None, fillna_date_end: str = "today"
+) -> pd.DataFrame:
+    """Define una fecha de inicio y una fecha de final para cada medida
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+    dict_rename : dict, optional
+    fillna_date_end : str, optional
+        Defines how we fill the NaNs in fecha_fin column, by default "today":
+        - "today": NaNs are changed to today date
+        - "start": NaNs are changed to fecha_inicio date
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    """
+    if dict_rename is None:
+        dict_rename = DICT_FECHA_RENAME
+    # Do not modify the original dataframe
+    df = df.copy()
+    # Rename strings
+    for col in ["fecha_inicio", "fecha_fin"]:
+        try:
+            df[col] = df[col].replace(dict_rename)
+        except TypeError:
+            continue
+    # Si no hay fecha de inicio se coge la fecha de publicacion, y sino la fecha de
+    # inicio de la cuarentena
+    list_idx = [str(i + 2) for i in df[df["fecha_inicio"].isna()].index]
+    df["fecha_inicio"] = (
+        df["fecha_inicio"].fillna(df["fecha_publicacion_oficial"]).fillna("2020-03-15")
+    )
+    if len(list_idx) > 0:
+        logger.warning(
+            f"Las siguientes filas no tienen fecha de inicio, "
+            f"se toma la fecha de publicacion o en su ausencia, "
+            f"el inicio de cuarentena: {', '.join(list_idx)}"
+        )
+
+    list_idx = [str(i + 2) for i in df[df["fecha_fin"].isna()].index]
+    if (len(list_idx) > 0) and ("today" in fillna_date_end.lower()):
+        # Llenamos los NaN de fecha_fin con el día de hoy
+        df["fecha_fin"] = df["fecha_fin"].fillna(pd.Timestamp(date.today()))
+        logger.warning(
+            f"Las siguientes filas no tienen fecha final, "
+            f"se toma el dia de hoy como final: {', '.join(list_idx)}"
+        )
+    elif (len(list_idx) > 0) and ("start" in fillna_date_end.lower()):
+        # Llenamos los NaN de fecha_fin con fecha_inicio
+        df["fecha_fin"] = df["fecha_fin"].fillna(df["fecha_inicio"])
+    elif (len(list_idx) > 0):
+        raise ValueError(f"fillna_date_end not valid: {fillna_date_end}")
+    return df
+
+
 def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
     """Rename the values of column unidad"""
     if rename is None:
@@ -192,7 +252,7 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
     df = df.copy()
 
     # Listamos los valores de unidad que no se corresponden a los esperados
-    list_unidad = df['unidad'].dropna().astype(str).unique()
+    list_unidad = df["unidad"].dropna().astype(str).unique()
     list_unidad = sorted(set(list_unidad) - set(DICT_UNIDAD_RENAME.values()))
     if len(list_unidad) > 0:
         logger.warning(
@@ -398,6 +458,8 @@ def read_npi_and_build_dict(
             continue
         # Filtramos las medidas relevantes
         df_filtered = filter_relevant_medidas(df, path_taxonomia=path_taxonomia)
+        # Corregimos las fechas
+        df_filtered = process_fecha(df_filtered)
         # Renombramos la columna unidad
         df_renamed = rename_unidad(df_filtered)
         # Formateamos "porcentaje afectado"
