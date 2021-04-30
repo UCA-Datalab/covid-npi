@@ -4,6 +4,7 @@ import typer
 
 from covidnpi.score.score_items import return_dict_score_items
 from covidnpi.score.score_medidas import return_dict_score_medidas
+from covidnpi.score.score_ambitos import return_dict_score_ambitos
 from covidnpi.utils.config import load_config
 from covidnpi.utils.dictionaries import (
     store_dict_scores,
@@ -59,20 +60,24 @@ def main(
     path_score_medidas = os.path.join(path_output, "score_medidas")
     store_dict_scores(dict_scores, path_output=path_score_medidas)
     logger.debug(
-        f"La puntuación de cada medida por provincia ha sido guardada en "
+        "La puntuación de cada medida por provincia ha sido guardada en "
         f"{path_score_medidas}\n\n...\n\nPasamos a puntuar los items"
     )
 
-    dict_items, dict_ambito = return_dict_score_items(
-        dict_scores, path_taxonomia=path_taxonomia
-    )
+    dict_items = return_dict_score_items(dict_scores)
     path_score_items = os.path.join(path_output, "score_items")
-    path_score_ambito = os.path.join(path_output, "score_ambito")
     store_dict_scores(dict_items, path_output=path_score_items)
-    store_dict_scores(dict_ambito, path_output=path_score_ambito)
     logger.debug(
-        f"La puntuación de cada item por provincia ha sido guardada en "
-        f"{path_score_items}\nY también calculada por porcentaje afectado, en "
+        "La puntuación de cada item por provincia ha sido guardada en "
+        f"{path_score_items}\n\n...\n\nPasamos a puntuar los ambitos"
+    )
+
+    dict_ambito = return_dict_score_ambitos(dict_items, path_taxonomia=path_taxonomia)
+    path_score_ambito = os.path.join(path_output, "score_ambito")
+    store_dict_scores(dict_ambito, path_output=path_score_ambito)
+
+    logger.debug(
+        "La puntuación de cada ambito ha sido guardada en "
         f"{path_score_ambito}\n\n...\n\nPasamos a guardar la informacion de movilidad"
     )
 
