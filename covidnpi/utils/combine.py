@@ -77,10 +77,10 @@ def add_province_code(
 
 def add_ccaa(df: pd.DataFrame, path_ccaa: str = "data/CCAA.csv") -> pd.DataFrame:
     ccaa = pd.read_csv(path_ccaa, dtype={"Codigo": str, "Cod_CCAA": str})
-    code_to_ccaa = dict(zip(ccaa["Codigo"], ccaa["CCAA"]))
+    code_to_ccaa = dict(zip(ccaa["Codigo"], ccaa["CCAA"].str.replace('"', '')))
     df.insert(loc=1, column="ccaa", value=df["cod_prov"].map(code_to_ccaa))
     code_to_codccaa = dict(zip(ccaa["Codigo"], ccaa["Cod_CCAA"]))
-    df.insert(loc=1, column="cod_ccaa", value=df["cod_prov"].map(code_to_codccaa))
+    df.insert(loc=2, column="cod_ccaa", value=df["cod_prov"].map(code_to_codccaa))
     return df
 
 
