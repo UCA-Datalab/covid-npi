@@ -53,13 +53,13 @@ def add_province_code(df: pd.DataFrame, path_config: str = "covidnpi/config.toml
     code_to_postal = reverse_dictionary(postal_to_code)
     # Check for islands
     unidad = df["provincia"].copy()
-    province = df["provincia"].map(isle_to_province)
-    df["unidad_territorial"] = unidad
+    province = df["provincia"].replace(isle_to_province)
+    df.insert(loc=1, column="unidad_territorial", value=unidad)
     df.loc[unidad == province, "unidad_territorial"] = np.nan
     # Get codes
-    code = province.map(province_to_code)
+    code = province.replace(province_to_code)
     # Replace province name and add code
-    df["provincia"] = code.map(code_to_province)
+    df["provincia"] = code.replace(code_to_province)
     df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
     # Raise warnings
     drop_prov = unidad[df["provincia"].isna()].dropna().unique()
