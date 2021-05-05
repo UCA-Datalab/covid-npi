@@ -44,27 +44,34 @@ def combine_csv(path: Union[Path, str], colname: str) -> pd.DataFrame:
     return pd.concat(df_dict, names=[colname]).reset_index().drop(columns="level_1")
 
 
-def add_province_code(df: pd.DataFrame, path_config: str = "covidnpi/config.toml"):
+def add_unidad_territorial(
+    df: pd.DataFrame, path_config: str = "covidnpi/config.toml"
+) -> pd.DataFrame:
     # Load all conversion dictionaries
     isle_to_province = load_config(path_config, "isla_to_provincia")
+    # Check for islands
+    unidad = df["provincia"].copy()
+    province = df["provincia"].replace(isle_to_province)
+    # Create unidad_territorial column, that contains the islands
+    df.insert(loc=2, column="unidad_territorial", value=unidad)
+    df.loc[unidad == province, "unidad_territorial"] = np.nan
+    df["provincia"] = province
+    return df
+
+
+def add_province_code(
+    df: pd.DataFrame, path_config: str = "covidnpi/config.toml"
+) -> pd.DataFrame:
+    # Load all conversion dictionaries
     province_to_code = load_config(path_config, "provincia_to_code")
     code_to_province = load_config(path_config, "code_to_provincia")
     postal_to_code = load_config(path_config, "postal_to_code")
     code_to_postal = reverse_dictionary(postal_to_code)
-    # Check for islands
-    unidad = df["provincia"].copy()
-    province = df["provincia"].replace(isle_to_province)
-    df.insert(loc=2, column="unidad_territorial", value=unidad)
-    df.loc[unidad == province, "unidad_territorial"] = np.nan
     # Get codes
-    code = province.replace(province_to_code)
+    code = df["provincia"].replace(province_to_code)
     # Replace province name and add code
     df["provincia"] = code.replace(code_to_province)
     df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
-    # Raise warnings
-    drop_prov = unidad[df["provincia"].isna()].dropna().unique()
-    if len(drop_prov) > 0:
-        logger.warning(f"Provincias sin codigo: {', '.join(drop_prov)}")
     return df
 
 
@@ -74,7 +81,7 @@ def combine_csv_ambito(
     df = combine_csv(path_data, "provincia")
     # Tomar las columnas relevantes y ordenar por fecha
     df = df[COLS_AMBITO].sort_values(["fecha", "provincia"])
-    df = add_province_code(df)
+    df = df.pipe(add_unidad_territorial).pipe(add_province_code)
     df.to_csv(path_output, index=False)
 
 
