@@ -50,7 +50,7 @@ def add_province_code(df: pd.DataFrame, path_config: str = "covidnpi/config.toml
     code = df["provincia"].map(province_to_code)
     # Replace province name and add code
     df["provincia"] = code.map(code_to_province)
-    df = df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
+    df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
     return df
 
 
