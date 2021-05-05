@@ -1,7 +1,11 @@
-import pandas as pd
-import typer
 from pathlib import Path
 from typing import Union
+
+import pandas as pd
+import typer
+
+from covidnpi.utils.config import load_config
+from covidnpi.utils.dictionaries import reverse_dictionary
 
 COLS_AMBITO = [
     "fecha",
@@ -36,6 +40,15 @@ def combine_csv(path: Union[Path, str], colname: str) -> pd.DataFrame:
     """
     df_dict = {fin.stem: pd.read_csv(fin) for fin in Path(path).glob("*.csv")}
     return pd.concat(df_dict, names=[colname]).reset_index().drop(columns="level_1")
+
+
+def add_province_code(df: pd.DataFrame, path_config: str = "covidnpi/config.toml"):
+    province_to_code = load_config(path_config, "provincia_to_code")
+    postal_to_code = load_config(path_config, "postal_to_code")
+    code_to_postal = reverse_dictionary(postal_to_code)
+    code = df["province"].map(province_to_code)
+    df["postal"] = code.map(code_to_postal)
+    return df
 
 
 def combine_csv_ambito(
