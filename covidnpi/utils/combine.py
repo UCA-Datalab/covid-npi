@@ -6,6 +6,7 @@ import typer
 
 from covidnpi.utils.config import load_config
 from covidnpi.utils.dictionaries import reverse_dictionary
+from covidnpi.utils.logging import logger
 
 COLS_AMBITO = [
     "fecha",
@@ -48,9 +49,15 @@ def add_province_code(df: pd.DataFrame, path_config: str = "covidnpi/config.toml
     postal_to_code = load_config(path_config, "postal_to_code")
     code_to_postal = reverse_dictionary(postal_to_code)
     code = df["provincia"].map(province_to_code)
+    # Store old province names
+    old_province = df["provincia"].copy()
     # Replace province name and add code
     df["provincia"] = code.map(code_to_province)
     df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
+    # Raise warnings
+    drop_prov = old_province[df["provincia"].isna()].dropna().unique()
+    if len(drop_prov) > 0:
+        logger.warning(f"Provincias sin codigo: {', '.join(drop_prov)}")
     return df
 
 
