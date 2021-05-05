@@ -54,7 +54,7 @@ def add_province_code(df: pd.DataFrame, path_config: str = "covidnpi/config.toml
     # Check for islands
     unidad = df["provincia"].copy()
     province = df["provincia"].replace(isle_to_province)
-    df.insert(loc=1, column="unidad_territorial", value=unidad)
+    df.insert(loc=2, column="unidad_territorial", value=unidad)
     df.loc[unidad == province, "unidad_territorial"] = np.nan
     # Get codes
     code = province.replace(province_to_code)
