@@ -178,6 +178,16 @@ vizcaya = "BI"
 zamora = "ZA"
 zaragoza = "Z"
 
+[isla_to_provincia]
+elhierro = "grancanaria"
+formentera = "tenerife"
+fuerteventura = "grancanaria"
+ibiza = "tenerife"
+lagomera = "grancanaria"
+lanzarote = "grancanaria"
+menorca = "tenerife"
+
+
 
 [code_to_poblacion]
 AB = 388270

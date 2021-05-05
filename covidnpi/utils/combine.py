@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Union
 
+import numpy as np
 import pandas as pd
 import typer
 
@@ -44,18 +45,24 @@ def combine_csv(path: Union[Path, str], colname: str) -> pd.DataFrame:
 
 
 def add_province_code(df: pd.DataFrame, path_config: str = "covidnpi/config.toml"):
+    # Load all conversion dictionaries
+    isle_to_province = load_config(path_config, "isla_to_provincia")
     province_to_code = load_config(path_config, "provincia_to_code")
     code_to_province = load_config(path_config, "code_to_provincia")
     postal_to_code = load_config(path_config, "postal_to_code")
     code_to_postal = reverse_dictionary(postal_to_code)
-    code = df["provincia"].map(province_to_code)
-    # Store old province names
-    old_province = df["provincia"].copy()
+    # Check for islands
+    unidad = df["provincia"].copy()
+    province = df["provincia"].map(isle_to_province)
+    df["unidad_territorial"] = unidad
+    df["unidad_territorial", unidad == province] = np.nan
+    # Get codes
+    code = province.map(province_to_code)
     # Replace province name and add code
     df["provincia"] = code.map(code_to_province)
     df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
     # Raise warnings
-    drop_prov = old_province[df["provincia"].isna()].dropna().unique()
+    drop_prov = unidad[df["provincia"].isna()].dropna().unique()
     if len(drop_prov) > 0:
         logger.warning(f"Provincias sin codigo: {', '.join(drop_prov)}")
     return df
