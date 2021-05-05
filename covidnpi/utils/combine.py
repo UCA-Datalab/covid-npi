@@ -57,6 +57,7 @@ def combine_csv_ambito(
     df = combine_csv(path_data, "provincia")
     # Tomar las columnas relevantes y ordenar por fecha
     df = df[COLS_AMBITO].sort_values(["fecha", "provincia"])
+    df = add_province_code(df)
     df.to_csv(path_output, index=False)
 
 
