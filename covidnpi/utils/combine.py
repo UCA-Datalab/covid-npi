@@ -46,7 +46,7 @@ def add_province_code(df: pd.DataFrame, path_config: str = "covidnpi/config.toml
     province_to_code = load_config(path_config, "provincia_to_code")
     postal_to_code = load_config(path_config, "postal_to_code")
     code_to_postal = reverse_dictionary(postal_to_code)
-    code = df["province"].map(province_to_code)
+    code = df["provincia"].map(province_to_code)
     df["postal"] = code.map(code_to_postal)
     return df
 
