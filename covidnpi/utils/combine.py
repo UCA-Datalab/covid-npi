@@ -75,10 +75,12 @@ def add_province_code(
     return df
 
 
-def add_ccaa_code(df: pd.DataFrame, path_ccaa: str = "data/CCAA.csv") -> pd.DataFrame:
-    ccaa = pd.read_csv(path_ccaa)
-    code_to_ccaa = dict(zip(ccaa["Codigo"], ccaa["Cod_CCAA"]))
-    df.insert(loc=1, column="cod_ccaa", value=df["cod_prov"].map(code_to_ccaa))
+def add_ccaa(df: pd.DataFrame, path_ccaa: str = "data/CCAA.csv") -> pd.DataFrame:
+    ccaa = pd.read_csv(path_ccaa, dtype={"Codigo": str, "Cod_CCAA": str})
+    code_to_ccaa = dict(zip(ccaa["Codigo"], ccaa["CCAA"]))
+    df.insert(loc=1, column="ccaa", value=df["cod_prov"].map(code_to_ccaa))
+    code_to_codccaa = dict(zip(ccaa["Codigo"], ccaa["Cod_CCAA"]))
+    df.insert(loc=1, column="cod_ccaa", value=df["cod_prov"].map(code_to_codccaa))
     return df
 
 
@@ -88,7 +90,7 @@ def combine_csv_ambito(
     df = combine_csv(path_data, "provincia")
     # Tomar las columnas relevantes y ordenar por fecha
     df = df[COLS_AMBITO].sort_values(["fecha", "provincia"])
-    df = df.pipe(add_unidad_territorial).pipe(add_province_code).pipe(add_ccaa_code)
+    df = df.pipe(add_unidad_territorial).pipe(add_province_code).pipe(add_ccaa)
     df.to_csv(path_output, index=False)
 
 
