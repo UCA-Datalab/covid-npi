@@ -68,10 +68,17 @@ def add_province_code(
     postal_to_code = load_config(path_config, "postal_to_code")
     code_to_postal = reverse_dictionary(postal_to_code)
     # Get codes
-    code = df["provincia"].replace(province_to_code)
+    code = df["provincia"].map(province_to_code)
     # Replace province name and add code
-    df["provincia"] = code.replace(code_to_province)
+    df["provincia"] = code.map(code_to_province)
     df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
+    return df
+
+
+def add_ccaa_code(df: pd.DataFrame, path_ccaa: str = "data/CCAA.csv") -> pd.DataFrame:
+    ccaa = pd.read_csv(path_ccaa)
+    code_to_ccaa = dict(zip(ccaa["Codigo"], ccaa["Cod_CCAA"]))
+    df.insert(loc=1, column="cod_ccaa", value=df["cod_prov"].map(code_to_ccaa))
     return df
 
 
