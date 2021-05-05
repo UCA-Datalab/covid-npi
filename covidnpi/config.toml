@@ -67,7 +67,6 @@ link = "https://cnecovid.isciii.es/covid19/resources/casos_tecnica_provincia.csv
 51 = "CE"
 52 = "ML"
 
-
 [code_to_provincia]
 A = "Alacant"
 AB = "Albacete"
@@ -186,8 +185,6 @@ ibiza = "tenerife"
 lagomera = "grancanaria"
 lanzarote = "grancanaria"
 menorca = "tenerife"
-
-
 
 [code_to_poblacion]
 AB = 388270
