@@ -7,7 +7,7 @@ import typer
 import xlrd
 
 from covidnpi.utils.dictionaries import store_dict_provincia_to_medidas
-from covidnpi.utils.logging import logger, raise_type_warning, raise_value_warning
+from covidnpi.utils.log import logger, raise_type_warning, raise_value_warning
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE"]

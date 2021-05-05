@@ -10,7 +10,7 @@ from covidnpi.utils.dictionaries import (
     store_dict_scores,
     store_dict_provincia_to_medidas,
 )
-from covidnpi.utils.logging import logger
+from covidnpi.utils.log import logger
 from covidnpi.utils.mobility import mobility_report_to_csv
 from covidnpi.utils.preprocess import read_npi_and_build_dict
 from covidnpi.utils.taxonomia import PATH_TAXONOMIA

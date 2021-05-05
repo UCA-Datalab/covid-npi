@@ -3,7 +3,7 @@ import json
 import typer
 
 from covidnpi.utils.config import load_config
-from covidnpi.utils.logging import logger
+from covidnpi.utils.log import logger
 from covidnpi.web.mongo import load_mongo
 
 

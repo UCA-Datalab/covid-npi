@@ -6,7 +6,7 @@ import typer
 
 from covidnpi.utils.config import load_config
 from covidnpi.utils.dictionaries import reverse_dictionary
-from covidnpi.utils.logging import logger
+from covidnpi.utils.log import logger
 
 COLS_AMBITO = [
     "fecha",
