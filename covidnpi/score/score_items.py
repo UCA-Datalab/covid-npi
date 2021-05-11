@@ -5,7 +5,7 @@ import pandas as pd
 import typer
 
 from covidnpi.utils.dictionaries import store_dict_scores, load_dict_scores
-from covidnpi.utils.logging import logger
+from covidnpi.utils.log import logger
 
 
 def score_items(df: pd.DataFrame):

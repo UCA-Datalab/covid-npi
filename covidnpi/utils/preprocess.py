@@ -7,7 +7,7 @@ import typer
 import xlrd
 
 from covidnpi.utils.dictionaries import store_dict_provincia_to_medidas
-from covidnpi.utils.logging import logger, raise_type_warning, raise_value_warning
+from covidnpi.utils.log import logger, raise_type_warning, raise_value_warning
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE"]
@@ -252,15 +252,6 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
 
     df = df.copy()
 
-    # Listamos los valores de unidad que no se corresponden a los esperados
-    list_unidad = df["unidad"].dropna().astype(str).unique()
-    list_unidad = sorted(set(list_unidad) - set(DICT_UNIDAD_RENAME.values()))
-    if len(list_unidad) > 0:
-        logger.warning(
-            f"Valores no esperados encontrados en la columna 'unidad': "
-            f"{', '.join(list_unidad)}"
-        )
-
     # If any value contains the exact word, change value to word
     list_rename = set(rename.values())
     for word in list_rename:
@@ -271,6 +262,15 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
 
     # Rename the rest
     df["unidad"] = df["unidad"].replace(rename)
+
+    # Listamos los valores de unidad que no se corresponden a los esperados
+    list_unidad = df["unidad"].dropna().astype(str).unique()
+    list_unidad = sorted(set(list_unidad) - list_rename)
+    if len(list_unidad) > 0:
+        logger.warning(
+            f"Valores no esperados encontrados en la columna 'unidad': "
+            f"{', '.join(list_unidad)}"
+        )
     return df
 
 

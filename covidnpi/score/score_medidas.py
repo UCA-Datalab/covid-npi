@@ -6,7 +6,7 @@ import pandas as pd
 import typer
 
 from covidnpi.utils.dictionaries import store_dict_scores, load_dict_medidas
-from covidnpi.utils.logging import logger
+from covidnpi.utils.log import logger
 from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
