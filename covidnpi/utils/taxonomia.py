@@ -1,6 +1,6 @@
 import pandas as pd
 
-PATH_TAXONOMIA = "datos_NPI/Taxonomía_07022021.xlsx"
+PATH_TAXONOMIA = "datos_NPI/Taxonomía_11052021.xlsx"
 
 
 def read_taxonomia(path_taxonomia: str = PATH_TAXONOMIA) -> pd.DataFrame:
