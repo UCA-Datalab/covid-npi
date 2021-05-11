@@ -252,15 +252,6 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
 
     df = df.copy()
 
-    # Listamos los valores de unidad que no se corresponden a los esperados
-    list_unidad = df["unidad"].dropna().astype(str).unique()
-    list_unidad = sorted(set(list_unidad) - set(DICT_UNIDAD_RENAME.values()))
-    if len(list_unidad) > 0:
-        logger.warning(
-            f"Valores no esperados encontrados en la columna 'unidad': "
-            f"{', '.join(list_unidad)}"
-        )
-
     # If any value contains the exact word, change value to word
     list_rename = set(rename.values())
     for word in list_rename:
@@ -271,6 +262,15 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
 
     # Rename the rest
     df["unidad"] = df["unidad"].replace(rename)
+
+    # Listamos los valores de unidad que no se corresponden a los esperados
+    list_unidad = df["unidad"].dropna().astype(str).unique()
+    list_unidad = sorted(set(list_unidad) - list_rename)
+    if len(list_unidad) > 0:
+        logger.warning(
+            f"Valores no esperados encontrados en la columna 'unidad': "
+            f"{', '.join(list_unidad)}"
+        )
     return df
 
 
