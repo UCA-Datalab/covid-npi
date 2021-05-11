@@ -111,7 +111,10 @@ def return_item_ponderacion(
 ) -> pd.DataFrame:
     taxonomia = read_taxonomia(path_taxonomia)
     # Fill missing names with "variable" + item count
-    mask_nan = taxonomia["nombre"].isna()
+    try:
+        mask_nan = taxonomia["nombre"].isna()
+    except KeyError:
+        raise KeyError("La columna 'nombre' falta en la taxonomia")
 
     taxonomia.loc[mask_nan, "nombre"] = (
         taxonomia.loc[mask_nan, "variable"].str[:3].str.upper()
