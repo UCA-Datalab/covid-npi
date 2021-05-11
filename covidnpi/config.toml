@@ -14,15 +14,15 @@ movavg = 7
 link = "https://cnecovid.isciii.es/covid19/resources/casos_tecnica_provincia.csv"
 
 [postal_to_code]
-1 = "VI"
-2 = "AB"
-3 = "A"
-4 = "AL"
-5 = "AV"
-6 = "BA"
-7 = "PM"
-8 = "B"
-9 = "BU"
+01 = "VI"
+02 = "AB"
+03 = "A"
+04 = "AL"
+05 = "AV"
+06 = "BA"
+07 = "PM"
+08 = "B"
+09 = "BU"
 10 = "CC"
 11 = "CA"
 12 = "CS"
@@ -66,7 +66,6 @@ link = "https://cnecovid.isciii.es/covid19/resources/casos_tecnica_provincia.csv
 50 = "Z"
 51 = "CE"
 52 = "ML"
-
 
 [code_to_provincia]
 A = "Alacant"
@@ -159,6 +158,7 @@ navarra = "NA"
 orense = "OR"
 asturias = "O"
 palencia = "P"
+grancanaria = "GC"
 gran_canaria = "GC"
 pontevedra = "PO"
 salamanca = "SA"
@@ -168,6 +168,7 @@ segovia = "SG"
 sevilla = "SE"
 soria = "SO"
 tarragona = "T"
+tenerife = "TF"
 teruel = "TE"
 toledo = "TO"
 valencia = "V"
@@ -176,6 +177,14 @@ vizcaya = "BI"
 zamora = "ZA"
 zaragoza = "Z"
 
+[isla_to_provincia]
+elhierro = "grancanaria"
+formentera = "tenerife"
+fuerteventura = "grancanaria"
+ibiza = "tenerife"
+lagomera = "grancanaria"
+lanzarote = "grancanaria"
+menorca = "tenerife"
 
 [code_to_poblacion]
 AB = 388270

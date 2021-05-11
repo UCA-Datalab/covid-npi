@@ -49,3 +49,8 @@ def load_dict_scores(path_scores: str = "output/score_medidas"):
         df = pd.read_csv(path_file, index_col="fecha")
         dict_scores.update({provincia: df})
     return dict_scores
+
+
+def reverse_dictionary(d: dict) -> dict:
+    reversed_dictionary = {value: key for (key, value) in d.items()}
+    return reversed_dictionary

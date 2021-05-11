@@ -4,7 +4,7 @@ import pandas as pd
 
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.config import load_config
-from covidnpi.utils.logging import logger
+from covidnpi.utils.log import logger
 from covidnpi.utils.series import (
     cumulative_incidence,
     compute_growth_rate,
