@@ -46,7 +46,7 @@ def return_ambits_by_province(
             "y_max": 1,
             "y_min": 0,
             "x_max": x[-1],
-            "X_min": DATE_MIN,
+            "x_min": DATE_MIN,
         }
         dict_plot.update({ambit: dict_ambit})
 
@@ -97,7 +97,7 @@ def return_provinces_by_ambit(
             "y_max": 1,
             "y_min": 0,
             "x_max": x[-1],
-            "X_min": DATE_MIN,
+            "x_min": DATE_MIN,
         }
         dict_plot.update({code: dict_code})
 
@@ -136,7 +136,7 @@ def return_incidence_of_province(code: str, path_config: str = "covidnpi/config.
         "y_max": 800,
         "y_min": 0,
         "x_max": x_max,
-        "X_min": DATE_MIN,
+        "x_min": DATE_MIN,
     }
     return dict_plot
 
@@ -172,6 +172,6 @@ def return_growth_of_province(code: str, path_config: str = "covidnpi/config.tom
         "y_max": 200,
         "y_min": -100,
         "x_max": x_max,
-        "X_min": DATE_MIN,
+        "x_min": DATE_MIN,
     }
     return dict_plot
