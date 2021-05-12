@@ -77,10 +77,13 @@ def return_provinces_by_ambit(
 
     dict_plot = {}
 
+    # Initialize x
+    x = [DATE_MIN]
+
     for code in codes:
         dict_provincia = col.find_one({"code": code})
-        x = dict_provincia["fechas"]
         try:
+            x = dict_provincia["fechas"]
             y = dict_provincia[ambit]
         except KeyError:
             print(f"[ERROR] Ambito '{ambit}' no existe para '{code}'")
