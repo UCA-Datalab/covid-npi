@@ -1,5 +1,6 @@
 from covidnpi.utils.config import load_config
 from covidnpi.web.mongo import load_mongo
+from covidnpi.utils.log import logger
 
 DATE_MIN = "2020-07-01"
 
@@ -35,9 +36,11 @@ def return_ambits_by_province(
         try:
             y = dict_provincia[ambit]
         except KeyError:
-            raise KeyError(f"Ambito '{ambit}' no existe")
+            logger.error(f"Ambito '{ambit}' no existe")
+            y = [0] * len(x)
         except TypeError:
-            raise KeyError(f"Provincia '{code}' no encontrada")
+            logger.error(f"Provincia '{code}' no encontrada")
+            y = [0] * len(x)
         dict_ambit = {
             "x": x,
             "y": y,
@@ -77,13 +80,15 @@ def return_provinces_by_ambit(
 
     for code in codes:
         dict_provincia = col.find_one({"code": code})
+        x = dict_provincia["fechas"]
         try:
-            x = dict_provincia["fechas"]
             y = dict_provincia[ambit]
         except KeyError:
-            raise KeyError(f"Ambito '{ambit}' no existe")
+            logger.error(f"Ambito '{ambit}' no existe")
+            y = [0] * len(x)
         except TypeError:
-            raise KeyError(f"Provincia '{code}' no encontrada")
+            logger.error(f"Provincia '{code}' no encontrada")
+            y = [0] * len(x)
         dict_code = {
             "x": x,
             "y": y,
