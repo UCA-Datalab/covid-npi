@@ -35,7 +35,7 @@ def return_ambits_by_province(
         try:
             y = dict_provincia[ambit]
         except KeyError:
-            print(f"[ERROR] Ambito '{ambit}' no existe")
+            print(f"[ERROR] Ambito '{ambit}' no existe para '{code}'")
             y = [0] * len(x)
         except TypeError:
             print(f"[ERROR] Provincia '{code}' no encontrada")
@@ -83,7 +83,7 @@ def return_provinces_by_ambit(
         try:
             y = dict_provincia[ambit]
         except KeyError:
-            print(f"[ERROR] Ambito '{ambit}' no existe")
+            print(f"[ERROR] Ambito '{ambit}' no existe para '{code}'")
             y = [0] * len(x)
         except TypeError:
             print(f"[ERROR] Provincia '{code}' no encontrada")
