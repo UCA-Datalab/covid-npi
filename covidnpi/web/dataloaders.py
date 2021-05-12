@@ -124,12 +124,18 @@ def return_incidence_of_province(code: str, path_config: str = "covidnpi/config.
     col = mongo.get_col("casos")
 
     x = col.find_one({"code": code})
+    try:
+        x_max = x[-1]
+    except KeyError:
+        print(f"[ERROR] El codigo '{code}' de 'casos' no tiene 'x'")
+        x_max = DATE_MIN
+
     dict_plot = {
         "x": x["fechas"],
         "y": x["casos"],
         "y_max": 800,
         "y_min": 0,
-        "x_max": x[-1],
+        "x_max": x_max,
         "X_min": DATE_MIN,
     }
     return dict_plot
