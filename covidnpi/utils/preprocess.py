@@ -129,6 +129,7 @@ def read_npi_data(
 
     for sheet in LIST_BASE_SHEET:
         try:
+            # Read excel - dates are parsed automatically
             df = pd.read_excel(path_com, sheet_name=sheet)
             break
         except xlrd.biffh.XLRDError:
@@ -343,8 +344,8 @@ def format_porcentaje_afectado(df: pd.DataFrame) -> pd.DataFrame:
             f"Maximo: {df['porcentaje_afectado'].dropna().max()}. Se multiplican por 100"
         )
         df["porcentaje_afectado"] = df["porcentaje_afectado"] * 100
-    elif df["porcentaje_afectado"].dropna().min() < 1:
-        list_idx = df.query("porcentaje_afectado < 1").index
+    elif 0 < df["porcentaje_afectado"].dropna().min() < 1:
+        list_idx = df.query("0 < porcentaje_afectado < 1").index
         raise_value_warning(df, list_idx, "porcentaje_afectado")
     # Round to one decimal
     new_col = df["porcentaje_afectado"].astype(float).round(1)
