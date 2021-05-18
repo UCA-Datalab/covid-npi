@@ -136,3 +136,5 @@ dmypy.json
 output/*
 .idea/*
 datos_*
+/config.toml
+/log.out
