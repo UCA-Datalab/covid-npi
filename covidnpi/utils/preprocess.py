@@ -275,7 +275,7 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
     return df
 
 
-def format_hora(df: pd.DataFrame, date_format: str = "%H:%M:%S") -> pd.DataFrame:
+def format_hora(df: pd.DataFrame) -> pd.DataFrame:
     """Formats the hora column, to datetime"""
     # We do not want to modify the original dataframe
     df = df.copy()
@@ -297,10 +297,10 @@ def format_hora(df: pd.DataFrame, date_format: str = "%H:%M:%S") -> pd.DataFrame
     )
     # Convert to date format
     try:
-        hora = pd.to_datetime(df["hora"], format=date_format, errors="raise")
+        hora = pd.to_datetime(df["hora"], format="%H:%M:%S", errors="raise")
     except (TypeError, ValueError) as e:
         hora = pd.Series(
-            pd.to_datetime(df["hora"], format=date_format, errors="coerce")
+            pd.to_datetime(df["hora"], format="%H:%M:%S", errors="coerce")
         )
         list_idx = df.loc[hora.isna(), "hora"].dropna().index.tolist()
         # Filtramos aquellos warning que no interesan,
