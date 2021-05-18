@@ -40,7 +40,7 @@ def score_items(df: pd.DataFrame):
     df_item["COM_hor"] = df[["CO.1", "CO.7"]].max(axis=1)
     df_item["COM_esp"] = df[["CO.1", "CO.2"]].max(axis=1)
     df_item["COM_fis"] = df[["CO.1", "CO.3"]].max(axis=1)
-    df_item["COM_cent"] = df[["CO.1", "CO.4", "CO.9"]].max(axis=1)
+    df_item["COM_cent"] = df[["CO.1", "CO.4", "CO.9", "CO.8"]].max(axis=1)
     df_item["COM_cczon"] = df[["CO.1", "CO.4", "CO.5"]].max(axis=1)
     df_item["COM_libre"] = df[["CO.1", "CO.6", "CO.10"]].max(axis=1)
 
@@ -62,8 +62,8 @@ def score_items(df: pd.DataFrame):
         ]
     )
     df_item["CUL_sal"] = df[["CD.5", "CD.11"]].max(axis=1)
-    df_item["CUL_tor"] = df[["CD.17", "CD.14"]].max(axis=1)
-    df_item["CUL_zoo"] = df[["CD.16", "CD.15"]].max(axis=1)
+    df_item["CUL_tor"] = df[["CD.3", "CD.17", "CD.14"]].max(axis=1)
+    df_item["CUL_zoo"] = df[["CD.3", "CD.16", "CD.15"]].max(axis=1)
 
     # Restauración interior
     df_item["RIN_afo"] = df[["RH.1", "RH.2", "RH.3", "RH.7"]].max(axis=1)
