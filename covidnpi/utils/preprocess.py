@@ -282,19 +282,23 @@ def format_hora(df: pd.DataFrame) -> pd.DataFrame:
     # If "hora" is empty, return original
     if df["hora"].isnull().all():
         return df
-    # Remove whitespaces from string
-    df["hora"] = df["hora"].str.replace(" ", "")
-    # Change ranges HH:MM-HH:MM to last HH:MM
-    mask_range = (
-        df["hora"]
-        .str.contains(
-            "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+    # The following will only run when the column "hora" is a string
+    try:
+        # Remove whitespaces from string
+        df["hora"] = df["hora"].str.replace(" ", "").astype(str)
+        # Change ranges HH:MM-HH:MM to last HH:MM
+        mask_range = (
+            df["hora"]
+            .str.contains(
+                "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+            )
+            .fillna(False)
         )
-        .fillna(False)
-    )
-    df.loc[mask_range, "hora"] = (
-        df.loc[mask_range, "hora"].str.split("-").str[-1] + ":00"
-    )
+        df.loc[mask_range, "hora"] = (
+            df.loc[mask_range, "hora"].str.split("-").str[-1] + ":00"
+        )
+    except AttributeError:
+        pass
     # Convert to date format
     try:
         hora = pd.to_datetime(df["hora"], format="%H:%M:%S", errors="raise")
