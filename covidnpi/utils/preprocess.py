@@ -23,8 +23,10 @@ DICT_PORCENTAJE = {
 }
 
 DICT_FILL_PROVINCIA = {
+    "CTB": "cantabria",
     "CEU": "ceuta",
     "MEL": "melilla",
+    "MUR": "murcia",
     "RIO": "rioja_la",
 }
 
@@ -169,9 +171,14 @@ def read_npi_data(
     )
 
     # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
-    for key, value in DICT_FILL_PROVINCIA.items():
-        if f"Medidas_{key}" in path_com:
-            df["provincia"] = df["provincia"].fillna(value)
+    if df["provincia"].isnull().all():
+        for key, value in DICT_FILL_PROVINCIA.items():
+            if f"Medidas_{key}" in path_com:
+                df["provincia"] = df["provincia"].fillna(value)
+                logger.warning(f"La columna 'provincia' se ha rellenado con '{value}'")
+                break
+        else:
+            logger.warning("La columna 'provincia' no ha sido rellenada")
     return df
 
 
@@ -303,9 +310,7 @@ def format_hora(df: pd.DataFrame) -> pd.DataFrame:
     try:
         hora = pd.to_datetime(df["hora"], format="%H:%M:%S", errors="raise")
     except (TypeError, ValueError) as e:
-        hora = pd.Series(
-            pd.to_datetime(df["hora"], format="%H:%M:%S", errors="coerce")
-        )
+        hora = pd.Series(pd.to_datetime(df["hora"], format="%H:%M:%S", errors="coerce"))
         list_idx = df.loc[hora.isna(), "hora"].dropna().index.tolist()
         # Filtramos aquellos warning que no interesan,
         # porque son medidas que no aplican la columna "hora"
