@@ -23,8 +23,10 @@ DICT_PORCENTAJE = {
 }
 
 DICT_FILL_PROVINCIA = {
+    "CTB": "cantabria",
     "CEU": "ceuta",
     "MEL": "melilla",
+    "MUR": "murcia",
     "RIO": "rioja_la",
 }
 
@@ -129,6 +131,7 @@ def read_npi_data(
 
     for sheet in LIST_BASE_SHEET:
         try:
+            # Read excel - dates are parsed automatically
             df = pd.read_excel(path_com, sheet_name=sheet)
             break
         except xlrd.biffh.XLRDError:
@@ -168,9 +171,14 @@ def read_npi_data(
     )
 
     # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
-    for key, value in DICT_FILL_PROVINCIA.items():
-        if f"Medidas_{key}" in path_com:
-            df["provincia"] = df["provincia"].fillna(value)
+    if df["provincia"].isnull().all():
+        for key, value in DICT_FILL_PROVINCIA.items():
+            if f"Medidas_{key}" in path_com:
+                df["provincia"] = df["provincia"].fillna(value)
+                logger.warning(f"La columna 'provincia' se ha rellenado con '{value}'")
+                break
+        else:
+            logger.warning("La columna 'provincia' no ha sido rellenada")
     return df
 
 
@@ -274,20 +282,35 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
     return df
 
 
-def format_hora(df: pd.DataFrame, date_format: str = "%H:%M:%S") -> pd.DataFrame:
+def format_hora(df: pd.DataFrame) -> pd.DataFrame:
     """Formats the hora column, to datetime"""
     # We do not want to modify the original dataframe
     df = df.copy()
     # If "hora" is empty, return original
     if df["hora"].isnull().all():
         return df
+    # The following will only run when the column "hora" is a string
+    try:
+        # Remove whitespaces from string
+        df["hora"] = df["hora"].str.replace(" ", "").astype(str)
+        # Change ranges HH:MM-HH:MM to last HH:MM
+        mask_range = (
+            df["hora"]
+            .str.contains(
+                "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+            )
+            .fillna(False)
+        )
+        df.loc[mask_range, "hora"] = (
+            df.loc[mask_range, "hora"].str.split("-").str[-1] + ":00"
+        )
+    except AttributeError:
+        pass
     # Convert to date format
     try:
-        hora = pd.to_datetime(df["hora"], format=date_format, errors="raise")
+        hora = pd.to_datetime(df["hora"], format="%H:%M:%S", errors="raise")
     except (TypeError, ValueError) as e:
-        hora = pd.Series(
-            pd.to_datetime(df["hora"], format=date_format, errors="coerce")
-        )
+        hora = pd.Series(pd.to_datetime(df["hora"], format="%H:%M:%S", errors="coerce"))
         list_idx = df.loc[hora.isna(), "hora"].dropna().index.tolist()
         # Filtramos aquellos warning que no interesan,
         # porque son medidas que no aplican la columna "hora"
@@ -343,8 +366,8 @@ def format_porcentaje_afectado(df: pd.DataFrame) -> pd.DataFrame:
             f"Maximo: {df['porcentaje_afectado'].dropna().max()}. Se multiplican por 100"
         )
         df["porcentaje_afectado"] = df["porcentaje_afectado"] * 100
-    elif df["porcentaje_afectado"].dropna().min() < 1:
-        list_idx = df.query("porcentaje_afectado < 1").index
+    elif 0 < df["porcentaje_afectado"].dropna().min() < 1:
+        list_idx = df.query("0 < porcentaje_afectado < 1").index
         raise_value_warning(df, list_idx, "porcentaje_afectado")
     # Round to one decimal
     new_col = df["porcentaje_afectado"].astype(float).round(1)
