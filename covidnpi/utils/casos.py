@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from covidnpi.utils.config import load_config
+from covidnpi.utils.log import logger
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -31,12 +32,13 @@ def load_casos_df(
         Number of cases of COVID by day and province
 
     """
+    logger.debug("Loading incidence data")
 
     casos = pd.read_csv(link, parse_dates=["fecha"], date_parser=_dateparse)
 
     # Correct some abbreviations
     casos["provincia_iso"] = casos["provincia_iso"].replace({"ME": "ML", "NC": "NA"})
-
+    logger.debug("Done loading incidence data")
     return casos
 
 
