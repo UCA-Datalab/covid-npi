@@ -6,7 +6,7 @@ import typer
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.config import load_config
 from covidnpi.utils.log import logger
-from covidnpi.utils.rho import compute_normed_incidence
+from covidnpi.utils.rho import compute_incidence_normed
 from covidnpi.utils.series import (
     cumulative_incidence,
     compute_growth_rate,
@@ -41,13 +41,15 @@ def load_mobility_report(
     logger.debug("Loading mobility report")
     # Process in chunks to not saturate the memory
     df_list = []
-    for i, chunk in enumerate(pd.read_csv(
-        path_csv,
-        parse_dates=["date"],
-        dayfirst=False,
-        chunksize=chunksize,
-        low_memory=False,
-    )):
+    for i, chunk in enumerate(
+        pd.read_csv(
+            path_csv,
+            parse_dates=["date"],
+            dayfirst=False,
+            chunksize=chunksize,
+            low_memory=False,
+        )
+    ):
         df_list += [chunk.query(f"country_region_code == '{country}'")]
         logger.debug(f"    Loaded chunk {i}")
     mob = pd.concat(df_list)
@@ -111,8 +113,7 @@ def mobility_report_to_csv(
         series_casos = return_casos_of_provincia_normed(
             casos, code, path_config=path_config
         )
-        casos_norm = compute_normed_incidence(series_casos)
-        print(casos_norm)
+        print(compute_incidence_normed(series_casos))
         series_ia7 = cumulative_incidence(series_casos, 7)
         series_growth = compute_growth_rate(series_casos, 7)
 
