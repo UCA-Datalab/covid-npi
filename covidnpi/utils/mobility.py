@@ -107,7 +107,7 @@ def mobility_report_to_csv(
             provincia = code_to_provincia[code]
             logger.debug(f"{code} - {provincia}")
         except KeyError:
-            logger.debug(f"Omitted {code}")
+            logger.error(f"Omitted {code}")
             continue
         dict_reports = return_reports_of_provincia(mob, code)
         series_casos = return_casos_of_provincia_normed(
