@@ -54,14 +54,34 @@ def compute_incidence_normed(
     return series_casos_norm
 
 
-def compute_rho(series_casos: pd.Series) -> pd.Series:
-    days = 7
-    lag_peso = 4
-    lag_norm = 6
+def compute_rho(
+    series_casos: pd.Series, days: int = 7, lag_peso: int = 4, lag_norm: int = 6
+) -> pd.Series:
+    """
+
+    Parameters
+    ----------
+    series_casos : pandas.Series
+        COVID incidence per date
+    days : int, optional
+        Size of the cumulative sum, by default 7
+    lag_peso : int, optional
+        Number of lags to use when computing weighted incidence, by default 4
+    lag_norm : int, optional
+        Number of lags to use when computing movavg normed incidence, by default 7
+
+    Returns
+    -------
+    pandas.Series
+        Rho
+
+    """
+    # Compute the moving average of normed incidence
     series_casos_norm = compute_incidence_normed(
         series_casos, days=days, num_lag=lag_peso
     )
     series_norm_movavg = moving_average(series_casos_norm, lag_norm)
+    # Compute rho
     list_numerator = [series_norm_movavg.shift(lag) for lag in range(3)]
     numerator = pd.concat(list_numerator, axis=1).mean(axis=1)
     list_denominator = [series_norm_movavg.shift(lag) for lag in range(5, 8)]
