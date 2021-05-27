@@ -45,9 +45,9 @@ def compute_incidence_normed(
 
     """
     series_casos_peso = compute_incidence_weighted(series_casos, days=days)
-    list_series_sum = [
+    list_series_peso = [
         series_casos_peso.shift(lag * days) for lag in range(num_lag + 1)
     ]
-    series_sum = pd.concat(list_series_sum, axis=1).mean(axis=1)
-    series_casos_norm = np.divide(series_casos, series_sum)
+    series_mean = pd.concat(list_series_peso, axis=1).mean(axis=1)
+    series_casos_norm = np.divide(series_casos, series_mean)
     return series_casos_norm
