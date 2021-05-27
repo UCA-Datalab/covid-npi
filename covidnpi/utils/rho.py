@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 from covidnpi.utils.series import moving_average
 
 
@@ -51,3 +52,18 @@ def compute_incidence_normed(
     series_mean = pd.concat(list_series_peso, axis=1).mean(axis=1)
     series_casos_norm = np.divide(series_casos, series_mean)
     return series_casos_norm
+
+
+def compute_rho(series_casos: pd.Series) -> pd.Series:
+    days = 7
+    lag_peso = 4
+    lag_norm = 6
+    series_casos_norm = compute_incidence_normed(
+        series_casos, days=days, num_lag=lag_peso
+    )
+    series_norm_movavg = moving_average(series_casos_norm, lag_norm)
+    list_numerator = [series_norm_movavg.shift(lag) for lag in range(3)]
+    numerator = pd.concat(list_numerator, axis=1).mean(axis=1)
+    list_denominator = [series_norm_movavg.shift(lag) for lag in range(5, 8)]
+    denominator = pd.concat(list_denominator, axis=1).mean(axis=1)
+    return np.divide(numerator, denominator)
