@@ -124,7 +124,10 @@ Z = "Zaragoza"
 [code_reassign]
 AS = "O"
 CB = "S"
+IB = "PM"
 MD = "M"
+MC = "MU"
+NC = "NA"
 
 [provincia_to_code]
 alava = "VI"
