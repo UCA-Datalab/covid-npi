@@ -87,7 +87,7 @@ def return_reports_of_provincia(mob: pd.DataFrame, code: str) -> dict:
 
 
 def mobility_report_to_csv(
-    path_config: str = "config.toml", path_output: str = "output/mobility"
+    path_config: str = "covidnpi/config.toml", path_output: str = "output/mobility"
 ):
     """Stores the Google mobility reports in csv format"""
 
