@@ -138,3 +138,4 @@ output/*
 datos_*
 /config.toml
 /log.out
+/config-prod.toml

@@ -54,8 +54,6 @@ def main(
         f"Ahora puntuamos cada medida"
     )
 
-    config = load_config(path_config, "npi")
-
     dict_scores = return_dict_score_medidas(dict_medidas)
     path_score_medidas = os.path.join(path_output, "score_medidas")
     store_dict_scores(dict_scores, path_output=path_score_medidas)
