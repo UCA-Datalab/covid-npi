@@ -3,11 +3,10 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-import typer
 
+import typer
 from covidnpi.utils.config import load_config
 from covidnpi.utils.dictionaries import reverse_dictionary
-from covidnpi.utils.log import logger
 
 COLS_AMBITO = [
     "fecha",
@@ -15,12 +14,12 @@ COLS_AMBITO = [
     "deporte_exterior",
     "deporte_interior",
     "cultura",
-    "colegios",
-    "educacion_otra",
+    # "colegios",
+    # "educacion_otra",
     "restauracion_exterior",
     "restauracion_interior",
     "movilidad",
-    "trabajo",
+    # "trabajo",
 ]
 
 
