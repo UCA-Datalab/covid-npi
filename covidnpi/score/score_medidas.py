@@ -67,9 +67,9 @@ def build_condicion_porcentaje(lista_medidas, porcentaje):
     return condicion_compuesta
 
 
-def build_condicion_personas(lista_medidas, personas):
+def build_condicion_personas(lista_medidas, personas, condition: str = "<="):
     condicion = build_condicion_existe(lista_medidas)
-    condicion_compuesta = f"({condicion} & (personas <= {personas}))"
+    condicion_compuesta = f"({condicion} & (personas {condition} {personas}))"
     return condicion_compuesta
 
 
@@ -126,6 +126,18 @@ def expand_nivel_educacion(df):
     return df_expanded
 
 
+def list_missing_codigos(taxonomia: pd.DataFrame, dict_condicion: dict):
+    """Avisa de que faltan ciertos codigos en la lista de condiciones"""
+    codigos = "-".join([s for s in dict_condicion.values()])
+    list_missing = []
+    # Filtramos aquellas con bajo == "existe" porque no saldran en la lista
+    for codigo in taxonomia.query("bajo != 'existe'")["codigo"].unique():
+        if codigo not in codigos:
+            list_missing.append(codigo)
+    if len(list_missing) > 0:
+        logger.error(f"Faltan codigos en condicones: {', '.join(list_missing)}")
+
+
 def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     df_score = df.copy()
     # Asumimos que por defecto es baja
@@ -143,11 +155,19 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
             list_condiciones += [build_condicion_existe(existe)]
         # Personas
         for pers in [6, 10, 100]:
-            personas_leq = taxonomia.loc[
-                taxonomia[nivel].str.contains(f"<={pers}(?!%)", regex=True), "codigo"
-            ].unique()
-            if len(personas_leq) > 0:
-                list_condiciones += [build_condicion_personas(personas_leq, pers)]
+            for condition in ["<=", "<"]:
+                personas_cond = taxonomia.loc[
+                    taxonomia[nivel].str.contains(
+                        f"{condition}{pers}(?!%)", regex=True
+                    ),
+                    "codigo",
+                ].unique()
+                if len(personas_cond) > 0:
+                    list_condiciones += [
+                        build_condicion_personas(
+                            personas_cond, pers, condition=condition
+                        )
+                    ]
         # Personas no especifica
         no_especifica = taxonomia.loc[
             taxonomia[nivel].str.contains("noseespecifica"), "codigo"
@@ -176,6 +196,8 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
 
     # Store dictionary
     store_dict_condicion(dict_condicion)
+    # List missing codigos
+    list_missing_codigos(taxonomia, dict_condicion)
 
     condicion_alto = dict_condicion["alto"]
     condicion_medio = dict_condicion["medio"]
