@@ -1,3 +1,4 @@
+import json
 import os
 
 import pandas as pd
@@ -54,3 +55,11 @@ def load_dict_scores(path_scores: str = "output/score_medidas"):
 def reverse_dictionary(d: dict) -> dict:
     reversed_dictionary = {value: key for (key, value) in d.items()}
     return reversed_dictionary
+
+
+def store_dict_condicion(
+    dict_condicion: dict, path_output: str = "output/dict_condicion.json"
+):
+    """Guarda un json con las condiciones aplicadas por la taxonomia"""
+    with open(path_output, "w") as f:
+        json.dump(dict_condicion, f)

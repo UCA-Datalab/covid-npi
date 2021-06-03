@@ -5,7 +5,11 @@ import numpy as np
 import pandas as pd
 import typer
 
-from covidnpi.utils.dictionaries import store_dict_scores, load_dict_medidas
+from covidnpi.utils.dictionaries import (
+    store_dict_scores,
+    load_dict_medidas,
+    store_dict_condicion,
+)
 from covidnpi.utils.log import logger
 from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
 
@@ -125,7 +129,7 @@ def expand_nivel_educacion(df):
 def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     df_score = df.copy()
     # Asumimos que por defecto es baja
-    df_score["score_medida"] = 0.3
+    df_score["score_medida"] = 0.2
 
     dict_condicion = {}
 
@@ -170,6 +174,9 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
         condicion = " | ".join(list_condiciones)
         dict_condicion.update({nivel: condicion})
 
+    # Store dictionary
+    store_dict_condicion(dict_condicion)
+
     condicion_alto = dict_condicion["alto"]
     condicion_medio = dict_condicion["medio"]
 
@@ -179,7 +186,7 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     except TypeError:
         raise TypeError(f"Column with unproper type:\n{df.dtypes}")
 
-    df_score.loc[mask_medio, "score_medida"] = 0.6
+    df_score.loc[mask_medio, "score_medida"] = 0.5
     df_score.loc[mask_alto, "score_medida"] = 1
 
     df_score = expand_nivel_educacion(df_score)
@@ -200,9 +207,7 @@ def pivot_df_score(df_score: pd.DataFrame):
     return df_medida
 
 
-def return_dict_score_medidas(
-    dict_medidas: dict
-) -> dict:
+def return_dict_score_medidas(dict_medidas: dict) -> dict:
     """
 
     Parameters
