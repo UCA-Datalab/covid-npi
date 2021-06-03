@@ -94,6 +94,8 @@ def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
         pesos = pon_sub["ponderacion"].values
         items = pon_sub["nombre"]
         df_afectado[ambito] = (df_afectado[items] * pesos).sum(axis=1).div(pesos.sum())
+        # Max value is 1
+        df_afectado.loc[df_afectado[ambito] > 1, ambito] = 1
     return df_afectado
 
 
