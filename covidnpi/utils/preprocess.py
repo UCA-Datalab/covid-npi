@@ -7,7 +7,12 @@ import typer
 import xlrd
 
 from covidnpi.utils.dictionaries import store_dict_provincia_to_medidas
-from covidnpi.utils.log import logger, raise_type_warning, raise_value_warning
+from covidnpi.utils.log import (
+    logger,
+    raise_type_warning,
+    raise_value_warning,
+    raise_missing_warning,
+)
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE"]
@@ -284,43 +289,30 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
 
 def format_hora(df: pd.DataFrame) -> pd.DataFrame:
     """Formats the hora column, to datetime"""
-    # We do not want to modify the original dataframe
-    df = df.copy()
     # If "hora" is empty, return original
     if df["hora"].isnull().all():
         return df
-    # The following will only run when the column "hora" is a string
-    try:
-        # Remove whitespaces from string
-        df["hora"] = df["hora"].str.replace(" ", "").astype(str)
-        # Change ranges HH:MM-HH:MM to last HH:MM
-        mask_range = (
-            df["hora"]
-            .str.contains(
-                "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
-            )
-            .fillna(False)
-        )
-        df.loc[mask_range, "hora"] = (
-            df.loc[mask_range, "hora"].str.split("-").str[-1] + ":00"
-        )
-    except AttributeError:
-        pass
-    # Convert to date format
-    try:
-        hora = pd.to_datetime(df["hora"], format="%H:%M:%S", errors="raise")
-    except (TypeError, ValueError) as e:
-        hora = pd.Series(pd.to_datetime(df["hora"], format="%H:%M:%S", errors="coerce"))
-        list_idx = df.loc[hora.isna(), "hora"].dropna().index.tolist()
-        # Filtramos aquellos warning que no interesan,
-        # porque son medidas que no aplican la columna "hora"
-        list_idx = [
-            idx for idx in list_idx if df["codigo"][idx] not in LIST_MEDIDAS_NO_HORA
-        ]
-        if len(list_idx) > 0:
-            raise_type_warning(df, list_idx, "hora")
-    # Take only hour
-    df["hora"] = hora.dt.hour + hora.dt.minute / 60
+    # We do not want to modify the original dataframe
+    df = df.copy()
+    # Take the column "hora" as a string series
+    hora = df["hora"].dropna().astype(str).str.replace(" ", "").copy()
+    # Change ranges HH:MM-HH:MM to last HH:MM
+    mask_range = hora.str.contains(
+        "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+    ).fillna(False)
+    hora[mask_range] = hora[mask_range].str.split("-").str[-1] + ":00"
+    # Take hour
+    minute = hora.str.split(":").str[1]
+    hora = hora.str.split(":").str[0]
+    # Force numeric
+    hora = pd.to_numeric(hora, errors="coerce")
+    minute = pd.to_numeric(minute, errors="coerce")
+    # Sum minutes to hora
+    hora += minute / 60
+    # Check if some original data is missing
+    list_idx = df[hora.isna() & ~df["hora"].isna()].index
+    raise_missing_warning(df, list_idx, "hora")
+    df["hora"] = hora
     return df
 
 
