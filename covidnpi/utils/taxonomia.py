@@ -99,10 +99,16 @@ def classify_criteria(taxonomia: pd.DataFrame):
     return classified
 
 
-def return_taxonomia(path_taxonomia: str = PATH_TAXONOMIA):
+def return_taxonomia(
+    path_taxonomia: str = PATH_TAXONOMIA, path_output: str = "output/taxonomia.csv"
+):
     taxonomia = read_taxonomia(path_taxonomia)
     criterio = classify_criteria(taxonomia)
-    taxonomia = pd.merge(taxonomia, criterio, left_index=True, right_index=True)
+    taxonomia = pd.merge(
+        taxonomia[["codigo", "item", "ambito"]], criterio, left_index=True, right_index=True
+    )
+    # Store taxonomia
+    taxonomia.to_csv(path_output, index=False)
     return taxonomia
 
 
