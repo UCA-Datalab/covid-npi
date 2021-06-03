@@ -66,7 +66,13 @@ def score_items(df: pd.DataFrame):
     df_item["CUL_zoo"] = df[["CD.3", "CD.16", "CD.15"]].max(axis=1)
 
     # Restauración interior
-    df_item["RIN_afo"] = df[["RH.1", "RH.2", "RH.3", "RH.7"]].max(axis=1)
+    df_item["RIN_afo"] = np.max(
+        [
+            df[["RH.1", "RH.2", "RH.3"]].max(axis=1),
+            df[["RH.4", "RH.7"]].sum(axis=1)
+            * df[["RH.1", "RH.2", "RH.3"]].isna().all(axis=1),
+        ]
+    )
     df_item["RIN_hor"] = df[["RH.1", "RH.2", "RH.3", "RH.5"]].max(axis=1)
     df_item["RIN_mesa"] = df[["RH.1", "RH.2", "RH.3", "RH.9", "RH.11"]].max(axis=1)
 
