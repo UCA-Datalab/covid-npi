@@ -152,7 +152,7 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
             taxonomia[nivel].str.contains("existe"), "codigo"
         ].unique()
         if len(existe) > 0:
-            list_condiciones += [build_condicion_existe(existe)]
+            list_condiciones.append(build_condicion_existe(existe))
         # Personas
         for pers in [6, 10, 100]:
             for condition in ["<=", "<"]:
@@ -163,24 +163,24 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
                     "codigo",
                 ].unique()
                 if len(personas_cond) > 0:
-                    list_condiciones += [
+                    list_condiciones.append(
                         build_condicion_personas(
                             personas_cond, pers, condition=condition
                         )
-                    ]
+                    )
         # Personas no especifica
         no_especifica = taxonomia.loc[
             taxonomia[nivel].str.contains("noseespecifica"), "codigo"
         ].unique()
         if len(no_especifica) > 0:
-            list_condiciones += [build_condicion_no_especifica(no_especifica)]
+            list_condiciones.append(build_condicion_no_especifica(no_especifica))
         # Porcentaje
         for por in [35]:
             porcentaje_leq = taxonomia.loc[
                 taxonomia[nivel].str.contains(f"<={por}%"), "codigo"
             ].unique()
             if len(porcentaje_leq) > 0:
-                list_condiciones += [build_condicion_porcentaje(porcentaje_leq, por)]
+                list_condiciones.append(build_condicion_porcentaje(porcentaje_leq, por))
         # Hora
         for hor in [18]:
             hora_leq = taxonomia.loc[
@@ -189,9 +189,9 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
                 "codigo",
             ].unique()
             if len(hora_leq) > 0:
-                list_condiciones += [build_condicion_horario(hora_leq, hor)]
+                list_condiciones.append(build_condicion_horario(hora_leq, hor))
         # All conditions
-        condicion = " | ".join(list_condiciones)
+        condicion = " | ".join(set(list_condiciones))
         dict_condicion.update({nivel: condicion})
 
     # Store dictionary
