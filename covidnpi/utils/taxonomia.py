@@ -106,7 +106,7 @@ def return_taxonomia(
     criterio = classify_criteria(taxonomia)
     taxonomia = pd.merge(
         taxonomia[["codigo", "item", "ambito"]], criterio, left_index=True, right_index=True
-    )
+    ).sort_values("codigo").drop_duplicates()
     # Store taxonomia
     taxonomia.to_csv(path_output, index=False)
     return taxonomia
