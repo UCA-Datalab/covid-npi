@@ -30,10 +30,10 @@ def score_items(df: pd.DataFrame):
     # Ceremonias
     df_item["CER_cult"] = df[["CE.1", "CE.2"]].max(axis=1)
     df_item["CER_cor"] = df[["CE.1", "CE.7"]].max(axis=1)
-    df_item["CER_ent_int"] = df[["CE.3", "CE.9"]]
-    df_item["CER_ent_ext"] = df[["CE.4", "CE.9"]]
-    df_item["CER_otro_int"] = df[["CE.5", "CE.10"]]
-    df_item["CER_otro_ext"] = df[["CE.6", "CE.10"]]
+    df_item["CER_ent_int"] = df[["CE.3", "CE.9"]].max(axis=1)
+    df_item["CER_ent_ext"] = df[["CE.4", "CE.9"]].max(axis=1)
+    df_item["CER_otro_int"] = df[["CE.5", "CE.10"]].max(axis=1)
+    df_item["CER_otro_ext"] = df[["CE.6", "CE.10"]].max(axis=1)
 
     # Comercio
     df_item["COM_afo"] = df[["CO.1", "CO.8"]].max(axis=1)
