@@ -45,33 +45,36 @@ def score_items(df: pd.DataFrame):
     df_item["COM_libre"] = df[["CO.1", "CO.6", "CO.10"]].max(axis=1)
 
     # Cultura
-    df_item["CUL_mus"] = np.max(
+    df_item["CUL_mus"] = np.nanmax(
         [
             df["CD.1"],
             (
-                0.5 * np.max([df["CD.2"], df["CD.7"], df["CD.6"]], axis=0)
-                + 0.5 * np.max([df["CD.8"], df["CD.6"]], axis=0)
+                0.5 * np.nanmax([df["CD.2"], df["CD.7"], df["CD.6"]], axis=0)
+                + 0.5 * np.nanmax([df["CD.8"], df["CD.6"]], axis=0)
             ),
-        ]
+        ],
+        axis=0,
     )
-    df_item["CUL_cin"] = np.max(
+    df_item["CUL_cin"] = np.nanmax(
         [
             df["CD.3"],
-            (0.7 * np.max([df["CD.4"], df["CD.9"]], axis=0) + 0.3 * df["CD.10"])
+            (0.7 * np.nanmax([df["CD.4"], df["CD.9"]], axis=0) + 0.3 * df["CD.10"])
             * (df["CD.3"] == 0),
-        ]
+        ],
+        axis=0,
     )
     df_item["CUL_sal"] = df[["CD.5", "CD.11"]].max(axis=1)
     df_item["CUL_tor"] = df[["CD.3", "CD.17", "CD.14"]].max(axis=1)
     df_item["CUL_zoo"] = df[["CD.3", "CD.16", "CD.15"]].max(axis=1)
 
     # Restauración interior
-    df_item["RIN_afo"] = np.max(
+    df_item["RIN_afo"] = np.nanmax(
         [
             df[["RH.1", "RH.2", "RH.3"]].max(axis=1),
             df[["RH.4", "RH.7"]].sum(axis=1)
             * df[["RH.1", "RH.2", "RH.3"]].isna().all(axis=1),
-        ]
+        ],
+        axis=0,
     )
     df_item["RIN_hor"] = df[["RH.1", "RH.2", "RH.3", "RH.5"]].max(axis=1)
     df_item["RIN_mesa"] = df[["RH.1", "RH.2", "RH.3", "RH.9", "RH.11"]].max(axis=1)
@@ -84,11 +87,12 @@ def score_items(df: pd.DataFrame):
     # Distancia social
     df_item["DS_even"] = df[["MV.1", "CD.12", "CD.13"]].max(axis=1)
     df_item["DS_dom"] = df[["MV.1", "MV.2"]].max(axis=1)
-    df_item["DS_reun"] = np.max(
+    df_item["DS_reun"] = np.nanmax(
         [
             df[["MV.1", "RS.1"]].max(axis=1),
             df[["RS.2", "RS.3", "RS.8"]].mean(axis=1) * df["RS.1"].isna(),
-        ]
+        ],
+        axis=0,
     )
     df_item["DS_tran"] = df[["MV.1", "TP.1"]].max(axis=1)
 

@@ -211,7 +211,7 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     df_score.loc[mask_medio, "score_medida"] = 0.5
     df_score.loc[mask_alto, "score_medida"] = 1
 
-    df_score = expand_nivel_educacion(df_score)
+    # df_score = expand_nivel_educacion(df_score)
 
     return df_score
 

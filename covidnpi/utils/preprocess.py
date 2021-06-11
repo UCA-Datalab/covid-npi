@@ -76,7 +76,7 @@ DICT_ADD_PROVINCE = {
     "vizcaya": "pais_vasco",
 }
 
-DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": ""}
+DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": "", "guipuzkoa": "guipuzcoa"}
 DICT_CCAA_RENAME = {"autonomico": np.nan}
 
 LIST_MEDIDAS_NO_HORA = ["MV.3", "MV.4", "MV.7"]
