@@ -133,9 +133,10 @@ dmypy.json
 *.iml
 
 # Other directories
+notebooks/*
 output/*
 .idea/*
 datos_*
-/config.toml
+/config*.toml
 /log.out
 /config-prod.toml
