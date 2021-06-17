@@ -27,7 +27,15 @@ def compute_proportion(df: pd.DataFrame, item: str):
         .groupby("fecha")["porcentaje_afectado"]
         .sum()
     )
-    porcentaje_general[porcentaje_general < 0] = 0
+    # Avisamos si hay sumas de porcentajes que superan el 100
+    list_dates = [
+        d.strftime("%d-%m-%Y") for d in porcentaje_general[porcentaje_general < 0].index
+    ]
+    if len(list_dates) > 0:
+        logger.warning(
+            f"La suma de porcentajes para {item} supera 100 en: {', '.join(list_dates)}"
+        )
+        porcentaje_general[porcentaje_general < 0] = 0
 
     # Identificamos las medidas que se han aplicado exclusivamente con caracter general
     mask_general = df_sub["porcentaje_afectado"] == 100
@@ -52,11 +60,14 @@ def compute_proportion(df: pd.DataFrame, item: str):
                     ignore_index=True,
                 )
 
-    # Se pondera la score de cada item = score * porcentaje que afecta / 100
-    df_sub["ponderado"] = df_sub["porcentaje_afectado"] * df_sub[item] / 100
+    # Se pondera la score de cada item = score * porcentaje que afecta
+    df_sub["ponderado"] = df_sub["porcentaje_afectado"] * df_sub[item]
 
     # Agrupamos por dia, sumando las score ponderadas
-    score = df_sub.groupby("fecha")["ponderado"].sum()
+    score = (
+        df_sub.groupby("fecha")["ponderado"].sum()
+        / df_sub.groupby("fecha")["porcentaje_afectado"].sum()
+    )
 
     return score
 
