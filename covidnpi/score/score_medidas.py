@@ -138,7 +138,11 @@ def list_missing_codigos(taxonomia: pd.DataFrame, dict_condicion: dict):
         logger.error(f"Faltan codigos en condicones: {', '.join(list_missing)}")
 
 
-def add_score_medida(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
+def add_score_medida(
+    df: pd.DataFrame,
+    taxonomia: pd.DataFrame,
+    path_out_conditions: str = "output/dict_condicion.json",
+) -> pd.DataFrame:
     df_score = df.copy()
     # Asumimos que por defecto es baja
     df_score["score_medida"] = 0.2
@@ -195,7 +199,7 @@ def add_score_medida(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
         dict_condicion.update({nivel: condicion})
 
     # Store dictionary
-    store_dict_condicion(dict_condicion)
+    store_dict_condicion(dict_condicion, path_output=path_out_conditions)
     # List missing codigos
     list_missing_codigos(taxonomia, dict_condicion)
 
@@ -229,7 +233,11 @@ def pivot_df_score(df_score: pd.DataFrame):
     return df_medida
 
 
-def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
+def score_medidas(
+    df: pd.DataFrame,
+    taxonomia: pd.DataFrame,
+    path_out_conditions: str = "output/dict_condicion.json",
+) -> pd.DataFrame:
     """Receives the medidas dataframe and outputs a new dataframe of scores
 
     Parameters
@@ -238,6 +246,8 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
         Dataframe of medidas
     taxonomia : pd.DataFrame
         Dataframe with taxonomy data
+    path_out_conditions: str, optional
+        Path where the extracted conditions are stored, by default "output/dict_condicion.json"
 
     Returns
     -------
@@ -247,7 +257,9 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     df_sub = df.copy()
     df_sub = process_hora(df_sub)
     df_sub_extended = extend_fecha(df_sub)
-    df_score = add_score_medida(df_sub_extended, taxonomia)
+    df_score = add_score_medida(
+        df_sub_extended, taxonomia, path_out_conditions="output/dict_condicion.json"
+    )
     df_score = pivot_df_score(df_score)
     return df_score
 

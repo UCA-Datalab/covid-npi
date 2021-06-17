@@ -10,4 +10,4 @@ def test_score_medidas(
 ):
     taxonomia = return_taxonomia(path_taxonomia=path_taxonomia, path_output=None)
     med = pd.read_csv(path_medidas)
-    sc_med = score_medidas(med, taxonomia)
+    sc_med = score_medidas(med, taxonomia, path_out_conditions=None)
