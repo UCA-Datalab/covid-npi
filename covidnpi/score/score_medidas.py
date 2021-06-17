@@ -258,7 +258,7 @@ def score_medidas(
     df_sub = process_hora(df_sub)
     df_sub_extended = extend_fecha(df_sub)
     df_score = add_score_medida(
-        df_sub_extended, taxonomia, path_out_conditions="output/dict_condicion.json"
+        df_sub_extended, taxonomia, path_out_conditions=path_out_conditions
     )
     df_score = pivot_df_score(df_score)
     return df_score
