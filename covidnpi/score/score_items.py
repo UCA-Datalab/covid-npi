@@ -85,11 +85,13 @@ def score_items(df: pd.DataFrame):
     df_item["REX_otr"] = df[["RH.1", "RH.2", "RH.9", "RH.10"]].max(axis=1)
 
     # Distancia social
-    df_item["DS_even"] = df[["MV.1", "CD.12", "CD.13"]].max(axis=1)
+    df_item["DS_even"] = np.nanmax(
+        [df[["MV.1", "CD.12"]].max(axis=1), df["CD.13"] * df["CD.12"].isna()], axis=0
+    )
     df_item["DS_dom"] = df[["MV.1", "MV.2"]].max(axis=1)
     df_item["DS_reun"] = np.nanmax(
         [
-            df[["MV.1", "RS.1"]].max(axis=1),
+            df["RS.1"],
             df[["RS.2", "RS.3", "RS.8"]].mean(axis=1) * df["RS.1"].isna(),
         ],
         axis=0,
