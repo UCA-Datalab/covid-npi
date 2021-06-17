@@ -18,6 +18,10 @@ def store_dict_provincia_to_medidas(
 
     for provincia, df_medida in dict_medidas.items():
         path_file = os.path.join(path_output, provincia.split("/")[0] + ".csv")
+        # Remove file if it exist
+        if os.path.exists(path_file):
+            os.remove(path_file)
+        # Store new file
         df_medida.to_csv(path_file, index=False)
 
 
