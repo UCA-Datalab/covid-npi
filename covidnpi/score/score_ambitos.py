@@ -27,6 +27,7 @@ def compute_proportion(df: pd.DataFrame, item: str):
         .groupby("fecha")["porcentaje_afectado"]
         .sum()
     )
+    porcentaje_general[porcentaje_general < 0] = 0
 
     # Identificamos las medidas que se han aplicado exclusivamente con caracter general
     mask_general = df_sub["porcentaje_afectado"] == 100
@@ -95,7 +96,7 @@ def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
         items = pon_sub["nombre"]
         df_afectado[ambito] = (df_afectado[items] * pesos).sum(axis=1).div(pesos.sum())
         # Max value is 1
-        df_afectado.loc[df_afectado[ambito] > 1, ambito] = 1
+        # assert df_afectado[ambito].max() <= 1, f"La puntuacion de {ambito} supera 1"
     return df_afectado
 
 
