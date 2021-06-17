@@ -1,6 +1,6 @@
 import pandas as pd
 
-from covidnpi.score.score_medidas import medidas_to_score
+from covidnpi.score.score_medidas import score_medidas
 from covidnpi.utils.taxonomia import return_taxonomia
 
 
@@ -14,5 +14,5 @@ def test_score_medidas(
         path_taxonomia=path_taxonomia, path_output=path_tax_out
     )
     med = pd.read_csv(path_medidas)
-    sc_med = medidas_to_score(med, taxonomia)
+    sc_med = score_medidas(med, taxonomia)
     sc_med.to_csv(path_score)
