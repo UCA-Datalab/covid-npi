@@ -138,7 +138,7 @@ def list_missing_codigos(taxonomia: pd.DataFrame, dict_condicion: dict):
         logger.error(f"Faltan codigos en condicones: {', '.join(list_missing)}")
 
 
-def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
+def add_score_medida(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     df_score = df.copy()
     # Asumimos que por defecto es baja
     df_score["score_medida"] = 0.2
@@ -229,6 +229,29 @@ def pivot_df_score(df_score: pd.DataFrame):
     return df_medida
 
 
+def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
+    """Receives the medidas dataframe and outputs a new dataframe of scores
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe of medidas
+    taxonomia : pd.DataFrame
+        Dataframe with taxonomy data
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe of scores, each row being a date and each column a medida
+    """
+    df_sub = df.copy()
+    df_sub = process_hora(df_sub)
+    df_sub_extended = extend_fecha(df_sub)
+    df_score = add_score_medida(df_sub_extended, taxonomia)
+    df_score = pivot_df_score(df_score)
+    return df_score
+
+
 def return_dict_score_medidas(dict_medidas: dict) -> dict:
     """
 
@@ -249,10 +272,7 @@ def return_dict_score_medidas(dict_medidas: dict) -> dict:
 
     for provincia, df_sub in dict_medidas.items():
         logger.debug(provincia)
-        df_sub = process_hora(df_sub)
-        df_sub_extended = extend_fecha(df_sub)
-        df_score = score_medidas(df_sub_extended, taxonomia)
-        df_score = pivot_df_score(df_score)
+        df_score = score_medidas(df_sub, taxonomia)
         # Nos aseguramos de que todas las medidas estan en el df
         medidas_missing = list(set(all_medidas) - set(df_score.columns))
         for m in medidas_missing:
