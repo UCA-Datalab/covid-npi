@@ -32,6 +32,7 @@ DICT_FILL_PROVINCIA = {
     "CEU": "ceuta",
     "MEL": "melilla",
     "MUR": "murcia",
+    "NAV": "navarra",
     "RIO": "rioja_la",
 }
 
@@ -183,7 +184,7 @@ def read_npi_data(
                 logger.warning(f"La columna 'provincia' se ha rellenado con '{value}'")
                 break
         else:
-            logger.warning("La columna 'provincia' no ha sido rellenada")
+            raise ValueError("La columna 'provincia' no puede ser rellenada")
     return df
 
 
