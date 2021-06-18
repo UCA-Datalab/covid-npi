@@ -71,7 +71,7 @@ def score_items(df: pd.DataFrame):
     df_item["RIN_afo"] = np.nanmax(
         [
             df[["RH.1", "RH.2", "RH.3"]].max(axis=1),
-            df[["RH.4", "RH.7"]].sum(axis=1)
+            df[["RH.4", "RH.7"]].sum(axis=1, skipna=False)
             * df[["RH.1", "RH.2", "RH.3"]].isna().all(axis=1),
         ],
         axis=0,
