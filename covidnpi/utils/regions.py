@@ -173,6 +173,15 @@ DICT_PROVINCE_RENAME = {
     "grancanaria": "gran_canaria",
 }
 
+DICT_FILL_PROVINCIA = {
+    "CTB": "cantabria",
+    "CEU": "ceuta",
+    "MEL": "melilla",
+    "MUR": "murcia",
+    "NAV": "navarra",
+    "RIO": "rioja_la",
+}
+
 ISLA_TO_PROVINCIA = {
     "elhierro": "gran_canaria",
     "formentera": "tenerife",
