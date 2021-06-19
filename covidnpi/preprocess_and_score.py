@@ -19,7 +19,6 @@ from covidnpi.utils.taxonomia import PATH_TAXONOMIA
 def main(
     path_raw: str = "datos_NPI",
     path_taxonomia: str = PATH_TAXONOMIA,
-    path_config: str = "config.toml",
     path_output: str = "output",
 ):
     """Reads the raw data stored in path_raw, preprocess and scores it, while storing
@@ -32,8 +31,6 @@ def main(
         Path to raw data, by default "datos_NPI_2"
     path_taxonomia : str, optional
         Path to taxonomia xlsx file, by default `PATH_TAXONOMIA`
-    path_config : str, optional
-        Path to config file, by default 'config.toml'
     path_output : str, optional
         Output folder, by default "output"
 
@@ -80,7 +77,7 @@ def main(
     )
 
     path_mobility = os.path.join(path_output, "mobility")
-    mobility_report_to_csv(path_config=path_config, path_output=path_mobility)
+    mobility_report_to_csv(path_output=path_mobility)
     logger.debug(f"La informacion de movilidad ha sido guardada en {path_mobility}\n")
 
 

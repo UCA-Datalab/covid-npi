@@ -4,7 +4,7 @@ import pandas as pd
 import typer
 
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
-from covidnpi.utils.config import load_config
+from covidnpi.utils.regions import CODE_REASSIGN, PROVINCIA_TO_CODE, CODE_TO_PROVINCIA
 from covidnpi.utils.log import logger
 from covidnpi.utils.rho import compute_rho
 from covidnpi.utils.series import (
@@ -89,7 +89,7 @@ def return_reports_of_provincia(mob: pd.DataFrame, code: str) -> dict:
 
 
 def mobility_report_to_csv(
-    path_config: str = "covidnpi/config.toml", path_output: str = "output/mobility"
+    path_output: str = "output/mobility",
 ):
     """Stores the Google mobility reports in csv format"""
 
@@ -98,24 +98,19 @@ def mobility_report_to_csv(
 
     mob = load_mobility_report()
     casos = load_casos_df()
-    code_to_provincia = load_config(path_config, "code_to_provincia")
-    code_reassign = load_config(path_config, "code_reassign")
-    provincia_to_code = load_config(path_config, "provincia_to_code")
-    code_to_filename = {v: k for k, v in provincia_to_code.items()}
+    code_to_filename = {v: k for k, v in PROVINCIA_TO_CODE.items()}
 
     for code in mob["code"].unique():
         # Reassign code if needed
-        code = code_reassign.get(code, code)
+        code = CODE_REASSIGN.get(code, code)
         try:
-            provincia = code_to_provincia[code]
+            provincia = CODE_TO_PROVINCIA[code]
             logger.debug(f"{code} - {provincia}")
         except KeyError:
             logger.warning(f"Omitted {code}")
             continue
         dict_reports = return_reports_of_provincia(mob, code)
-        series_casos = return_casos_of_provincia_normed(
-            casos, code, path_config=path_config
-        )
+        series_casos = return_casos_of_provincia_normed(casos, code)
         series_ia7 = cumulative_incidence(series_casos, 7)
         series_growth = compute_growth_rate(series_casos, 7)
         series_rho = compute_rho(series_casos)

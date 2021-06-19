@@ -14,6 +14,7 @@ from covidnpi.utils.log import (
     raise_missing_warning,
 )
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
+from covidnpi.utils.regions import DICT_PROVINCE_RENAME, DICT_FILL_PROVINCIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE"]
 
@@ -25,15 +26,6 @@ DICT_PORCENTAJE = {
     "iscar": 1.2,
     "pedrajassanesteban": 0.6,
     "pesqueradeduero": 0.1,
-}
-
-DICT_FILL_PROVINCIA = {
-    "CTB": "cantabria",
-    "CEU": "ceuta",
-    "MEL": "melilla",
-    "MUR": "murcia",
-    "NAV": "navarra",
-    "RIO": "rioja_la",
 }
 
 DICT_COL_RENAME = {
@@ -77,7 +69,6 @@ DICT_ADD_PROVINCE = {
     "vizcaya": "pais_vasco",
 }
 
-DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": "", "guipuzkoa": "guipuzcoa"}
 DICT_CCAA_RENAME = {"autonomico": np.nan}
 
 LIST_MEDIDAS_NO_HORA = ["MV.3", "MV.4", "MV.7"]
