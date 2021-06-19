@@ -246,3 +246,21 @@ CODE_TO_POBLACION = {
     "CE": 84202,
     "ML": 87076,
 }
+
+ISLA_TO_PERCENTAGE = {
+    "islas_baleares": {
+        "mallorca": 0.778,
+        "menorca": 0.081,
+        "ibiza": 0.130,
+        "formentera": 0.011,
+    },
+    "islas_canarias": {
+        "tenerife": 0.427,
+        "gran_canaria": 0.393,
+        "lanzarote": 0.071,
+        "fuerteventura": 0.055,
+        "lapalma": 0.038,
+        "lagomera": 0.010,
+        "elhierro": 0.005,
+    },
+}

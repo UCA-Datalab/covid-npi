@@ -2,13 +2,13 @@ import os
 
 import typer
 
+from covidnpi.score.score_ambitos import return_dict_score_ambitos
 from covidnpi.score.score_items import return_dict_score_items
 from covidnpi.score.score_medidas import return_dict_score_medidas
-from covidnpi.score.score_ambitos import return_dict_score_ambitos
-from covidnpi.utils.config import load_config
+from covidnpi.score.score_islas import return_dict_score_islas
 from covidnpi.utils.dictionaries import (
-    store_dict_scores,
     store_dict_provincia_to_medidas,
+    store_dict_scores,
 )
 from covidnpi.utils.log import logger
 from covidnpi.utils.mobility import mobility_report_to_csv
@@ -68,6 +68,8 @@ def main(
     )
 
     dict_ambito = return_dict_score_ambitos(dict_items, path_taxonomia=path_taxonomia)
+    dict_islas = return_dict_score_islas(dict_ambito)
+    dict_ambito.update(dict_islas)
     path_score_ambito = os.path.join(path_output, "score_ambito")
     store_dict_scores(dict_ambito, path_output=path_score_ambito)
 

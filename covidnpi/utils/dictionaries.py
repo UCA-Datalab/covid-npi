@@ -2,6 +2,7 @@ import json
 import os
 
 import pandas as pd
+from covidnpi.utils.log import logger
 
 
 def extract_codes_to_dict(df: pd.DataFrame, category: str):
@@ -42,7 +43,10 @@ def store_dict_scores(dict_scores, path_output: str = "output/score_medidas"):
 
     for provincia, df_score in dict_scores.items():
         path_file = os.path.join(path_output, provincia.split("/")[0] + ".csv")
-        df_score.to_csv(path_file, float_format="%.3f")
+        try:
+            df_score.to_csv(path_file, float_format="%.3f")
+        except AttributeError as er:
+            logger.error(f"Provincia {provincia} no puede guardarse: {er}")
 
 
 def load_dict_scores(path_scores: str = "output/score_medidas"):

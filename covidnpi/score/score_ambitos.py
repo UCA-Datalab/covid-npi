@@ -1,9 +1,8 @@
 import pandas as pd
 import typer
-
-from covidnpi.utils.dictionaries import store_dict_scores, load_dict_scores
+from covidnpi.utils.dictionaries import load_dict_scores, store_dict_scores
 from covidnpi.utils.log import logger
-from covidnpi.utils.taxonomia import return_item_ponderacion, PATH_TAXONOMIA
+from covidnpi.utils.taxonomia import PATH_TAXONOMIA, return_item_ponderacion
 
 
 def compute_proportion(df: pd.DataFrame, item: str):
