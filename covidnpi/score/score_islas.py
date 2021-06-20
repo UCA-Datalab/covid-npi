@@ -6,6 +6,25 @@ from covidnpi.utils.regions import ISLA_TO_PERCENTAGE
 
 
 def aggregate_score_isles(dict_islas: dict, dict_ambito: dict) -> pd.DataFrame:
+    """Aggregates the scores of isles, normalizing by population percentage
+
+    Parameters
+    ----------
+    dict_islas : dict
+        Contains couples of {island: population percentage}
+    dict_ambito : dict
+        Contains couples of {island: pd.DataFrame of scores}
+
+    Returns
+    -------
+    pd.DataFrame
+        Scores, aggregated
+
+    Raises
+    ------
+    KeyError
+        If an island is missing
+    """
     list_df = []
     for isle, percentage in dict_islas.items():
         try:
@@ -16,6 +35,20 @@ def aggregate_score_isles(dict_islas: dict, dict_ambito: dict) -> pd.DataFrame:
 
 
 def return_dict_score_islas(dict_ambito: dict) -> dict:
+    """Given a dictionary of scores by island, returns a dictionary
+    of scores by group of islands
+
+    Parameters
+    ----------
+    dict_ambito : dict
+        Contains couples of {island: pd.DataFrame of scores}
+
+    Returns
+    -------
+    dict
+        Contains couples of {group of islands: pd.DataFrame of scores}
+    """
+    # Initialize output dictionary
     dict_ccaa = {}
     # Ensure the isles of each group are present
     # If so, perform grouping operation
