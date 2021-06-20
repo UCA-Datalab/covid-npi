@@ -52,7 +52,9 @@ def store_scores_in_mongo(
                 "fechas": df.index.tolist(),
             }
         except KeyError:
-            logger.debug(f"\nProvincia '{provincia}' code not found\n")
+            logger.debug(
+                f"\nProvincia '{provincia}' code not found. Not stored in mongo.\n"
+            )
             continue
         logger.debug(f"\n{provincia}")
         for ambito in list_ambito:
