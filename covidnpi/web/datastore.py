@@ -3,16 +3,12 @@ import os
 
 import pandas as pd
 import typer
-
-from covidnpi.utils.casos import (
-    load_casos_df,
-    return_casos_of_provincia_normed,
-)
+from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.config import load_config
-from covidnpi.utils.regions import PROVINCIA_TO_CODE
 from covidnpi.utils.log import logger
-from covidnpi.utils.series import cumulative_incidence, compute_growth_rate
-from covidnpi.utils.taxonomia import return_taxonomia, PATH_TAXONOMIA
+from covidnpi.utils.regions import PROVINCIA_TO_CODE
+from covidnpi.utils.series import compute_growth_rate, cumulative_incidence
+from covidnpi.utils.taxonomia import PATH_TAXONOMIA, return_taxonomia
 from covidnpi.web.mongo import load_mongo
 
 

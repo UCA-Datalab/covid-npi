@@ -2,15 +2,11 @@ import os
 
 import pandas as pd
 import typer
-
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
-from covidnpi.utils.regions import CODE_REASSIGN, PROVINCIA_TO_CODE, CODE_TO_PROVINCIA
 from covidnpi.utils.log import logger
+from covidnpi.utils.regions import CODE_REASSIGN, CODE_TO_PROVINCIA, PROVINCIA_TO_CODE
 from covidnpi.utils.rho import compute_rho
-from covidnpi.utils.series import (
-    cumulative_incidence,
-    compute_growth_rate,
-)
+from covidnpi.utils.series import compute_growth_rate, cumulative_incidence
 
 URL_MOBILITY = "https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv"
 

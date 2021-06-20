@@ -3,10 +3,10 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-
 import typer
 from covidnpi.utils.config import load_config
 from covidnpi.utils.dictionaries import reverse_dictionary
+from covidnpi.utils.regions import CODE_TO_PROVINCIA, POSTAL_TO_CODE, PROVINCIA_TO_CODE
 
 COLS_AMBITO = [
     "fecha",
@@ -62,14 +62,11 @@ def add_province_code(
     df: pd.DataFrame, path_config: str = "covidnpi/config.toml"
 ) -> pd.DataFrame:
     # Load all conversion dictionaries
-    province_to_code = load_config(path_config, "provincia_to_code")
-    code_to_province = load_config(path_config, "code_to_provincia")
-    postal_to_code = load_config(path_config, "postal_to_code")
-    code_to_postal = reverse_dictionary(postal_to_code)
+    code_to_postal = reverse_dictionary(POSTAL_TO_CODE)
     # Get codes
-    code = df["provincia"].map(province_to_code)
+    code = df["provincia"].map(PROVINCIA_TO_CODE)
     # Replace province name and add code
-    df["provincia"] = code.map(code_to_province)
+    df["provincia"] = code.map(CODE_TO_PROVINCIA)
     df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
     return df
 
