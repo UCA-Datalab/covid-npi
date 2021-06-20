@@ -254,13 +254,11 @@ ISLA_TO_PERCENTAGE = {
         "ibiza": 0.130,
         "formentera": 0.011,
     },
-    "islas_canarias": {
-        "tenerife": 0.427,
-        "gran_canaria": 0.393,
-        "lanzarote": 0.071,
-        "fuerteventura": 0.055,
-        "lapalma": 0.038,
-        "lagomera": 0.010,
-        "elhierro": 0.005,
+    "tenerife": {"tenerife": 0.77, "lanzarote": 0.13, "fuerteventura": 0.10},
+    "gran_canaria": {
+        "gran_canaria": 0.88,
+        "lapalma": 0.09,
+        "lagomera": 0.02,
+        "elhierro": 0.01,
     },
 }
