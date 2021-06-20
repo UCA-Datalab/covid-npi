@@ -4,9 +4,13 @@ from typing import Union
 import numpy as np
 import pandas as pd
 import typer
-from covidnpi.utils.config import load_config
 from covidnpi.utils.dictionaries import reverse_dictionary
-from covidnpi.utils.regions import CODE_TO_PROVINCIA, POSTAL_TO_CODE, PROVINCIA_TO_CODE
+from covidnpi.utils.regions import (
+    CODE_TO_PROVINCIA,
+    ISLA_TO_PROVINCIA,
+    POSTAL_TO_CODE,
+    PROVINCIA_TO_CODE,
+)
 
 COLS_AMBITO = [
     "fecha",
@@ -43,14 +47,10 @@ def combine_csv(path: Union[Path, str], colname: str) -> pd.DataFrame:
     return pd.concat(df_dict, names=[colname]).reset_index().drop(columns="level_1")
 
 
-def add_unidad_territorial(
-    df: pd.DataFrame, path_config: str = "covidnpi/config.toml"
-) -> pd.DataFrame:
-    # Load all conversion dictionaries
-    isle_to_province = load_config(path_config, "isla_to_provincia")
+def add_unidad_territorial(df: pd.DataFrame) -> pd.DataFrame:
     # Check for islands
     unidad = df["provincia"].copy()
-    province = df["provincia"].replace(isle_to_province)
+    province = df["provincia"].replace(ISLA_TO_PROVINCIA)
     # Create unidad_territorial column, that contains the islands
     df.insert(loc=2, column="unidad_territorial", value=unidad)
     df.loc[unidad == province, "unidad_territorial"] = np.nan
@@ -58,9 +58,7 @@ def add_unidad_territorial(
     return df
 
 
-def add_province_code(
-    df: pd.DataFrame, path_config: str = "covidnpi/config.toml"
-) -> pd.DataFrame:
+def add_province_code(df: pd.DataFrame) -> pd.DataFrame:
     # Load all conversion dictionaries
     code_to_postal = reverse_dictionary(POSTAL_TO_CODE)
     # Get codes
