@@ -26,6 +26,7 @@ def aggregate_score_isles(dict_islas: dict, dict_ambito: dict) -> pd.DataFrame:
         If an island is missing
     """
     list_df = []
+    assert sum(dict_islas.values()) == 1, "The percentage does not sum 1"
     for isle, percentage in dict_islas.items():
         try:
             list_df.append(dict_ambito[isle].copy() * percentage)
