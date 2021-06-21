@@ -4,7 +4,7 @@ import pandas as pd
 import typer
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.log import logger
-from covidnpi.utils.regions import CODE_REASSIGN, CODE_TO_PROVINCIA, PROVINCIA_TO_CODE
+from covidnpi.utils.regions import CODE_REASSIGN, CODE_TO_FILENAME, CODE_TO_PROVINCIA
 from covidnpi.utils.rho import compute_rho
 from covidnpi.utils.series import compute_growth_rate, cumulative_incidence
 
@@ -94,7 +94,6 @@ def mobility_report_to_csv(
 
     mob = load_mobility_report()
     casos = load_casos_df()
-    code_to_filename = {v: k for k, v in PROVINCIA_TO_CODE.items()}
 
     for code in mob["code"].unique():
         # Reassign code if needed
@@ -117,7 +116,7 @@ def mobility_report_to_csv(
             .assign(ia7=series_ia7, growth_rate=series_growth, rho=series_rho)
             .rename_axis("date", axis=0)
         )
-        filename = code_to_filename[code]
+        filename = CODE_TO_FILENAME[code]
         df_store.to_csv(os.path.join(path_output, f"{filename}.csv"))
 
 

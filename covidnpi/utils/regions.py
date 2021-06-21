@@ -1,3 +1,5 @@
+from covidnpi.utils.dictionaries import reverse_dictionary
+
 POSTAL_TO_CODE = {
     "01": "VI",
     "02": "AB",
@@ -52,6 +54,8 @@ POSTAL_TO_CODE = {
     "51": "CE",
     "52": "ML",
 }
+
+CODE_TO_POSTAL = reverse_dictionary(POSTAL_TO_CODE)
 
 CODE_TO_PROVINCIA = {
     "A": "Alacant",
@@ -117,7 +121,8 @@ PROVINCIA_TO_CODE = {
     "almeria": "AL",
     "avila": "AV",
     "badajoz": "BA",
-    "mallorca": "PM",
+    # "mallorca": "PM",
+    "islas_baleares": "PM",
     "barcelona": "B",
     "burgos": "BU",
     "caceres": "CC",
@@ -165,6 +170,8 @@ PROVINCIA_TO_CODE = {
     "zamora": "ZA",
     "zaragoza": "Z",
 }
+
+CODE_TO_FILENAME = reverse_dictionary(PROVINCIA_TO_CODE)
 
 DICT_PROVINCE_RENAME = {
     "a_coruna": "coruna_la",

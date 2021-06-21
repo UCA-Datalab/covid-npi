@@ -4,11 +4,10 @@ from typing import Union
 import numpy as np
 import pandas as pd
 import typer
-from covidnpi.utils.dictionaries import reverse_dictionary
 from covidnpi.utils.regions import (
+    CODE_TO_POSTAL,
     CODE_TO_PROVINCIA,
     ISLA_TO_PROVINCIA,
-    POSTAL_TO_CODE,
     PROVINCIA_TO_CODE,
 )
 
@@ -59,13 +58,11 @@ def add_unidad_territorial(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_province_code(df: pd.DataFrame) -> pd.DataFrame:
-    # Load all conversion dictionaries
-    code_to_postal = reverse_dictionary(POSTAL_TO_CODE)
     # Get codes
     code = df["provincia"].map(PROVINCIA_TO_CODE)
     # Replace province name and add code
     df["provincia"] = code.map(CODE_TO_PROVINCIA)
-    df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
+    df.insert(loc=1, column="cod_prov", value=code.map(CODE_TO_POSTAL))
     return df
 
 
