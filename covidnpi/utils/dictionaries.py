@@ -5,6 +5,31 @@ import pandas as pd
 from covidnpi.utils.log import logger
 
 
+def update_keep_old_keys(dict_old: dict, dict_add: dict, label: str = "_isla") -> dict:
+    """Updates a dictionary, but if the same keys are found, keep old ones with a label
+
+    Parameters
+    ----------
+    dict_old : dict
+        Dictionary to update
+    dict_add : dict
+        Dictionary with new information
+    label : str, optional
+        Label of old keys, by default "_isla"
+
+    Returns
+    -------
+    dict
+        Updated dictionary
+    """
+    dict_new = dict_old.copy()
+    for key, _ in dict_add.items():
+        if key in dict_old.keys():
+            dict_new[key + label] = dict_new.pop(key)
+    dict_new.update(dict_add)
+    return dict_new
+
+
 def extract_codes_to_dict(df: pd.DataFrame, category: str):
     df_sub = df[df["Nombre TM"] == category]
     d = pd.Series(df_sub["Literal"].values, index=df_sub["Código"]).to_dict()
