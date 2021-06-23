@@ -41,6 +41,7 @@ python covidnpi/preprocess_and_score.py
 ```
 
 To see an explanation of this script, run instead:
+
 ```
 python covidnpi/preprocess_and_score.py --help
 ```
@@ -57,4 +58,4 @@ See [the README on covidnpi/web](covidnpi/web) to learn how to load the data fro
 - [Leopoldo Gutiérrez](https://github.com/leoguga), [UCADatalab](http://datalab.uca.es/)
 - [Daniel Precioso](https://github.com/daniprec), [UCADatalab](http://datalab.uca.es/)
              
-**Last update**: 24th february 2021
+**Last update**: 23th june 2021
