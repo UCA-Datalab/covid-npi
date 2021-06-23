@@ -4,7 +4,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from covidnpi.utils.config import load_config
+from covidnpi.utils.regions import CODE_TO_POBLACION
+from covidnpi.utils.log import logger
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -31,12 +32,13 @@ def load_casos_df(
         Number of cases of COVID by day and province
 
     """
+    logger.debug("Loading incidence data")
 
     casos = pd.read_csv(link, parse_dates=["fecha"], date_parser=_dateparse)
 
     # Correct some abbreviations
     casos["provincia_iso"] = casos["provincia_iso"].replace({"ME": "ML", "NC": "NA"})
-
+    logger.debug("Done loading incidence data")
     return casos
 
 
@@ -73,7 +75,6 @@ def return_casos_of_provincia_normed(
     casos: pd.DataFrame,
     code: str,
     per_inhabitants: int = 100000,
-    path_config: str = "covidnpi/config.toml",
 ) -> pd.Series:
     """Return the series of cases of COVID per date, per N inhabitants,
     for a province
@@ -86,8 +87,6 @@ def return_casos_of_provincia_normed(
         Code of the province (example: "M" for "Madrid")
     per_inhabitants : int, optional
         Normalization value, N, by default 100,000
-    path_config : str, optional
-        Path to the config file, by default "covidnpi/config.toml"
 
     Returns
     -------
@@ -96,6 +95,5 @@ def return_casos_of_provincia_normed(
 
     """
     series = return_casos_of_provincia(casos, code)
-    code_to_poblacion = load_config(path_config, "code_to_poblacion")
-    pob = code_to_poblacion[code]
+    pob = CODE_TO_POBLACION[code]
     return per_inhabitants * series / pob

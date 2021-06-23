@@ -17,5 +17,7 @@ def load_config(path: str, key: str = None):
     try:
         config = toml.load(path)
         return config if key is None else config[key]
-    except:
-        raise ValueError(f"Path to config not found: {path}")
+    except KeyError:
+        raise KeyError(f"Missing key in config file ({path}): {key}")
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Path to config not found: {path}")

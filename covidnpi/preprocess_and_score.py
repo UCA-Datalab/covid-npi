@@ -2,13 +2,14 @@ import os
 
 import typer
 
+from covidnpi.score.score_ambitos import return_dict_score_ambitos
+from covidnpi.score.score_islas import return_dict_score_islas
 from covidnpi.score.score_items import return_dict_score_items
 from covidnpi.score.score_medidas import return_dict_score_medidas
-from covidnpi.score.score_ambitos import return_dict_score_ambitos
-from covidnpi.utils.config import load_config
 from covidnpi.utils.dictionaries import (
-    store_dict_scores,
     store_dict_provincia_to_medidas,
+    store_dict_scores,
+    update_keep_old_keys,
 )
 from covidnpi.utils.log import logger
 from covidnpi.utils.mobility import mobility_report_to_csv
@@ -19,7 +20,6 @@ from covidnpi.utils.taxonomia import PATH_TAXONOMIA
 def main(
     path_raw: str = "datos_NPI",
     path_taxonomia: str = PATH_TAXONOMIA,
-    path_config: str = "config.toml",
     path_output: str = "output",
 ):
     """Reads the raw data stored in path_raw, preprocess and scores it, while storing
@@ -32,8 +32,6 @@ def main(
         Path to raw data, by default "datos_NPI_2"
     path_taxonomia : str, optional
         Path to taxonomia xlsx file, by default `PATH_TAXONOMIA`
-    path_config : str, optional
-        Path to config file, by default 'config.toml'
     path_output : str, optional
         Output folder, by default "output"
 
@@ -54,8 +52,6 @@ def main(
         f"Ahora puntuamos cada medida"
     )
 
-    config = load_config(path_config, "npi")
-
     dict_scores = return_dict_score_medidas(dict_medidas)
     path_score_medidas = os.path.join(path_output, "score_medidas")
     store_dict_scores(dict_scores, path_output=path_score_medidas)
@@ -73,6 +69,8 @@ def main(
     )
 
     dict_ambito = return_dict_score_ambitos(dict_items, path_taxonomia=path_taxonomia)
+    dict_islas = return_dict_score_islas(dict_ambito)
+    dict_ambito = update_keep_old_keys(dict_ambito, dict_islas)
     path_score_ambito = os.path.join(path_output, "score_ambito")
     store_dict_scores(dict_ambito, path_output=path_score_ambito)
 
@@ -82,7 +80,7 @@ def main(
     )
 
     path_mobility = os.path.join(path_output, "mobility")
-    mobility_report_to_csv(path_config=path_config, path_output=path_mobility)
+    mobility_report_to_csv(path_output=path_mobility)
     logger.debug(f"La informacion de movilidad ha sido guardada en {path_mobility}\n")
 
 

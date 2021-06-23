@@ -1,6 +1,33 @@
+import json
 import os
 
 import pandas as pd
+from covidnpi.utils.log import logger
+
+
+def update_keep_old_keys(dict_old: dict, dict_add: dict, label: str = "_isla") -> dict:
+    """Updates a dictionary, but if the same keys are found, keep old ones with a label
+
+    Parameters
+    ----------
+    dict_old : dict
+        Dictionary to update
+    dict_add : dict
+        Dictionary with new information
+    label : str, optional
+        Label of old keys, by default "_isla"
+
+    Returns
+    -------
+    dict
+        Updated dictionary
+    """
+    dict_new = dict_old.copy()
+    for key, _ in dict_add.items():
+        if key in dict_old.keys():
+            dict_new[key + label] = dict_new.pop(key)
+    dict_new.update(dict_add)
+    return dict_new
 
 
 def extract_codes_to_dict(df: pd.DataFrame, category: str):
@@ -17,6 +44,10 @@ def store_dict_provincia_to_medidas(
 
     for provincia, df_medida in dict_medidas.items():
         path_file = os.path.join(path_output, provincia.split("/")[0] + ".csv")
+        # Remove file if it exist
+        if os.path.exists(path_file):
+            os.remove(path_file)
+        # Store new file
         df_medida.to_csv(path_file, index=False)
 
 
@@ -37,7 +68,10 @@ def store_dict_scores(dict_scores, path_output: str = "output/score_medidas"):
 
     for provincia, df_score in dict_scores.items():
         path_file = os.path.join(path_output, provincia.split("/")[0] + ".csv")
-        df_score.to_csv(path_file, float_format="%.3f")
+        try:
+            df_score.to_csv(path_file, float_format="%.3f")
+        except AttributeError as er:
+            logger.error(f"Provincia {provincia} no puede guardarse: {er}")
 
 
 def load_dict_scores(path_scores: str = "output/score_medidas"):
@@ -54,3 +88,13 @@ def load_dict_scores(path_scores: str = "output/score_medidas"):
 def reverse_dictionary(d: dict) -> dict:
     reversed_dictionary = {value: key for (key, value) in d.items()}
     return reversed_dictionary
+
+
+def store_dict_condicion(
+    dict_condicion: dict, path_output: str = "output/dict_condicion.json"
+):
+    """Guarda un json con las condiciones aplicadas por la taxonomia"""
+    if path_output is None:
+        return
+    with open(path_output, "w") as f:
+        json.dump(dict_condicion, f)

@@ -4,10 +4,12 @@ from typing import Union
 import numpy as np
 import pandas as pd
 import typer
-
-from covidnpi.utils.config import load_config
-from covidnpi.utils.dictionaries import reverse_dictionary
-from covidnpi.utils.log import logger
+from covidnpi.utils.regions import (
+    CODE_TO_POSTAL,
+    CODE_TO_PROVINCIA,
+    ISLA_TO_PROVINCIA,
+    PROVINCIA_TO_CODE,
+)
 
 COLS_AMBITO = [
     "fecha",
@@ -15,12 +17,12 @@ COLS_AMBITO = [
     "deporte_exterior",
     "deporte_interior",
     "cultura",
-    "colegios",
-    "educacion_otra",
+    # "colegios",
+    # "educacion_otra",
     "restauracion_exterior",
     "restauracion_interior",
     "movilidad",
-    "trabajo",
+    # "trabajo",
 ]
 
 
@@ -44,14 +46,10 @@ def combine_csv(path: Union[Path, str], colname: str) -> pd.DataFrame:
     return pd.concat(df_dict, names=[colname]).reset_index().drop(columns="level_1")
 
 
-def add_unidad_territorial(
-    df: pd.DataFrame, path_config: str = "covidnpi/config.toml"
-) -> pd.DataFrame:
-    # Load all conversion dictionaries
-    isle_to_province = load_config(path_config, "isla_to_provincia")
+def add_unidad_territorial(df: pd.DataFrame) -> pd.DataFrame:
     # Check for islands
     unidad = df["provincia"].copy()
-    province = df["provincia"].replace(isle_to_province)
+    province = df["provincia"].replace(ISLA_TO_PROVINCIA)
     # Create unidad_territorial column, that contains the islands
     df.insert(loc=2, column="unidad_territorial", value=unidad)
     df.loc[unidad == province, "unidad_territorial"] = np.nan
@@ -59,19 +57,12 @@ def add_unidad_territorial(
     return df
 
 
-def add_province_code(
-    df: pd.DataFrame, path_config: str = "covidnpi/config.toml"
-) -> pd.DataFrame:
-    # Load all conversion dictionaries
-    province_to_code = load_config(path_config, "provincia_to_code")
-    code_to_province = load_config(path_config, "code_to_provincia")
-    postal_to_code = load_config(path_config, "postal_to_code")
-    code_to_postal = reverse_dictionary(postal_to_code)
+def add_province_code(df: pd.DataFrame) -> pd.DataFrame:
     # Get codes
-    code = df["provincia"].map(province_to_code)
+    code = df["provincia"].map(PROVINCIA_TO_CODE)
     # Replace province name and add code
-    df["provincia"] = code.map(code_to_province)
-    df.insert(loc=1, column="cod_prov", value=code.map(code_to_postal))
+    df["provincia"] = code.map(CODE_TO_PROVINCIA)
+    df.insert(loc=1, column="cod_prov", value=code.map(CODE_TO_POSTAL))
     return df
 
 

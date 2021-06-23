@@ -1,4 +1,5 @@
 import pymongo
+from covidnpi.utils.log import logger
 
 
 class SingletonMeta(type):
@@ -43,9 +44,7 @@ class MongoSingleton(metaclass=SingletonMeta):
         logger.debug(x.inserted_id)
         return x
 
-    def update_dict(
-        self, collection: str, id_key: str, id_value: str, new_dict: dict
-    ):
+    def update_dict(self, collection: str, id_key: str, id_value: str, new_dict: dict):
         mydb = self.client[self.database]
         mycol = mydb[collection]
         mycol.update({id_key: id_value}, new_dict)

@@ -3,15 +3,12 @@ import os
 
 import pandas as pd
 import typer
-
-from covidnpi.utils.casos import (
-    load_casos_df,
-    return_casos_of_provincia_normed,
-)
+from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.config import load_config
 from covidnpi.utils.log import logger
-from covidnpi.utils.series import cumulative_incidence, compute_growth_rate
-from covidnpi.utils.taxonomia import return_taxonomia, PATH_TAXONOMIA
+from covidnpi.utils.regions import PROVINCIA_TO_CODE
+from covidnpi.utils.series import compute_growth_rate, cumulative_incidence
+from covidnpi.utils.taxonomia import PATH_TAXONOMIA, return_taxonomia
 from covidnpi.web.mongo import load_mongo
 
 
@@ -36,8 +33,6 @@ def store_scores_in_mongo(
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
 
-    provincia_to_code = load_config(path_config, key="provincia_to_code")
-
     taxonomia = return_taxonomia(path_taxonomia=path_taxonomia)
     list_ambito = taxonomia["ambito"].unique().tolist()
     # Get the minimum date in datetime format
@@ -53,11 +48,13 @@ def store_scores_in_mongo(
         try:
             dict_provincia = {
                 "provincia": provincia,
-                "code": provincia_to_code[provincia],
+                "code": PROVINCIA_TO_CODE[provincia],
                 "fechas": df.index.tolist(),
             }
         except KeyError:
-            logger.debug(f"\nProvincia '{provincia}' code not found\n")
+            logger.debug(
+                f"\nProvincia '{provincia}' code not found. Not stored in mongo.\n"
+            )
             continue
         logger.debug(f"\n{provincia}")
         for ambito in list_ambito:
@@ -74,13 +71,17 @@ def store_scores_in_mongo(
             _ = mongo.insert_new_dict("scores", dict_provincia)
 
 
-def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
+def store_casos_in_mongo(
+    path_config: str = "covidnpi/config.toml",
+):
     """Store incidence and growth rate in mongo
 
     Parameters
     ----------
     path_config : str, optional
         Config file contains the route and credentials of mongo server
+    path_regions : str, optional
+        Regions file contains info about provinces and AC
 
     """
     cfg_mongo = load_config(path_config, key="mongo")
@@ -97,7 +98,8 @@ def store_casos_in_mongo(path_config: str = "covidnpi/config.toml"):
         dict_provincia = {}
         try:
             series = return_casos_of_provincia_normed(
-                casos, code, path_config=path_config
+                casos,
+                code,
             )
             # Filter dates previous to the minimum date
             mask_date = series.index >= date_min
@@ -142,11 +144,15 @@ def datastore(
         Path to taxonomia xlsx file
     path_config : str, optional
         Path to the config toml file
+    path_regions : str, optional
+        Path to the regions file
 
     """
     logger.debug("\n-----\nStoring scores in mongo\n-----\n")
     store_scores_in_mongo(
-        path_output=path_output, path_taxonomia=path_taxonomia, path_config=path_config
+        path_output=path_output,
+        path_taxonomia=path_taxonomia,
+        path_config=path_config,
     )
     logger.debug("\n-----\nStoring number of cases in mongo\n-----\n")
     store_casos_in_mongo(path_config=path_config)

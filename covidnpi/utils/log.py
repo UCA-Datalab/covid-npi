@@ -65,9 +65,7 @@ def raise_type_warning(
     )
 
 
-def raise_value_warning(
-    df: pd.DataFrame, list_idx: list, col: str
-):
+def raise_value_warning(df: pd.DataFrame, list_idx: list, col: str):
     """Prints the rows that produces warnings, showing index and the value that fails"""
     list_msg = [""] * len(list_idx)
     for j, idx in enumerate(list_idx):
@@ -76,3 +74,14 @@ def raise_value_warning(
     logger.warning(
         f"La columna '{col}' contiene valores sospechosos:\n" + "\n".join(list_msg)
     )
+
+
+def raise_missing_warning(df: pd.DataFrame, list_idx: list, col: str):
+    """Prints the rows that produces warnings, showing index and the value that fails"""
+    if len(list_idx) == 0:
+        return
+    list_msg = [""] * len(list_idx)
+    for j, idx in enumerate(list_idx):
+        list_msg[j] = f"     {idx + 2} ... {df.loc[idx, col]}"
+
+    logger.warning(f"La columna '{col}' ha perdido valores:\n" + "\n".join(list_msg))

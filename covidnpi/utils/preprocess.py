@@ -7,8 +7,14 @@ import typer
 import xlrd
 
 from covidnpi.utils.dictionaries import store_dict_provincia_to_medidas
-from covidnpi.utils.log import logger, raise_type_warning, raise_value_warning
+from covidnpi.utils.log import (
+    logger,
+    raise_type_warning,
+    raise_value_warning,
+    raise_missing_warning,
+)
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
+from covidnpi.utils.regions import DICT_PROVINCE_RENAME, DICT_FILL_PROVINCIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE"]
 
@@ -20,12 +26,6 @@ DICT_PORCENTAJE = {
     "iscar": 1.2,
     "pedrajassanesteban": 0.6,
     "pesqueradeduero": 0.1,
-}
-
-DICT_FILL_PROVINCIA = {
-    "CEU": "ceuta",
-    "MEL": "melilla",
-    "RIO": "rioja_la",
 }
 
 DICT_COL_RENAME = {
@@ -69,7 +69,6 @@ DICT_ADD_PROVINCE = {
     "vizcaya": "pais_vasco",
 }
 
-DICT_PROVINCE_RENAME = {"a_coruna": "coruna_la", "cyl": ""}
 DICT_CCAA_RENAME = {"autonomico": np.nan}
 
 LIST_MEDIDAS_NO_HORA = ["MV.3", "MV.4", "MV.7"]
@@ -129,6 +128,7 @@ def read_npi_data(
 
     for sheet in LIST_BASE_SHEET:
         try:
+            # Read excel - dates are parsed automatically
             df = pd.read_excel(path_com, sheet_name=sheet)
             break
         except xlrd.biffh.XLRDError:
@@ -168,9 +168,14 @@ def read_npi_data(
     )
 
     # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
-    for key, value in DICT_FILL_PROVINCIA.items():
-        if f"Medidas_{key}" in path_com:
-            df["provincia"] = df["provincia"].fillna(value)
+    if df["provincia"].isnull().all():
+        for key, value in DICT_FILL_PROVINCIA.items():
+            if f"Medidas_{key}" in path_com:
+                df["provincia"] = df["provincia"].fillna(value)
+                logger.warning(f"La columna 'provincia' se ha rellenado con '{value}'")
+                break
+        else:
+            raise ValueError("La columna 'provincia' no puede ser rellenada")
     return df
 
 
@@ -274,30 +279,32 @@ def rename_unidad(df, rename: dict = None) -> pd.DataFrame:
     return df
 
 
-def format_hora(df: pd.DataFrame, date_format: str = "%H:%M:%S") -> pd.DataFrame:
+def format_hora(df: pd.DataFrame) -> pd.DataFrame:
     """Formats the hora column, to datetime"""
-    # We do not want to modify the original dataframe
-    df = df.copy()
     # If "hora" is empty, return original
     if df["hora"].isnull().all():
         return df
-    # Convert to date format
-    try:
-        hora = pd.to_datetime(df["hora"], format=date_format, errors="raise")
-    except (TypeError, ValueError) as e:
-        hora = pd.Series(
-            pd.to_datetime(df["hora"], format=date_format, errors="coerce")
-        )
-        list_idx = df.loc[hora.isna(), "hora"].dropna().index.tolist()
-        # Filtramos aquellos warning que no interesan,
-        # porque son medidas que no aplican la columna "hora"
-        list_idx = [
-            idx for idx in list_idx if df["codigo"][idx] not in LIST_MEDIDAS_NO_HORA
-        ]
-        if len(list_idx) > 0:
-            raise_type_warning(df, list_idx, "hora")
-    # Take only hour
-    df["hora"] = hora.dt.hour + hora.dt.minute / 60
+    # We do not want to modify the original dataframe
+    df = df.copy()
+    # Take the column "hora" as a string series
+    hora = df["hora"].dropna().astype(str).str.replace(" ", "").copy()
+    # Change ranges HH:MM-HH:MM to last HH:MM
+    mask_range = hora.str.contains(
+        "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+    ).fillna(False)
+    hora[mask_range] = hora[mask_range].str.split("-").str[-1] + ":00"
+    # Take hour
+    minute = hora.str.split(":").str[1]
+    hora = hora.str.split(":").str[0]
+    # Force numeric
+    hora = pd.to_numeric(hora, errors="coerce")
+    minute = pd.to_numeric(minute, errors="coerce")
+    # Sum minutes to hora
+    hora += minute / 60
+    # Check if some original data is missing
+    list_idx = df[hora.isna() & ~df["hora"].isna()].index
+    raise_missing_warning(df, list_idx, "hora")
+    df["hora"] = hora
     return df
 
 
@@ -343,8 +350,8 @@ def format_porcentaje_afectado(df: pd.DataFrame) -> pd.DataFrame:
             f"Maximo: {df['porcentaje_afectado'].dropna().max()}. Se multiplican por 100"
         )
         df["porcentaje_afectado"] = df["porcentaje_afectado"] * 100
-    elif df["porcentaje_afectado"].dropna().min() < 1:
-        list_idx = df.query("porcentaje_afectado < 1").index
+    elif 0 < df["porcentaje_afectado"].dropna().min() < 1:
+        list_idx = df.query("0 < porcentaje_afectado < 1").index
         raise_value_warning(df, list_idx, "porcentaje_afectado")
     # Round to one decimal
     new_col = df["porcentaje_afectado"].astype(float).round(1)

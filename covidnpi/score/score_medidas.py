@@ -5,7 +5,11 @@ import numpy as np
 import pandas as pd
 import typer
 
-from covidnpi.utils.dictionaries import store_dict_scores, load_dict_medidas
+from covidnpi.utils.dictionaries import (
+    store_dict_scores,
+    load_dict_medidas,
+    store_dict_condicion,
+)
 from covidnpi.utils.log import logger
 from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
 
@@ -63,9 +67,9 @@ def build_condicion_porcentaje(lista_medidas, porcentaje):
     return condicion_compuesta
 
 
-def build_condicion_personas(lista_medidas, personas):
+def build_condicion_personas(lista_medidas, personas, condition: str = "<="):
     condicion = build_condicion_existe(lista_medidas)
-    condicion_compuesta = f"({condicion} & (personas <= {personas}))"
+    condicion_compuesta = f"({condicion} & (personas {condition} {personas}))"
     return condicion_compuesta
 
 
@@ -122,10 +126,26 @@ def expand_nivel_educacion(df):
     return df_expanded
 
 
-def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
+def list_missing_codigos(taxonomia: pd.DataFrame, dict_condicion: dict):
+    """Avisa de que faltan ciertos codigos en la lista de condiciones"""
+    codigos = "-".join([s for s in dict_condicion.values()])
+    list_missing = []
+    # Filtramos aquellas con bajo == "existe" porque no saldran en la lista
+    for codigo in taxonomia.query("bajo != 'existe'")["codigo"].unique():
+        if codigo not in codigos:
+            list_missing.append(codigo)
+    if len(list_missing) > 0:
+        logger.error(f"Faltan codigos en condicones: {', '.join(list_missing)}")
+
+
+def add_score_medida(
+    df: pd.DataFrame,
+    taxonomia: pd.DataFrame,
+    path_out_conditions: str = "output/dict_condicion.json",
+) -> pd.DataFrame:
     df_score = df.copy()
     # Asumimos que por defecto es baja
-    df_score["score_medida"] = 0.3
+    df_score["score_medida"] = 0.2
 
     dict_condicion = {}
 
@@ -136,27 +156,35 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
             taxonomia[nivel].str.contains("existe"), "codigo"
         ].unique()
         if len(existe) > 0:
-            list_condiciones += [build_condicion_existe(existe)]
+            list_condiciones.append(build_condicion_existe(existe))
         # Personas
         for pers in [6, 10, 100]:
-            personas_leq = taxonomia.loc[
-                taxonomia[nivel].str.contains(f"<={pers}(?!%)", regex=True), "codigo"
-            ].unique()
-            if len(personas_leq) > 0:
-                list_condiciones += [build_condicion_personas(personas_leq, pers)]
+            for condition in ["<=", "<"]:
+                personas_cond = taxonomia.loc[
+                    taxonomia[nivel].str.contains(
+                        f"{condition}{pers}(?!%)", regex=True
+                    ),
+                    "codigo",
+                ].unique()
+                if len(personas_cond) > 0:
+                    list_condiciones.append(
+                        build_condicion_personas(
+                            personas_cond, pers, condition=condition
+                        )
+                    )
         # Personas no especifica
         no_especifica = taxonomia.loc[
             taxonomia[nivel].str.contains("noseespecifica"), "codigo"
         ].unique()
         if len(no_especifica) > 0:
-            list_condiciones += [build_condicion_no_especifica(no_especifica)]
+            list_condiciones.append(build_condicion_no_especifica(no_especifica))
         # Porcentaje
         for por in [35]:
             porcentaje_leq = taxonomia.loc[
                 taxonomia[nivel].str.contains(f"<={por}%"), "codigo"
             ].unique()
             if len(porcentaje_leq) > 0:
-                list_condiciones += [build_condicion_porcentaje(porcentaje_leq, por)]
+                list_condiciones.append(build_condicion_porcentaje(porcentaje_leq, por))
         # Hora
         for hor in [18]:
             hora_leq = taxonomia.loc[
@@ -165,10 +193,15 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
                 "codigo",
             ].unique()
             if len(hora_leq) > 0:
-                list_condiciones += [build_condicion_horario(hora_leq, hor)]
+                list_condiciones.append(build_condicion_horario(hora_leq, hor))
         # All conditions
-        condicion = " | ".join(list_condiciones)
+        condicion = " | ".join(set(list_condiciones))
         dict_condicion.update({nivel: condicion})
+
+    # Store dictionary
+    store_dict_condicion(dict_condicion, path_output=path_out_conditions)
+    # List missing codigos
+    list_missing_codigos(taxonomia, dict_condicion)
 
     condicion_alto = dict_condicion["alto"]
     condicion_medio = dict_condicion["medio"]
@@ -179,10 +212,10 @@ def score_medidas(df: pd.DataFrame, taxonomia: pd.DataFrame) -> pd.DataFrame:
     except TypeError:
         raise TypeError(f"Column with unproper type:\n{df.dtypes}")
 
-    df_score.loc[mask_medio, "score_medida"] = 0.6
+    df_score.loc[mask_medio, "score_medida"] = 0.5
     df_score.loc[mask_alto, "score_medida"] = 1
 
-    df_score = expand_nivel_educacion(df_score)
+    # df_score = expand_nivel_educacion(df_score)
 
     return df_score
 
@@ -200,9 +233,38 @@ def pivot_df_score(df_score: pd.DataFrame):
     return df_medida
 
 
-def return_dict_score_medidas(
-    dict_medidas: dict
-) -> dict:
+def score_medidas(
+    df: pd.DataFrame,
+    taxonomia: pd.DataFrame,
+    path_out_conditions: str = "output/dict_condicion.json",
+) -> pd.DataFrame:
+    """Receives the medidas dataframe and outputs a new dataframe of scores
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe of medidas
+    taxonomia : pd.DataFrame
+        Dataframe with taxonomy data
+    path_out_conditions: str, optional
+        Path where the extracted conditions are stored, by default "output/dict_condicion.json"
+
+    Returns
+    -------
+    pd.DataFrame
+        Dataframe of scores, each row being a date and each column a medida
+    """
+    df_sub = df.copy()
+    df_sub = process_hora(df_sub)
+    df_sub_extended = extend_fecha(df_sub)
+    df_score = add_score_medida(
+        df_sub_extended, taxonomia, path_out_conditions=path_out_conditions
+    )
+    df_score = pivot_df_score(df_score)
+    return df_score
+
+
+def return_dict_score_medidas(dict_medidas: dict) -> dict:
     """
 
     Parameters
@@ -222,10 +284,7 @@ def return_dict_score_medidas(
 
     for provincia, df_sub in dict_medidas.items():
         logger.debug(provincia)
-        df_sub = process_hora(df_sub)
-        df_sub_extended = extend_fecha(df_sub)
-        df_score = score_medidas(df_sub_extended, taxonomia)
-        df_score = pivot_df_score(df_score)
+        df_score = score_medidas(df_sub, taxonomia)
         # Nos aseguramos de que todas las medidas estan en el df
         medidas_missing = list(set(all_medidas) - set(df_score.columns))
         for m in medidas_missing:
