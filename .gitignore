@@ -135,6 +135,7 @@ dmypy.json
 # Other directories
 notebooks/*
 output/*
+output.zip
 .idea/*
 datos_*
 /config*.toml
