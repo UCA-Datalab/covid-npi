@@ -1,7 +1,60 @@
-# COVID NPI
+<!-- README template: https://github.com/othneildrew/Best-README-Template -->
 
-## Set up
-### Create the environment using Conda
+<!-- PROJECT SHIELDS -->
+<!--
+*** I'm using markdown "reference style" links for readability.
+*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
+*** See the bottom of this document for the declaration of the reference variables
+*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
+*** https://www.markdownguide.org/basic-syntax/#reference-style-links
+-->
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
+
+<!-- PROJECT LOGO -->
+<br />
+<p align="center">
+  <a href="https://github.com/UCA-Datalab">
+    <img src="images/logo.png" alt="Logo" width="400" height="80">
+  </a>
+
+  <h3 align="center">COVID NPI</h3>
+</p>
+
+
+<!-- TABLE OF CONTENTS -->
+<details open="open">
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#create-the-environment">Create the Environment</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#preprocess-and-score-items">Preprocess and Score Items</a>
+     </li>
+     <li>
+      <a href="#web-application">Web Application</a>
+     </li>
+  </ol>
+</details>
+
+## About the project
+
+COVID NPI
+
+## Getting started
+### Create the environment
+
+To create the environment using Conda:
 
   1. Install miniconda
      
@@ -46,14 +99,13 @@ To see an explanation of this script, run instead:
 python covidnpi/preprocess_and_score.py --help
 ```
 
-## Web
+## Web Application
 
 See [the README on covidnpi/web](covidnpi/web) to learn how to load the data from mongo.
 
 
-## Credits
+## Contact
 
-**Authors:**
 - [David Gómez-Ullate](https://github.com/dgullate), [UCADatalab](http://datalab.uca.es/)
 - [Leopoldo Gutiérrez](https://github.com/leoguga), [UCADatalab](http://datalab.uca.es/)
 - [Daniel Precioso](https://github.com/daniprec), [UCADatalab](http://datalab.uca.es/)
