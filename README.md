@@ -12,7 +12,6 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
 
 <!-- PROJECT LOGO -->
 <br />
@@ -43,7 +42,13 @@
      </li>
      <li>
       <a href="#web-application">Web Application</a>
+      <ul>
+        <li><a href="#initialize-the-web-application">Initialize the Web Application</a></li>
+        <li><a href="#load-data-from-mongo">Load Data from Mongo</a></li>
+      </ul>
      </li>
+     <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgements">Acknowledgements</a></li>
   </ol>
 </details>
 
@@ -101,13 +106,116 @@ python covidnpi/preprocess_and_score.py --help
 
 ## Web Application
 
-See [the README on covidnpi/web](covidnpi/web) to learn how to load the data from mongo.
+### Initialize the Web Application
 
+To initialize the web application, you must first host a mongo server.
+Make a copy of the [config file](config.toml) and fill in the required credentials.
+From now on, use that config file when running the following functions.
+
+To store all the required data in the mongo server, run:
+
+```
+python covidnpi/initialize_web.py --path-config path-config
+```
+
+Where `path-config` leads to your copy of the config file.
+
+### Load Data from Mongo
+
+In this section we show use cases for the different functions.
+
+To load the NPI scores of several ambits for a given province:
+
+````python
+from covidnpi.web.dataloaders import return_ambits_by_province
+
+# Parameters to define
+# province : The code of the province, in uppercase
+province = "M"
+# ambits : List containing the ambits
+ambits = ["deporte_exterior", "cultura", "movilidad"]
+# path_config : Path to your config file
+path_config = "config.toml"
+
+dict_plot = return_ambits_by_province(province, ambits, path_config=path_config)
+# Output dict_plot will have the following format
+# {"deporte_exterior": {"x": [...], "y": [...]},
+#  "cultura": {"x": [...], "y": [...]},
+#  "movilidad": {"x": [...], "y": [...]}}
+# where x are dates and y are floats between 0 and 1
+````
+
+To load the NPI scores of several provinces for a given ambit:
+
+````python
+from covidnpi.web.dataloaders import return_provinces_by_ambit
+
+# Parameters to define
+# ambit : The name of the ambit, in lowercase
+ambit = "movilidad"
+# provinces : List of provinces codes
+provinces = ["M", "CA"]
+# path_config : Path to your config file
+path_config = "config.toml"
+
+dict_plot = return_provinces_by_ambit(ambit, provinces, path_config=path_config)
+# Output dict_plot will have the following format
+# {"M": {"x": [...], "y": [...]},
+#  "CA": {"x": [...], "y": [...]}}
+# where x are dates and y are floats between 0 and 1
+````
+
+To load the cumulative incidence in a given province:
+````python
+from covidnpi.web.dataloaders import return_incidence_of_province
+
+# Parameters to define
+# province : The code of the province, in uppercase
+province = "M"
+# path_config : Path to your config file
+path_config = "config.toml"
+
+dict_plot = return_incidence_of_province(province, path_config=path_config)
+# Output dict_plot will have the following format
+# {"x": [...], "y": [...]}
+# where x are dates and y are floats
+````
+
+To load the growth ratio in a given province:
+````python
+from covidnpi.web.dataloaders import return_growth_of_province
+
+# Parameters to define
+# province : The code of the province, in uppercase
+province = "M"
+# path_config : Path to your config file
+path_config = "config.toml"
+
+dict_plot = return_growth_of_province(province, path_config=path_config)
+# Output dict_plot will have the following format
+# {"x": [...], "y": [...]}
+# where x are dates and y are floats
+````
 
 ## Contact
 
-- [David Gómez-Ullate](https://github.com/dgullate), [UCADatalab](http://datalab.uca.es/)
-- [Leopoldo Gutiérrez](https://github.com/leoguga), [UCADatalab](http://datalab.uca.es/)
-- [Daniel Precioso](https://github.com/daniprec), [UCADatalab](http://datalab.uca.es/)
-             
-**Last update**: 23th june 2021
+David Gómez-Ullate - [dgullate](https://github.com/dgullate) -  david.gomezullate@uca.es
+
+Project link: [https://github.com/UCA-Datalab/covid-npi](https://github.com/UCA-Datalab/covid-npi)
+
+## Acknowledgements
+
+* [UCA DataLab](http://datalab.uca.es/)
+* [Daniel Precioso](https://www.linkedin.com/in/daniel-precioso-garcelan/)
+* [Leopoldo Jesús Gutiérrez Galeano](https://www.linkedin.com/search/results/all/?keywords=leopoldo%20jes%C3%BAs%20guti%C3%A9rrez%20galeano&origin=RICH_QUERY_SUGGESTION&position=0&searchId=52369ebd-8c77-46b0-b6cb-864f095f42e2&sid=MW!)
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/UCA-Datalab/covid-npi.svg?style=for-the-badge
+[contributors-url]: https://github.com/UCA-Datalab/covid-npi/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/UCA-Datalab/covid-npi.svg?style=for-the-badge
+[forks-url]: https://github.com/UCA-Datalab/covid-npi/network/members
+[stars-shield]: https://img.shields.io/github/stars/UCA-Datalab/covid-npi.svg?style=for-the-badge
+[stars-url]: https://github.com/UCA-Datalab/covid-npi/stargazers
+[issues-shield]: https://img.shields.io/github/issues/UCA-Datalab/covid-npi.svg?style=for-the-badge
+[issues-url]: https://github.com/UCA-Datalab/covid-npi/issues
