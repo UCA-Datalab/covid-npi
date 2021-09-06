@@ -106,10 +106,14 @@ python covidnpi/preprocess_and_score.py --help
 
 ## Web Application
 
+Our web service is hosted at [http://npispain.clapton.uca.es/#/home](http://npispain.clapton.uca.es/#/home)
+
+If you want to host your own web application, follow the instructions in this section. Else, you can skip to [Contact](#contact) section.
+
 ### Initialize the Web Application
 
 To initialize the web application, you must first host a mongo server.
-Make a copy of the [config file](config.toml) and fill in the required credentials.
+Make a copy of the [config file](covidnpi/config.toml) and fill in the required credentials.
 From now on, use that config file when running the following functions.
 
 To store all the required data in the mongo server, run:
