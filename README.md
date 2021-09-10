@@ -38,6 +38,13 @@
       </ul>
     </li>
     <li>
+      <a href="#data">Data</a>
+      <ul>
+        <li><a href="#non-pharmaceutical-interventions">Non-Pharmaceutical Interventions</a></li>
+        <li><a href="#taxonomy">Taxonomy</a></li>
+      </ul>
+    </li>
+    <li>
       <a href="#preprocess-and-score-items">Preprocess and Score Items</a>
      </li>
      <li>
@@ -54,7 +61,7 @@
 
 ## About the project
 
-COVID NPI
+We quantify the restriction level of non-pharmaceutical interventions during COVID, in Spain.
 
 ## Getting started
 ### Create the environment
@@ -90,7 +97,19 @@ To create the environment using Conda:
        python -m ipykernel install --user --name=covid-npi
        ```
 
-## Preprocess and score items
+## Data
+
+The data required to run this module must be provided by the user, and must follow the format specified below.
+
+### Non-Pharmaceutical Interventions
+
+Non-Pharmaceutical Interventions (NPI) should be located in a folder named [datos_NPI](./datos_NPI) at root level. This folder contains one file per region (Autonomous Community), in xlsm or xlsx format.
+
+The name of the region NPI files does not matter, but it is important that they have a sheet labelled "base" inside. Other valid names for the sheet are "base-regional-provincias", "BASE" or "Base". Files without this sheet will be ignored by the module.
+
+### Taxonomy
+
+## Preprocess and Score Items
 
 With the environment active, run the following command:
 
