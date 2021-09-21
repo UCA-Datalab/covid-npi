@@ -112,7 +112,7 @@ The name of the files does not matter, but it is important that they have a shee
 [ERROR] File could not be opened as province: base sheet is missing
 ```
 
-The `base` sheet describes one **intervention** per row. Interventions apply to a specific area of activity (such as "culture" or "mobility") and may affect all the region or only part of it, during a certain period of time. The `base` sheet should contain the following columns:
+The `base` sheet describes one **intervention (NPI)** per row. Interventions apply to a specific area of activity (such as "culture" or "mobility") and may affect all the region or only part of it, during a certain period of time. The `base` sheet should contain the following columns:
 
 - `ambito` can take the values "autonómico" when the intervention affects the whole autonomous community, "provincial" when it applies to a province (see `provincia`), or "subprovincial" when it only affects part of a province (see `porcentaje_afectado`).
 - `comunidad_autonoma` contains the name of the autonomous community. Must be the same in the whole file.
@@ -133,12 +133,12 @@ The `base` sheet describes one **intervention** per row. Interventions apply to 
 
 Taxonomy is a xslx file, and must be placed in the same [datos_NPI](./datos_NPI) folder as the data above. Each sheet in the taxonomy corresponds to a specific area of intervention, such as "commerce", "education" or "outside sport". These sheets have the following columns:
 
-- `Código medida concreta` contains the specific code of the intervention. Related to the column `codigo` of the NPI files.
-- `Media concreta` contains the description of the intervention. Not used by this module.
-- `Nombre item` contains the name of the item which the interventions belongs to. An item is a group of interventions related to the same topic.
-- `Construcción del item`
-- `Ponderación del item`
-- `Criterio`
+- `Código medida concreta` contains the specific code of the intervention (NP). Related to the column `codigo` of the NPI files.
+- `Media concreta` contains the description of the NPI. Not used by this module.
+- `Nombre item` contains the name of the item which the interventions are associated to.
+- `Construcción del item` contains the rules that describe how to compute the score of the item from the scores of the NPI associated to it.
+- `Ponderación del item` contains the weight (between 0 and 1) given to the item. It is used to compute the area score.
+- `Criterio` contains the rules that describe how to score the NPI.
 
 ## Preprocess and Score Items
 
