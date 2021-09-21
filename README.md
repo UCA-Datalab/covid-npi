@@ -103,11 +103,34 @@ The data required to run this module must be provided by the user, and must foll
 
 ### Non-Pharmaceutical Interventions
 
-Non-Pharmaceutical Interventions (NPI) should be located in a folder named [datos_NPI](./datos_NPI) at root level. This folder contains one file per region (Autonomous Community), in xlsm or xlsx format.
+Non-Pharmaceutical Interventions (NPI) should be located in a folder named [datos_NPI](./datos_NPI) at root level. This folder contains one file per region (autonomous community), in xlsm or xlsx format.
 
-The name of the region NPI files does not matter, but it is important that they have a sheet labelled "base" inside. Other valid names for the sheet are "base-regional-provincias", "BASE" or "Base". Files without this sheet will be ignored by the module.
+The name of the region NPI files does not matter, but it is important that they have a sheet labelled `base` inside. Other valid names for the sheet are `base-regional-provincias`, `BASE` or `Base`. Files without this sheet will raise the following error when trying to be processed:
+
+```
+[ERROR] File could not be opened as province: base sheet is missing
+```
+
+The `base` sheet file should contain the following columns:
+
+- `ambito` can take the values "autonómico" when it affects the whole autonomous community, "provincial" when it applies to a province (see `provincia`), or "subprovincial" when it only affects part of a province (see `porcentaje_afectado`).
+- `comunidad_autonoma` contains the name of the autonomous community. Must be the same in the whole file.
+- `provincia` contains the name of the province affected by the intervention, when `ambito` is "provincial" or "subprovincial".
+- `fecha_publicacion` contains the date of publication of the intervention. Format is "MM/DD/YY".
+- `fecha_inicio` contains the date of start of the intervention. Format is "MM/DD/YY".
+- `fecha_fin` contains the date of end of the intervention. Format is "MM/DD/YY".
+- `medida_concreta` contains the description of the intervention. Not used by this module.
+- `codigo` or `cod_con` contains the specific code of the intervention.
+- `medida_generica` is not used by this module.
+- `cod_gen` is not used by this module.
+- `unidad` is only used by certain interventions, when certain value needs to be specified. This column contains the units of that value. Examples are "hora", "personas" and "porcentaje".
+- `valor` comes in conjunction with `unidad`. Contains the value.
+- `porcentaje_afectado` contains the percentage (over 100) affected by the intervention, when `ambito` is "subprovincial".
+- `nivel_educacion`
 
 ### Taxonomy
+
+Taxonomy is a xslx file, and must be placed in the same [datos_NPI](./datos_NPI) folder as the data above.
 
 ## Preprocess and Score Items
 
