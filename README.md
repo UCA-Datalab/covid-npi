@@ -54,6 +54,7 @@
         <li><a href="#load-data-from-mongo">Load Data from Mongo</a></li>
       </ul>
      </li>
+     <li><a href="#glossary">Glossary</a></li>
      <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgements">Acknowledgements</a></li>
   </ol>
@@ -103,17 +104,17 @@ The data required to run this module must be provided by the user, and must foll
 
 ### Non-Pharmaceutical Interventions
 
-Non-Pharmaceutical Interventions (NPI) should be located in a folder named [datos_NPI](./datos_NPI) at root level. This folder contains one file per region (autonomous community), in xlsm or xlsx format.
+Non-Pharmaceutical Interventions (NPI) files should be located in a folder named [datos_NPI](./datos_NPI) at root level. This folder contains one file per region (autonomous community), in xlsm or xlsx format.
 
-The name of the region NPI files does not matter, but it is important that they have a sheet labelled `base` inside. Other valid names for the sheet are `base-regional-provincias`, `BASE` or `Base`. Files without this sheet will raise the following error when trying to be processed:
+The name of the files does not matter, but it is important that they have a sheet labelled `base` inside. Other valid names for the sheet are `base-regional-provincias`, `BASE` or `Base`. Files without this sheet will raise the following error when trying to be processed:
 
 ```
 [ERROR] File could not be opened as province: base sheet is missing
 ```
 
-The `base` sheet file should contain the following columns:
+The `base` sheet describes one **intervention** per row. Interventions apply to a specific area of activity (such as "culture" or "mobility") and may affect all the region or only part of it, during a certain period of time. The `base` sheet should contain the following columns:
 
-- `ambito` can take the values "autonómico" when it affects the whole autonomous community, "provincial" when it applies to a province (see `provincia`), or "subprovincial" when it only affects part of a province (see `porcentaje_afectado`).
+- `ambito` can take the values "autonómico" when the intervention affects the whole autonomous community, "provincial" when it applies to a province (see `provincia`), or "subprovincial" when it only affects part of a province (see `porcentaje_afectado`).
 - `comunidad_autonoma` contains the name of the autonomous community. Must be the same in the whole file.
 - `provincia` contains the name of the province affected by the intervention, when `ambito` is "provincial" or "subprovincial".
 - `fecha_publicacion` contains the date of publication of the intervention. Format is "MM/DD/YY".
@@ -130,7 +131,14 @@ The `base` sheet file should contain the following columns:
 
 ### Taxonomy
 
-Taxonomy is a xslx file, and must be placed in the same [datos_NPI](./datos_NPI) folder as the data above.
+Taxonomy is a xslx file, and must be placed in the same [datos_NPI](./datos_NPI) folder as the data above. Each sheet in the taxonomy corresponds to a specific area of intervention, such as "commerce", "education" or "outside sport". These sheets have the following columns:
+
+- `Código medida concreta` contains the specific code of the intervention. Related to the column `codigo` of the NPI files.
+- `Media concreta` contains the description of the intervention. Not used by this module.
+- `Nombre item` contains the name of the item which the interventions belongs to. An item is a group of interventions related to the same topic.
+- `Construcción del item`
+- `Ponderación del item`
+- `Criterio`
 
 ## Preprocess and Score Items
 
@@ -242,6 +250,20 @@ dict_plot = return_growth_of_province(province, path_config=path_config)
 # {"x": [...], "y": [...]}
 # where x are dates and y are floats
 ````
+
+## Glossary
+
+- **Ambit:** false friend. See "Area".
+- **Area (of activity):** Specific group of activities where NPI are applied. Examples are "commerce", "education" and "outside sports".
+- **Area Score:** Represents how restricted are the activities related to that area, from 0 (no restriction) to 1 (activity is not allowed). Area score is computed by weighting the scores of the items related to that area. The weights of each item are given by the taxonomy.
+- **Intervention:** see "Non-Pharmaceutical Intervention".
+- **Item:** An item is part of an area of activity. It relates to a specific topic within the area. For instance, the area "culture" has the items "museum" and "cinema" among others.
+- **Item Score:** Represents how restricted are the activities related to that item, from 0 (no restriction) to 1 (activity is not allowed). Item score is computed from the scores of the NPI related to that item, following the rules described in the taxonomy.
+- **Non-Pharmaceutical Intervention:** Interventions are restrictions over a specific area of activity (such as "culture" or "mobility") and may affect all the region or only part of it, during a certain period of time.
+- **NPI:** Initials of "Non-Pharmaceutical Intervention".
+- **NPI Score:** Severity of the NPI, how restrictive the intervention is. It has four levels: none (score of 0), low (0.2), medium (0.5) and high (score of 1).
+- **Score:** Level of restriction impossed by a NPI or a group of NPI, from 0 to 1. Scores are computed following the rules given by the taxonomy. NPI scores are used to compute item scores, while item scores are required to compute area scores.
+- **Taxonomy:** File that contains the rules to compute the sevirity of each NPI, and the score of items and areas of activity.
 
 ## Contact
 
