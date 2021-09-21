@@ -16,7 +16,7 @@ from covidnpi.utils.log import (
 from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
 from covidnpi.utils.regions import DICT_PROVINCE_RENAME, DICT_FILL_PROVINCIA
 
-LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE"]
+LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE", "Base"]
 
 DICT_PORCENTAJE = {
     "cantalejo": 2,
@@ -456,12 +456,12 @@ def read_npi_and_build_dict(
             df = read_npi_data(path_file)
         except IsADirectoryError:
             logger.error(
-                f"File {file} could not be opened as province\n...............\n"
+                f"File {file} could not be opened as province: not a valid file format\n...............\n"
             )
             continue
         except KeyError:
             logger.error(
-                f"File {file} could not be opened as province\n...............\n"
+                f"File {file} could not be opened as province: base sheet is missing\n...............\n"
             )
             continue
         # Filtramos las medidas relevantes
