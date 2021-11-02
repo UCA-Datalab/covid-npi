@@ -8,6 +8,27 @@ from covidnpi.utils.ambitos import list_ambitos
 from scipy.integrate import trapz
 
 
+def compute_area_of_dataframe_columns(df: pd.DataFrame) -> Dict:
+    """Retuns a dictionary with the area under the series of each
+    column in the dataframe. Keys are the name of the columns.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Pandas dataframe, containing numeric values.
+
+    Returns
+    -------
+    Dict
+        Column: Area
+    """
+    dict_areas = {}
+    for column in df:
+        ser = df[column]
+        dict_areas.update({column: trapz(ser)})
+    return dict_areas
+
+
 def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
     """Returns a dataframe with the mean NPI score per province (columns)
     and date (rows).
@@ -39,27 +60,6 @@ def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
         # Compute the area under the curve and store
         dict_ambito.update({province: ser})
     return pd.DataFrame.from_dict(dict_ambito)
-
-
-def compute_area_of_dataframe_columns(df: pd.DataFrame) -> Dict:
-    """Retuns a dictionary with the area under the series of each
-    column in the dataframe. Keys are the name of the columns.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Pandas dataframe, containing numeric values.
-
-    Returns
-    -------
-    Dict
-        Column: Area
-    """
-    dict_areas = {}
-    for column in df:
-        ser = df[column]
-        dict_areas.update({column: trapz(ser)})
-    return dict_areas
 
 
 def dict_of_scores_area_by_ambito(
