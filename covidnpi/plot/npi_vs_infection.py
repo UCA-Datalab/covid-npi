@@ -184,10 +184,20 @@ def main(
 
     # Scatter plot of NPI vs infection
     plt.figure(dpi=160)
-    plt.scatter(list_scores, list_infect, c=np.multiply(list_infect, list_scores))
+    plt.scatter(
+        list_scores,
+        list_infect,
+        c=np.multiply(list_infect, list_scores),
+        label="Data points",
+    )
     # Plot lines in medians
     plt.axhline(np.median(list_infect), linestyle="--", color="k", alpha=0.3)
     plt.axvline(np.median(list_scores), linestyle="--", color="k", alpha=0.3)
+
+    # Compute correlation
+    r = np.corrcoef(list_scores, list_infect)[0, 1]
+    plt.scatter([], [], c="w", alpha=1, label=f"Pearson's r = {round(r,2)}")
+    plt.legend()
 
     # Include the provinces codes, adjusted so that they do not overlap
     list_text = []
