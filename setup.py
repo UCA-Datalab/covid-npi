@@ -20,6 +20,7 @@ setuptools.setup(
     python_requires=">=3.7, <3.8",
     setup_requires=["setuptools_scm"],
     install_requires=[
+        "adjustText==0.7.3",
         "matplotlib==3.2.1",
         "numpy==1.18.1",
         "pandas==1.0.3",
