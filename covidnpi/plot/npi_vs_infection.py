@@ -5,6 +5,8 @@ from typing import Dict
 import pandas as pd
 import typer
 from covidnpi.utils.ambitos import list_ambitos
+from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
+from covidnpi.utils.regions import PROVINCIA_TO_CODE
 from scipy.integrate import trapz
 
 
@@ -64,8 +66,8 @@ def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
 
 def dict_of_scores_area_by_ambito(
     path_data: Path,
-    date_min: str="15-09-2020",
-    date_max: str="08-05-2021",
+    date_min: str = "15-09-2020",
+    date_max: str = "08-05-2021",
 ) -> Dict:
     """Returns a dictionary that contains the NPI area score
     of each province.
@@ -93,11 +95,65 @@ def dict_of_scores_area_by_ambito(
     return compute_area_of_dataframe_columns(df)
 
 
-def main(path_data: str = "output",date_min: str="15-09-2020",
-    date_max: str="08-05-2021",):
+def dataframe_of_infection() -> pd.DataFrame:
+    """Returns a dataframe with the daily number of infections
+    per province
+
+    Returns
+    -------
+    pd.DataFrame
+        Pandas dataframe, index is datetime
+    """
+    casos = load_casos_df()
+    # Initialize dictionary of time series
+    dict_ser = {}
+    for provincia, code in PROVINCIA_TO_CODE.items():
+        # Incidence by province for each 100,000 inhabitants
+        ser = return_casos_of_provincia_normed(casos, code)
+        # Index to datetime
+        ser.index = pd.to_datetime(ser.index)
+        dict_ser.update({provincia: ser})
+    return pd.DataFrame.from_dict(dict_ser)
+
+
+def dict_of_infection_area(
+    date_min: str = "15-09-2020",
+    date_max: str = "08-05-2021",
+) -> Dict:
+    """Returns a dictionary that contains the infection area
+    of each province.
+
+    Parameters
+    ----------
+    date_min : str, optional
+        Minimum date with format "%d-%m-%Y", by default "15-09-2020"
+    date_max : str, optional
+        Maximum date with format "%d-%m-%Y", by default "08-05-2021"
+
+    Returns
+    -------
+    Dict
+        Province: Infection area
+    """
+    df = dataframe_of_infection()
+    # String to datetime
+    date_min = dt.datetime.strptime(date_min, "%d-%m-%Y")
+    date_max = dt.datetime.strptime(date_max, "%d-%m-%Y")
+    # Limit dataframe within date range
+    df = df[(df.index >= date_min) & (df.index <= date_max)]
+    return compute_area_of_dataframe_columns(df)
+
+
+def main(
+    path_data: str = "output",
+    date_min: str = "15-09-2020",
+    date_max: str = "08-05-2021",
+):
     path_data = Path(path_data)
-    dict_scores = dict_of_scores_area_by_ambito(path_data, date_min=date_min, date_max=date_max)
-    print(dict_scores)
+    dict_scores = dict_of_scores_area_by_ambito(
+        path_data, date_min=date_min, date_max=date_max
+    )
+    dict_infect = dict_of_infection_area(date_min=date_min, date_max=date_max)
 
 
 if __name__ == "__main__":
