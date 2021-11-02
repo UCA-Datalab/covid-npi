@@ -27,7 +27,6 @@ setuptools.setup(
         "pip==19.3",
         "pymongo==3.11.0",
         "pytest==6.2.4",
-        "scipy==1.7.1",
         "toml==0.10.2",
         "typer==0.3.2",
         "xlrd==1.1.0",

@@ -10,12 +10,15 @@ from adjustText import adjust_text
 from covidnpi.utils.ambitos import list_ambitos
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.log import logger
-from covidnpi.utils.regions import DICT_PROVINCE_RENAME, PROVINCIA_TO_CODE
-from scipy.integrate import trapz
+from covidnpi.utils.regions import (
+    CODE_TO_PROVINCIA,
+    DICT_PROVINCE_RENAME,
+    PROVINCIA_TO_CODE,
+)
 
 
-def compute_area_of_dataframe_columns(df: pd.DataFrame) -> Dict:
-    """Retuns a dictionary with the area under the series of each
+def compute_mean_of_dataframe_columns(df: pd.DataFrame) -> Dict:
+    """Returns a dictionary with the mean of the series of each
     column in the dataframe. Keys are the name of the columns.
 
     Parameters
@@ -31,7 +34,7 @@ def compute_area_of_dataframe_columns(df: pd.DataFrame) -> Dict:
     dict_areas = {}
     for column in df:
         ser = df[column]
-        dict_areas.update({column: trapz(ser) / len(ser)})
+        dict_areas.update({column: ser.mean()})
     return dict_areas
 
 
@@ -72,12 +75,12 @@ def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
     return pd.DataFrame.from_dict(dict_ambito)
 
 
-def dict_of_scores_area_by_ambito(
+def dict_of_scores_mean_by_ambito(
     path_data: Path,
     date_min: str = "15-09-2020",
     date_max: str = "08-05-2021",
 ) -> Dict:
-    """Returns a dictionary that contains the NPI area score
+    """Returns a dictionary that contains the NPI mean score
     of each province.
 
     Parameters
@@ -100,7 +103,7 @@ def dict_of_scores_area_by_ambito(
     date_max = dt.datetime.strptime(date_max, "%d-%m-%Y")
     # Limit dataframe within date range
     df = df[(df.index >= date_min) & (df.index <= date_max)]
-    return compute_area_of_dataframe_columns(df)
+    return compute_mean_of_dataframe_columns(df)
 
 
 def dataframe_of_infection() -> pd.DataFrame:
@@ -124,11 +127,11 @@ def dataframe_of_infection() -> pd.DataFrame:
     return pd.DataFrame.from_dict(dict_ser)
 
 
-def dict_of_infection_area(
+def dict_of_infection_mean(
     date_min: str = "15-09-2020",
     date_max: str = "08-05-2021",
 ) -> Dict:
-    """Returns a dictionary that contains the infection area
+    """Returns a dictionary that contains the infection mean
     of each province.
 
     Parameters
@@ -149,7 +152,7 @@ def dict_of_infection_area(
     date_max = dt.datetime.strptime(date_max, "%d-%m-%Y")
     # Limit dataframe within date range
     df = df[(df.index >= date_min) & (df.index <= date_max)]
-    return compute_area_of_dataframe_columns(df)
+    return compute_mean_of_dataframe_columns(df)
 
 
 def main(
@@ -158,11 +161,13 @@ def main(
     date_max: str = "08-05-2021",
 ):
     path_data = Path(path_data)
+
     # Dictionary of scores and infection
-    dict_scores = dict_of_scores_area_by_ambito(
+    dict_scores = dict_of_scores_mean_by_ambito(
         path_data, date_min=date_min, date_max=date_max
     )
-    dict_infect = dict_of_infection_area(date_min=date_min, date_max=date_max)
+    dict_infect = dict_of_infection_mean(date_min=date_min, date_max=date_max)
+
     # List provinces, scores and infection
     list_provinces = []
     list_scores = []
@@ -178,6 +183,7 @@ def main(
         list_infect.append(infection)
 
     # Scatter plot of NPI vs infection
+    plt.figure(dpi=160)
     plt.scatter(list_scores, list_infect, c=np.multiply(list_infect, list_scores))
     # Plot lines in medians
     plt.axhline(np.median(list_infect), linestyle="--", color="k", alpha=0.3)
@@ -185,18 +191,21 @@ def main(
 
     # Include the provinces codes, adjusted so that they do not overlap
     list_text = []
-    for idx, province in enumerate(list_provinces):
+    for idx, code in enumerate(list_provinces):
         list_text.append(
             plt.text(
-                list_scores[idx], list_infect[idx], province, fontdict={"size": 10}
+                list_scores[idx],
+                list_infect[idx],
+                CODE_TO_PROVINCIA[code],
+                fontdict={"size": 7},
             )
         )
-    adjust_text(list_text)
+    adjust_text(list_text, arrowprops=dict(arrowstyle="->", color="grey", lw=0.5))
 
     # Labels and store the image
-    plt.xlabel("NPI mean score")
+    plt.xlabel("Mean stringency index")
     plt.ylabel("Infections per day (100,000 inhabitants)")
-    plt.savefig("npi_vs_infection.png")
+    plt.savefig(path_data / "npi_vs_infection.png")
 
 
 if __name__ == "__main__":
