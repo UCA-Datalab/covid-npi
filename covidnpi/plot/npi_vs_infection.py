@@ -2,11 +2,15 @@ import datetime as dt
 from pathlib import Path
 from typing import Dict
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import typer
+from adjustText import adjust_text
 from covidnpi.utils.ambitos import list_ambitos
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
-from covidnpi.utils.regions import PROVINCIA_TO_CODE
+from covidnpi.utils.log import logger
+from covidnpi.utils.regions import DICT_PROVINCE_RENAME, PROVINCIA_TO_CODE
 from scipy.integrate import trapz
 
 
@@ -27,7 +31,7 @@ def compute_area_of_dataframe_columns(df: pd.DataFrame) -> Dict:
     dict_areas = {}
     for column in df:
         ser = df[column]
-        dict_areas.update({column: trapz(ser)})
+        dict_areas.update({column: trapz(ser) / len(ser)})
     return dict_areas
 
 
@@ -43,7 +47,8 @@ def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        Dataframe with mean NPI scores
+        Dataframe with mean NPI scores, index is datetimes,
+        columns are provinces codes
     """
     # Path to score_ambito
     path_area = path_data / "score_ambito"
@@ -59,8 +64,11 @@ def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
         ser = pd.read_csv(path_file, index_col=0)[list_amb].mean(axis=1)
         # Index to datetime
         ser.index = pd.to_datetime(ser.index)
+        # Rename province if needed
+        province = DICT_PROVINCE_RENAME.get(province, province)
+        code = PROVINCIA_TO_CODE.get(province, province)
         # Compute the area under the curve and store
-        dict_ambito.update({province: ser})
+        dict_ambito.update({code: ser})
     return pd.DataFrame.from_dict(dict_ambito)
 
 
@@ -84,7 +92,7 @@ def dict_of_scores_area_by_ambito(
     Returns
     -------
     Dict
-        Province: NPI score area
+        Province Code: NPI score area
     """
     df = dataframe_of_scores_mean_by_ambito(path_data)
     # String to datetime
@@ -102,17 +110,17 @@ def dataframe_of_infection() -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        Pandas dataframe, index is datetime
+        Pandas dataframe, index is datetime, columns are provinces codes
     """
     casos = load_casos_df()
     # Initialize dictionary of time series
     dict_ser = {}
-    for provincia, code in PROVINCIA_TO_CODE.items():
+    for _, code in PROVINCIA_TO_CODE.items():
         # Incidence by province for each 100,000 inhabitants
         ser = return_casos_of_provincia_normed(casos, code)
         # Index to datetime
         ser.index = pd.to_datetime(ser.index)
-        dict_ser.update({provincia: ser})
+        dict_ser.update({code: ser})
     return pd.DataFrame.from_dict(dict_ser)
 
 
@@ -133,7 +141,7 @@ def dict_of_infection_area(
     Returns
     -------
     Dict
-        Province: Infection area
+        Province Code: Infection area
     """
     df = dataframe_of_infection()
     # String to datetime
@@ -150,10 +158,45 @@ def main(
     date_max: str = "08-05-2021",
 ):
     path_data = Path(path_data)
+    # Dictionary of scores and infection
     dict_scores = dict_of_scores_area_by_ambito(
         path_data, date_min=date_min, date_max=date_max
     )
     dict_infect = dict_of_infection_area(date_min=date_min, date_max=date_max)
+    # List provinces, scores and infection
+    list_provinces = []
+    list_scores = []
+    list_infect = []
+    for province, score in dict_scores.items():
+        try:
+            infection = dict_infect[province]
+        except KeyError:
+            logger.warning(f"Province {province} has no infected value. Skipped.")
+            continue
+        list_provinces.append(province)
+        list_scores.append(score)
+        list_infect.append(infection)
+
+    # Scatter plot of NPI vs infection
+    plt.scatter(list_scores, list_infect, c=np.multiply(list_infect, list_scores))
+    # Plot lines in medians
+    plt.axhline(np.median(list_infect), linestyle="--", color="k", alpha=0.3)
+    plt.axvline(np.median(list_scores), linestyle="--", color="k", alpha=0.3)
+
+    # Include the provinces codes, adjusted so that they do not overlap
+    list_text = []
+    for idx, province in enumerate(list_provinces):
+        list_text.append(
+            plt.text(
+                list_scores[idx], list_infect[idx], province, fontdict={"size": 10}
+            )
+        )
+    adjust_text(list_text)
+
+    # Labels and store the image
+    plt.xlabel("NPI mean score")
+    plt.ylabel("Infections per day (100,000 inhabitants)")
+    plt.savefig("npi_vs_infection.png")
 
 
 if __name__ == "__main__":
