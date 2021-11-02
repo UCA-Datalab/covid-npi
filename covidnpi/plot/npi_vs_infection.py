@@ -64,8 +64,8 @@ def compute_area_of_dataframe_columns(df: pd.DataFrame) -> Dict:
 
 def dict_of_scores_area_by_ambito(
     path_data: Path,
-    date_min: dt.datetime = dt.datetime(2020, 9, 15),
-    date_max: dt.datetime = dt.datetime(2021, 5, 8),
+    date_min: str="15-09-2020",
+    date_max: str="08-05-2021",
 ) -> Dict:
     """Returns a dictionary that contains the NPI area score
     of each province.
@@ -74,10 +74,10 @@ def dict_of_scores_area_by_ambito(
     ----------
     path_data : Path
         Path to the data folder. Must contain the folder "score_ambito"
-    date_min : dt.datetime, optional
-        Minimum date, by default dt.datetime(2020, 9, 15)
-    date_max : dt.datetime, optional
-        [Maximum date, by default dt.datetime(2021, 5, 8)
+    date_min : str, optional
+        Minimum date with format "%d-%m-%Y", by default "15-09-2020"
+    date_max : str, optional
+        Maximum date with format "%d-%m-%Y", by default "08-05-2021"
 
     Returns
     -------
@@ -85,14 +85,18 @@ def dict_of_scores_area_by_ambito(
         Province: NPI score area
     """
     df = dataframe_of_scores_mean_by_ambito(path_data)
+    # String to datetime
+    date_min = dt.datetime.strptime(date_min, "%d-%m-%Y")
+    date_max = dt.datetime.strptime(date_max, "%d-%m-%Y")
     # Limit dataframe within date range
     df = df[(df.index >= date_min) & (df.index <= date_max)]
     return compute_area_of_dataframe_columns(df)
 
 
-def main(path_data: str = "output"):
+def main(path_data: str = "output",date_min: str="15-09-2020",
+    date_max: str="08-05-2021",):
     path_data = Path(path_data)
-    dict_scores = dict_of_scores_area_by_ambito(path_data)
+    dict_scores = dict_of_scores_area_by_ambito(path_data, date_min=date_min, date_max=date_max)
     print(dict_scores)
 
 
