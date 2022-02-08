@@ -174,6 +174,31 @@ python covidnpi/initialize_web.py --path-config path-config
 
 Where `path-config` leads to your copy of the config file.
 
+### Web API configuration
+
+The Web API is in charge of sending the project data from the backend hosted on Zappa, to the web application hosted on Clapton (served using Apache2).
+
+
+The Web API is composed of the Mongo service and a Flask app that sends the data from Zappa to Clapton, the entire orchestation is managed from `/DATA2/ucadatalab_group/leo/npi-spain`.  Here you can find 6 directories: 3 for mongo, Flask and the venv of the live (production) version, and 3 for the stagging version:
+
+- mongo-live          
+- npi-spain-api-live 
+- venv_npi-spain-api-live          
+
+- npi-spain-api-staging
+- mongo-staging    
+- venv_npi-spain-api-staging
+
+
+There is a system daemon to run the Flask app for the live version , that can be executed using `sudo systemctl start npi-spain.service`, this will run the flask app on Zappa using port 5010. 
+
+The configuration of this daemon can be found on `/etc/systemd/system/npi-spain.service`.
+
+\* systemctl command can also be used to check the status of the daemon, to stop it, or reboot it, for more info check: https://www.digitalocean.com/community/tutorials/how-to-use-systemctl-to-manage-systemd-services-and-units 
+
+
+
+
 ### Load Data from Mongo
 
 In this section we show use cases for the different functions.
@@ -274,8 +299,9 @@ Project link: [https://github.com/UCA-Datalab/covid-npi](https://github.com/UCA-
 ## Acknowledgements
 
 * [UCA DataLab](http://datalab.uca.es/)
-* [Daniel Precioso](https://www.linkedin.com/in/daniel-precioso-garcelan/)
+* [Daniel Precioso](https://daniprec.github.io/)
 * [Leopoldo Jesús Gutiérrez Galeano](https://www.linkedin.com/search/results/all/?keywords=leopoldo%20jes%C3%BAs%20guti%C3%A9rrez%20galeano&origin=RICH_QUERY_SUGGESTION&position=0&searchId=52369ebd-8c77-46b0-b6cb-864f095f42e2&sid=MW!)
+* [Francisco Amor Roldán](https://www.linkedin.com/in/francisco-amor-97b27820b/)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
