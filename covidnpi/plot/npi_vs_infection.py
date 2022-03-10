@@ -17,28 +17,7 @@ from covidnpi.utils.regions import (
 )
 
 
-def compute_mean_of_dataframe_columns(df: pd.DataFrame) -> Dict:
-    """Returns a dictionary with the mean of the series of each
-    column in the dataframe. Keys are the name of the columns.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Pandas dataframe, containing numeric values.
-
-    Returns
-    -------
-    Dict
-        Column: Area
-    """
-    dict_areas = {}
-    for column in df:
-        ser = df[column]
-        dict_areas.update({column: ser.mean()})
-    return dict_areas
-
-
-def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
+def dataframe_of_npi_score_mean_by_date_province(path_data: Path) -> pd.DataFrame:
     """Returns a dataframe with the mean NPI score per province (columns)
     and date (rows).
 
@@ -51,7 +30,7 @@ def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
     -------
     pd.DataFrame
         Dataframe with mean NPI scores, index is datetimes,
-        columns are provinces codes
+        columns are provinces codes.
     """
     # Path to score_ambito
     path_area = path_data / "score_ambito"
@@ -78,7 +57,7 @@ def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
     return pd.DataFrame.from_dict(dict_ambito)
 
 
-def dict_of_scores_mean_by_ambito(
+def dict_of_npi_score_mean_by_province(
     path_data: Path,
     date_min: str = "15-09-2020",
     date_max: str = "08-05-2021",
@@ -100,18 +79,24 @@ def dict_of_scores_mean_by_ambito(
     Dict
         Province Code: NPI score area
     """
-    df = dataframe_of_scores_mean_by_ambito(path_data)
+    df = dataframe_of_npi_score_mean_by_date_province(path_data)
     # String to datetime
     date_min = dt.datetime.strptime(date_min, "%d-%m-%Y")
     date_max = dt.datetime.strptime(date_max, "%d-%m-%Y")
     # Limit dataframe within date range
     df = df[(df.index >= date_min) & (df.index <= date_max)]
-    return compute_mean_of_dataframe_columns(df)
+    # Initialize dictionary of mean NPI per province
+    dict_npi = {}
+    # Compute the average NPI per province
+    for column in df:
+        ser = df[column]
+        dict_npi.update({column: ser.mean()})
+    return dict_npi
 
 
-def dataframe_of_infection() -> pd.DataFrame:
+def dataframe_of_infection_by_date_province() -> pd.DataFrame:
     """Returns a dataframe with the daily number of infections
-    per province
+    per province (column) and date (row)
 
     Returns
     -------
@@ -130,7 +115,7 @@ def dataframe_of_infection() -> pd.DataFrame:
     return pd.DataFrame.from_dict(dict_ser)
 
 
-def dict_of_infection_mean(
+def dict_of_infection_mean_by_province(
     date_min: str = "15-09-2020",
     date_max: str = "08-05-2021",
 ) -> Dict:
@@ -149,13 +134,19 @@ def dict_of_infection_mean(
     Dict
         Province Code: Infection area
     """
-    df = dataframe_of_infection()
+    df = dataframe_of_infection_by_date_province()
     # String to datetime
     date_min = dt.datetime.strptime(date_min, "%d-%m-%Y")
     date_max = dt.datetime.strptime(date_max, "%d-%m-%Y")
     # Limit dataframe within date range
     df = df[(df.index >= date_min) & (df.index <= date_max)]
-    return compute_mean_of_dataframe_columns(df)
+    # Initialize dictionary of infection per province
+    dict_infection = {}
+    # Compute the average infection of each province
+    for column in df:
+        ser = df[column]
+        dict_infection.update({column: ser.mean()})
+    return dict_infection
 
 
 def main(
@@ -166,10 +157,12 @@ def main(
     path_data = Path(path_data)
 
     # Dictionary of scores and infection
-    dict_scores = dict_of_scores_mean_by_ambito(
+    dict_scores = dict_of_npi_score_mean_by_province(
         path_data, date_min=date_min, date_max=date_max
     )
-    dict_infect = dict_of_infection_mean(date_min=date_min, date_max=date_max)
+    dict_infect = dict_of_infection_mean_by_province(
+        date_min=date_min, date_max=date_max
+    )
 
     # List provinces, scores and infection
     list_provinces = []
