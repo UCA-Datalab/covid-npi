@@ -10,11 +10,6 @@ from covidnpi.utils.log import logger
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
-def _dateparse(x):
-    """This function is used to parse the dates of casos"""
-    return dt.datetime.strptime(x, "%Y-%m-%d")
-
-
 def load_casos_df(
     link: str = "https://cnecovid.isciii.es/covid19/resources/"
     "casos_tecnica_provincia.csv",
@@ -34,7 +29,11 @@ def load_casos_df(
     """
     logger.debug("Loading incidence data")
 
-    casos = pd.read_csv(link, parse_dates=["fecha"], date_parser=_dateparse)
+    def dateparse(x):
+        """This function is used to parse the dates of casos"""
+        return dt.datetime.strptime(x, "%Y-%m-%d")
+
+    casos = pd.read_csv(link, parse_dates=["fecha"], date_parser=dateparse)
 
     # Correct some abbreviations
     casos["provincia_iso"] = casos["provincia_iso"].replace({"ME": "ML", "NC": "NA"})
