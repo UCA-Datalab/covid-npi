@@ -13,7 +13,7 @@ from covidnpi.utils.log import (
     raise_value_warning,
     raise_missing_warning,
 )
-from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMIA
+from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMY
 from covidnpi.utils.regions import DICT_PROVINCE_RENAME, DICT_FILL_PROVINCIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE", "Base"]
@@ -180,7 +180,7 @@ def read_npi_data(
 
 
 def filter_relevant_medidas(
-    df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOMIA
+    df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOMY
 ) -> pd.DataFrame:
     """Elimina aquellas medidas del dataframe que no figuran en la taxonomia"""
     all_medidas = return_all_medidas(path_taxonomia=path_taxonomia)
@@ -444,7 +444,7 @@ def return_dict_provincia_to_medidas(df: pd.DataFrame) -> dict:
 
 def read_npi_and_build_dict(
     path_data: str = "datos_NPI",
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMY,
 ):
     """Reads the folder containing the NPI and returns a dictionary
     {province: limitations}"""
@@ -486,7 +486,7 @@ def read_npi_and_build_dict(
 
 def main(
     path_data: str = "datos_NPI",
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMY,
     path_output: str = "output/medidas",
 ):
     """Reads the raw data, in path_data, preprocess it and stores the results in

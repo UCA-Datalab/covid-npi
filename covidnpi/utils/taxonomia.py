@@ -1,9 +1,9 @@
 import pandas as pd
 
-PATH_TAXONOMIA = "datos_NPI/Taxonomía_11052021.xlsx"
+PATH_TAXONOMY = "datos_NPI/Taxonomía_11052021.xlsx"
 
 
-def read_taxonomia(path_taxonomia: str = PATH_TAXONOMIA) -> pd.DataFrame:
+def read_taxonomia(path_taxonomia: str = PATH_TAXONOMY) -> pd.DataFrame:
     xl = pd.ExcelFile(path_taxonomia)
 
     list_sheet = xl.sheet_names
@@ -47,7 +47,7 @@ def read_taxonomia(path_taxonomia: str = PATH_TAXONOMIA) -> pd.DataFrame:
     return df
 
 
-def return_all_medidas(path_taxonomia: str = PATH_TAXONOMIA):
+def return_all_medidas(path_taxonomia: str = PATH_TAXONOMY):
     """Returns a list of the relevant medidas"""
 
     df = read_taxonomia(path_taxonomia=path_taxonomia)
@@ -100,7 +100,7 @@ def classify_criteria(taxonomia: pd.DataFrame):
 
 
 def return_taxonomia(
-    path_taxonomia: str = PATH_TAXONOMIA, path_output: str = "output/taxonomia.csv"
+    path_taxonomia: str = PATH_TAXONOMY, path_output: str = "output/taxonomia.csv"
 ):
     taxonomia = read_taxonomia(path_taxonomia)
     criterio = classify_criteria(taxonomia)
@@ -120,7 +120,7 @@ def return_taxonomia(
 
 
 def return_item_ponderacion(
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMY,
 ) -> pd.DataFrame:
     taxonomia = read_taxonomia(path_taxonomia)
     # Fill missing names with "variable" + item count

@@ -14,12 +14,12 @@ from covidnpi.utils.dictionaries import (
 from covidnpi.utils.log import logger
 from covidnpi.utils.mobility import mobility_report_to_csv
 from covidnpi.utils.preprocess import read_npi_and_build_dict
-from covidnpi.utils.taxonomia import PATH_TAXONOMIA
+from covidnpi.utils.taxonomia import PATH_TAXONOMY
 
 
 def main(
     path_raw: str = "datos_NPI",
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMY,
     path_output: str = "output",
 ):
     """Reads the raw data stored in path_raw, preprocess and scores it, while storing
@@ -31,7 +31,7 @@ def main(
     path_raw : str, optional
         Path to raw data, by default "datos_NPI_2"
     path_taxonomia : str, optional
-        Path to taxonomia xlsx file, by default `PATH_TAXONOMIA`
+        Path to taxonomia xlsx file, by default `PATH_TAXONOMY`
     path_output : str, optional
         Output folder, by default "output"
 

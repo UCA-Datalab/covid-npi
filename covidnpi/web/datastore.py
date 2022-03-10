@@ -8,13 +8,13 @@ from covidnpi.utils.config import load_config
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import PROVINCIA_TO_ISOPROV
 from covidnpi.utils.series import compute_growth_rate, cumulative_incidence
-from covidnpi.utils.taxonomia import PATH_TAXONOMIA, return_taxonomia
+from covidnpi.utils.taxonomia import PATH_TAXONOMY, return_taxonomia
 from covidnpi.web.mongo import load_mongo
 
 
 def store_scores_in_mongo(
     path_output: str = "output/score_ambito",
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
 ):
     """Store NPI scores in mongo server
@@ -131,7 +131,7 @@ def store_casos_in_mongo(
 
 def datastore(
     path_output: str = "output/score_ambito",
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
 ):
     """Stores the data contained in the output folder in mongo

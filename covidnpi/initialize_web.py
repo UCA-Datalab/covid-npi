@@ -1,13 +1,13 @@
 import typer
 
-from covidnpi.utils.taxonomia import PATH_TAXONOMIA
+from covidnpi.utils.taxonomia import PATH_TAXONOMY
 from covidnpi.web.datastore import datastore
 from covidnpi.web.generate_json import generate_json
 
 
 def main(
     path_output: str = "output/score_ambito",
-    path_taxonomia=PATH_TAXONOMIA,
+    path_taxonomia=PATH_TAXONOMY,
     path_config: str = "config.toml",
     path_json_provincia: str = "output/provincias.json",
     path_json_ambitos: str = "output/ambitos.json",

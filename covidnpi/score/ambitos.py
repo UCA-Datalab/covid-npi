@@ -2,7 +2,7 @@ import pandas as pd
 import typer
 from covidnpi.utils.dictionaries import load_dict_scores, store_dict_scores
 from covidnpi.utils.log import logger
-from covidnpi.utils.taxonomia import PATH_TAXONOMIA, return_item_ponderacion
+from covidnpi.utils.taxonomia import PATH_TAXONOMY, return_item_ponderacion
 
 
 def compute_proportion(df: pd.DataFrame, item: str):
@@ -96,7 +96,7 @@ def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
     return df_afectado
 
 
-def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
+def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMY):
     """Calcula la score de cada ambito a partir de sus item"""
     ponderacion = return_item_ponderacion(path_taxonomia=path_taxonomia)
     list_ambito = ponderacion["ambito"].unique()
@@ -112,7 +112,7 @@ def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
 
 def return_dict_ambitos(
     dict_items: dict,
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMY,
     verbose: bool = True,
 ) -> dict:
     dict_ambito = {}
@@ -130,7 +130,7 @@ def return_dict_ambitos(
 def main(
     path_items: str = "output/items",
     path_output_ponderado: str = "output/score_ambito",
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomia: str = PATH_TAXONOMY,
 ):
     dict_items = load_dict_scores(path_items)
     dict_ambito = return_dict_ambitos(dict_items, path_taxonomia=path_taxonomia)
