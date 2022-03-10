@@ -112,7 +112,7 @@ ISOPROV_TO_PROVINCIA = {
     "Z": "Zaragoza",
 }
 
-# Reassing ISO of CCAA to ISO of province
+# Reassign ISO of CCAA to ISO of province
 # For CCAA with only one province
 ISOPROV_REASSIGN = {
     "AS": "O",
