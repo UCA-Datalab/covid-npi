@@ -62,7 +62,7 @@ def load_dict_medidas(path_medidas: str = "output/medidas"):
     return dict_medidas
 
 
-def store_dict_scores(dict_scores, path_output: str = "output/score_medidas"):
+def store_dict_scores(dict_scores, path_output: str = "output/medidas"):
     if not os.path.exists(path_output):
         os.mkdir(path_output)
 
@@ -74,7 +74,7 @@ def store_dict_scores(dict_scores, path_output: str = "output/score_medidas"):
             logger.error(f"Provincia {provincia} no puede guardarse: {er}")
 
 
-def load_dict_scores(path_scores: str = "output/score_medidas"):
+def load_dict_scores(path_scores: str = "output/medidas"):
     dict_scores = {}
     list_files = os.listdir(path_scores)
     for file in list_files:

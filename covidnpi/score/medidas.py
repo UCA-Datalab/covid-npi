@@ -233,7 +233,7 @@ def pivot_df_score(df_score: pd.DataFrame):
     return df_medida
 
 
-def score_medidas(
+def medidas(
     df: pd.DataFrame,
     taxonomia: pd.DataFrame,
     path_out_conditions: str = "output/dict_condicion.json",
@@ -264,7 +264,7 @@ def score_medidas(
     return df_score
 
 
-def return_dict_score_medidas(dict_medidas: dict) -> dict:
+def return_dict_medidas(dict_medidas: dict) -> dict:
     """
 
     Parameters
@@ -284,7 +284,7 @@ def return_dict_score_medidas(dict_medidas: dict) -> dict:
 
     for provincia, df_sub in dict_medidas.items():
         logger.debug(provincia)
-        df_score = score_medidas(df_sub, taxonomia)
+        df_score = medidas(df_sub, taxonomia)
         # Nos aseguramos de que todas las medidas estan en el df
         medidas_missing = list(set(all_medidas) - set(df_score.columns))
         for m in medidas_missing:
@@ -294,11 +294,9 @@ def return_dict_score_medidas(dict_medidas: dict) -> dict:
     return dict_scores
 
 
-def main(
-    path_medidas: str = "output/medidas", path_output: str = "output/score_medidas"
-):
+def main(path_medidas: str = "output/medidas", path_output: str = "output/medidas"):
     dict_medidas = load_dict_medidas(path_medidas=path_medidas)
-    dict_scores = return_dict_score_medidas(dict_medidas)
+    dict_scores = return_dict_medidas(dict_medidas)
     store_dict_scores(dict_scores, path_output=path_output)
 
 

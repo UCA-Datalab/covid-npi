@@ -110,7 +110,7 @@ def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
     return df_afectado
 
 
-def return_dict_score_ambitos(
+def return_dict_ambitos(
     dict_items: dict,
     path_taxonomia: str = PATH_TAXONOMIA,
     verbose: bool = True,
@@ -128,12 +128,12 @@ def return_dict_score_ambitos(
 
 
 def main(
-    path_score_items: str = "output/score_items",
+    path_items: str = "output/items",
     path_output_ponderado: str = "output/score_ambito",
     path_taxonomia: str = PATH_TAXONOMIA,
 ):
-    dict_items = load_dict_scores(path_score_items)
-    dict_ambito = return_dict_score_ambitos(dict_items, path_taxonomia=path_taxonomia)
+    dict_items = load_dict_scores(path_items)
+    dict_ambito = return_dict_ambitos(dict_items, path_taxonomia=path_taxonomia)
     store_dict_scores(dict_ambito, path_output=path_output_ponderado)
 
 

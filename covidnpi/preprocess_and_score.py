@@ -2,10 +2,10 @@ import os
 
 import typer
 
-from covidnpi.score.score_ambitos import return_dict_score_ambitos
-from covidnpi.score.score_islas import return_dict_score_islas
-from covidnpi.score.score_items import return_dict_score_items
-from covidnpi.score.score_medidas import return_dict_score_medidas
+from covidnpi.score.ambitos import return_dict_ambitos
+from covidnpi.score.islas import return_dict_islas
+from covidnpi.score.items import return_dict_items
+from covidnpi.score.medidas import return_dict_medidas
 from covidnpi.utils.dictionaries import (
     store_dict_provincia_to_medidas,
     store_dict_scores,
@@ -52,24 +52,24 @@ def main(
         f"Ahora puntuamos cada medida"
     )
 
-    dict_scores = return_dict_score_medidas(dict_medidas)
-    path_score_medidas = os.path.join(path_output, "score_medidas")
-    store_dict_scores(dict_scores, path_output=path_score_medidas)
+    dict_scores = return_dict_medidas(dict_medidas)
+    path_medidas = os.path.join(path_output, "medidas")
+    store_dict_scores(dict_scores, path_output=path_medidas)
     logger.debug(
         "La puntuación de cada medida por provincia ha sido guardada en "
-        f"{path_score_medidas}\n\n...\n\nPasamos a puntuar los items"
+        f"{path_medidas}\n\n...\n\nPasamos a puntuar los items"
     )
 
-    dict_items = return_dict_score_items(dict_scores)
-    path_score_items = os.path.join(path_output, "score_items")
-    store_dict_scores(dict_items, path_output=path_score_items)
+    dict_items = return_dict_items(dict_scores)
+    path_items = os.path.join(path_output, "items")
+    store_dict_scores(dict_items, path_output=path_items)
     logger.debug(
         "La puntuación de cada item por provincia ha sido guardada en "
-        f"{path_score_items}\n\n...\n\nPasamos a puntuar los ambitos"
+        f"{path_items}\n\n...\n\nPasamos a puntuar los ambitos"
     )
 
-    dict_ambito = return_dict_score_ambitos(dict_items, path_taxonomia=path_taxonomia)
-    dict_islas = return_dict_score_islas(dict_ambito)
+    dict_ambito = return_dict_ambitos(dict_items, path_taxonomia=path_taxonomia)
+    dict_islas = return_dict_islas(dict_ambito)
     dict_ambito = update_keep_old_keys(dict_ambito, dict_islas)
     path_score_ambito = os.path.join(path_output, "score_ambito")
     store_dict_scores(dict_ambito, path_output=path_score_ambito)

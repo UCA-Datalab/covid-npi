@@ -8,7 +8,7 @@ from covidnpi.utils.dictionaries import store_dict_scores, load_dict_scores
 from covidnpi.utils.log import logger
 
 
-def score_items(df: pd.DataFrame):
+def items(df: pd.DataFrame):
     # "fecha" and "porcentaje_afectado" must be columns
     # If they are index, convert to columns
     try:
@@ -109,7 +109,7 @@ def score_items(df: pd.DataFrame):
     return df_item
 
 
-def return_dict_score_items(
+def return_dict_items(
     dict_scores: dict,
     verbose: bool = True,
 ) -> dict:
@@ -118,18 +118,18 @@ def return_dict_score_items(
     for provincia, df_sub in dict_scores.items():
         if verbose:
             logger.debug(provincia)
-        df_item = score_items(df_sub)
+        df_item = items(df_sub)
         dict_items.update({provincia: df_item.set_index("fecha")})
 
     return dict_items
 
 
 def main(
-    path_score_medidas: str = "output/score_medidas",
-    path_output: str = "output/score_items",
+    path_medidas: str = "output/medidas",
+    path_output: str = "output/items",
 ):
-    dict_scores = load_dict_scores(path_score_medidas)
-    dict_items = return_dict_score_items(dict_scores)
+    dict_scores = load_dict_scores(path_medidas)
+    dict_items = return_dict_items(dict_scores)
     store_dict_scores(dict_items, path_output=path_output)
 
 

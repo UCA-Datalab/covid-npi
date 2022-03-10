@@ -35,7 +35,7 @@ def aggregate_score_isles(dict_islas: dict, dict_ambito: dict) -> pd.DataFrame:
     return reduce(lambda x, y: x.add(y, fill_value=0), list_df)
 
 
-def return_dict_score_islas(dict_ambito: dict) -> dict:
+def return_dict_islas(dict_ambito: dict) -> dict:
     """Given a dictionary of scores by island, returns a dictionary
     of scores by group of islands
 
