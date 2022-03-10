@@ -4,7 +4,11 @@ import warnings
 import numpy as np
 import pandas as pd
 from covidnpi.utils.log import logger
-from covidnpi.utils.regions import CODE_REASSIGN, CODE_TO_POBLACION, CODE_TO_PROVINCIA
+from covidnpi.utils.regions import (
+    ISOPROV_REASSIGN,
+    ISOPROV_TO_POBLACION,
+    ISOPROV_TO_PROVINCIA,
+)
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -32,20 +36,26 @@ def load_casos_df(
         """This function is used to parse the dates of casos"""
         return dt.datetime.strptime(x, "%Y-%m-%d")
 
-    casos = pd.read_csv(link, parse_dates=["fecha"], date_parser=dateparse)
+    casos = pd.read_csv(
+        link,
+        parse_dates=["fecha"],
+        date_parser=dateparse,
+        keep_default_na=False,
+        na_values=["NC"],
+    )
     # Correct some abbreviations
     casos["provincia_iso"] = (
-        casos["provincia_iso"].fillna("Desconocido").replace(CODE_REASSIGN)
+        casos["provincia_iso"].fillna("Desconocido").replace(ISOPROV_REASSIGN)
     )
 
     # List abbreviations not appearing in province codes
-    list_miss = set(casos["provincia_iso"].unique()) - set(CODE_TO_PROVINCIA.keys())
+    list_miss = set(casos["provincia_iso"].unique()) - set(ISOPROV_TO_PROVINCIA.keys())
     if len(list_miss) > 0:
         logger.warning(
             f"The following codes are not assigned to any province: {','.join(list_miss)}"
         )
     # List provinces not appearing in incidence
-    list_miss = set(CODE_TO_PROVINCIA.keys()) - set(casos["provincia_iso"].unique())
+    list_miss = set(ISOPROV_TO_PROVINCIA.keys()) - set(casos["provincia_iso"].unique())
     if len(list_miss) > 0:
         logger.warning(f"The following provinces are missing: {','.join(list_miss)}")
 
@@ -106,5 +116,5 @@ def return_casos_of_provincia_normed(
 
     """
     series = return_casos_of_provincia(casos, code)
-    pob = CODE_TO_POBLACION[code]
+    pob = ISOPROV_TO_POBLACION[code]
     return per_inhabitants * series / pob

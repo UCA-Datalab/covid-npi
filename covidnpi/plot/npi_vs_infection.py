@@ -11,9 +11,9 @@ from covidnpi.utils.ambitos import list_ambitos
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import (
-    CODE_TO_PROVINCIA,
+    ISOPROV_TO_PROVINCIA,
     DICT_PROVINCE_RENAME,
-    PROVINCIA_TO_CODE,
+    PROVINCIA_TO_ISOPROV,
 )
 
 
@@ -51,7 +51,7 @@ def dataframe_of_npi_score_mean_by_date_province(path_data: Path) -> pd.DataFram
         ser.index = pd.to_datetime(ser.index)
         # Rename province if needed
         province = DICT_PROVINCE_RENAME.get(province, province)
-        code = PROVINCIA_TO_CODE.get(province, province)
+        code = PROVINCIA_TO_ISOPROV.get(province, province)
         # Compute the area under the curve and store
         dict_ambito.update({code: ser})
     return pd.DataFrame.from_dict(dict_ambito)
@@ -106,7 +106,7 @@ def dataframe_of_infection_by_date_province() -> pd.DataFrame:
     casos = load_casos_df()
     # Initialize dictionary of time series
     dict_ser = {}
-    for _, code in PROVINCIA_TO_CODE.items():
+    for _, code in PROVINCIA_TO_ISOPROV.items():
         # Incidence by province for each 100,000 inhabitants
         ser = return_casos_of_provincia_normed(casos, code)
         # Index to datetime
@@ -202,7 +202,7 @@ def main(
             plt.text(
                 list_scores[idx],
                 list_infect[idx],
-                CODE_TO_PROVINCIA[code],
+                ISOPROV_TO_PROVINCIA[code],
                 fontdict={"size": 7},
             )
         )

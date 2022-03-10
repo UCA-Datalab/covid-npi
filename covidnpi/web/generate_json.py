@@ -5,7 +5,7 @@ import typer
 from covidnpi.utils.config import load_config
 from covidnpi.utils.log import logger
 from covidnpi.web.mongo import load_mongo
-from covidnpi.utils.regions import CODE_TO_PROVINCIA
+from covidnpi.utils.regions import ISOPROV_TO_PROVINCIA
 
 
 def json_code_to_provincia(code_to_provincia: dict, path_json: str):
@@ -75,7 +75,7 @@ def generate_json(
 
     """
     logger.debug(f"\n-----\nStoring provinces json in {path_json_provincia}\n-----")
-    json_code_to_provincia(CODE_TO_PROVINCIA, path_json=path_json_provincia)
+    json_code_to_provincia(ISOPROV_TO_PROVINCIA, path_json=path_json_provincia)
     logger.debug(f"\n-----\nStoring ambits json in {path_json_ambitos}\n-----")
     json_ambitos(path_config, path_json_ambitos)
 

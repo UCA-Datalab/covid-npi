@@ -6,7 +6,7 @@ import typer
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.config import load_config
 from covidnpi.utils.log import logger
-from covidnpi.utils.regions import PROVINCIA_TO_CODE
+from covidnpi.utils.regions import PROVINCIA_TO_ISOPROV
 from covidnpi.utils.series import compute_growth_rate, cumulative_incidence
 from covidnpi.utils.taxonomia import PATH_TAXONOMIA, return_taxonomia
 from covidnpi.web.mongo import load_mongo
@@ -48,7 +48,7 @@ def store_scores_in_mongo(
         try:
             dict_provincia = {
                 "provincia": provincia,
-                "code": PROVINCIA_TO_CODE[provincia],
+                "code": PROVINCIA_TO_ISOPROV[provincia],
                 "fechas": df.index.tolist(),
             }
         except KeyError:

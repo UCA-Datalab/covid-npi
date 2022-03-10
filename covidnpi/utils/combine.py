@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 import typer
 from covidnpi.utils.regions import (
-    CODE_TO_POSTAL,
-    CODE_TO_PROVINCIA,
+    ISOPROV_TO_POSTAL,
+    ISOPROV_TO_PROVINCIA,
     ISLA_TO_PROVINCIA,
-    PROVINCIA_TO_CODE,
+    PROVINCIA_TO_ISOPROV,
 )
 
 COLS_AMBITO = [
@@ -59,10 +59,10 @@ def add_unidad_territorial(df: pd.DataFrame) -> pd.DataFrame:
 
 def add_province_code(df: pd.DataFrame) -> pd.DataFrame:
     # Get codes
-    code = df["provincia"].map(PROVINCIA_TO_CODE)
+    code = df["provincia"].map(PROVINCIA_TO_ISOPROV)
     # Replace province name and add code
-    df["provincia"] = code.map(CODE_TO_PROVINCIA)
-    df.insert(loc=1, column="cod_prov", value=code.map(CODE_TO_POSTAL))
+    df["provincia"] = code.map(ISOPROV_TO_PROVINCIA)
+    df.insert(loc=1, column="cod_prov", value=code.map(ISOPROV_TO_POSTAL))
     return df
 
 

@@ -1,6 +1,6 @@
 from covidnpi.utils.dictionaries import reverse_dictionary
 
-POSTAL_TO_CODE = {
+POSTAL_TO_ISOPROV = {
     "01": "VI",
     "02": "AB",
     "03": "A",
@@ -55,9 +55,9 @@ POSTAL_TO_CODE = {
     "52": "ML",
 }
 
-CODE_TO_POSTAL = reverse_dictionary(POSTAL_TO_CODE)
+ISOPROV_TO_POSTAL = reverse_dictionary(POSTAL_TO_ISOPROV)
 
-CODE_TO_PROVINCIA = {
+ISOPROV_TO_PROVINCIA = {
     "A": "Alacant",
     "AB": "Albacete",
     "AL": "Almería",
@@ -112,7 +112,9 @@ CODE_TO_PROVINCIA = {
     "Z": "Zaragoza",
 }
 
-CODE_REASSIGN = {
+# Reassing ISO of CCAA to ISO of province
+# For CCAA with only one province
+ISOPROV_REASSIGN = {
     "AS": "O",
     "CB": "S",
     "IB": "PM",
@@ -122,7 +124,7 @@ CODE_REASSIGN = {
     "NC": "NA",
 }
 
-PROVINCIA_TO_CODE = {
+PROVINCIA_TO_ISOPROV = {
     "alava": "VI",
     "albacete": "AB",
     "alicante": "A",
@@ -179,7 +181,7 @@ PROVINCIA_TO_CODE = {
     "zaragoza": "Z",
 }
 
-CODE_TO_FILENAME = reverse_dictionary(PROVINCIA_TO_CODE)
+ISOPROV_TO_FILENAME = reverse_dictionary(PROVINCIA_TO_ISOPROV)
 
 DICT_PROVINCE_RENAME = {
     "a_coruna": "coruna_la",
@@ -207,7 +209,7 @@ ISLA_TO_PROVINCIA = {
     "menorca": "tenerife",
 }
 
-CODE_TO_POBLACION = {
+ISOPROV_TO_POBLACION = {
     "AB": 388270,
     "A": 1879888,
     "AL": 727945,
