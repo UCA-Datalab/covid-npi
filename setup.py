@@ -23,7 +23,7 @@ setuptools.setup(
         "matplotlib==3.2.1",
         "numpy==1.18.1",
         "pandas==1.0.3",
-        "pip==19.3",
+        "pip==21.1",
         "pymongo==3.11.0",
         "pytest==6.2.4",
         "toml==0.10.2",
