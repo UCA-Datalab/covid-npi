@@ -24,6 +24,6 @@ def list_ambitos(path_data: Path) -> Iterable[str]:
             list_areas = [d["value"] for d in dict_areas]
     except FileNotFoundError as err:
         raise FileNotFoundError(
-            f"{err}\n[IMPORTANT] Run `covidnpi/web/generate_json.py` first!"
+            f"{err}\n[IMPORTANT] Run `covidnpi/initialize_web.py` first!"
         )
     return list_areas
