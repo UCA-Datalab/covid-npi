@@ -57,6 +57,9 @@ def dataframe_of_scores_mean_by_ambito(path_data: Path) -> pd.DataFrame:
     path_area = path_data / "score_ambito"
     # List the ambitos of interest
     list_amb = list_ambitos(path_data)
+    logger.debug(
+        f"Fields of activity used to compute the mean NPI: {', '.join(list_amb)}"
+    )
     # Initialize dictionary of areas
     dict_ambito = {}
     # Loop through each province
