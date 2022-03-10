@@ -112,7 +112,15 @@ CODE_TO_PROVINCIA = {
     "Z": "Zaragoza",
 }
 
-CODE_REASSIGN = {"AS": "O", "CB": "S", "IB": "PM", "MD": "M", "MC": "MU", "NC": "NA"}
+CODE_REASSIGN = {
+    "AS": "O",
+    "CB": "S",
+    "IB": "PM",
+    "MD": "M",
+    "ME": "ML",
+    "MC": "MU",
+    "NC": "NA",
+}
 
 PROVINCIA_TO_CODE = {
     "alava": "VI",
