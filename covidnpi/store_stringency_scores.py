@@ -22,9 +22,9 @@ def main(
     path_taxonomia: str = PATH_TAXONOMY,
     path_output: str = "output",
 ):
-    """Reads the raw data stored in path_raw, preprocess and scores it, while storing
-    all the results in path_output. An additional path to the taxonomia xlsx file
-    must also be provided in path_taxonomia.
+    """Reads the raw data stored in `path_raw`, preprocess and scores it, while storing
+    all the results in `path_output`. An additional path to the taxonomy xlsx file
+    must also be provided in `path_taxonomia`.
 
     Parameters
     ----------
@@ -36,7 +36,7 @@ def main(
         Output folder, by default "output"
 
     """
-    logger.debug(f"Leyendo datos crudos de {path_raw}")
+    logger.debug(f"Reading raw data from {path_raw}")
     dict_medidas = read_npi_and_build_dict(
         path_data=path_raw, path_taxonomia=path_taxonomia
     )
@@ -48,24 +48,24 @@ def main(
     path_medidas = os.path.join(path_output, "medidas")
     store_dict_provincia_to_medidas(dict_medidas, path_output=path_medidas)
     logger.debug(
-        f"Las medidas preprocesadas han sido guardadas en {path_medidas}\n\n...\n\n"
-        f"Ahora puntuamos cada medida"
+        f"The processed interventions have been stored in {path_medidas}\n\n...\n\n"
+        f"Next step is to score each intervention."
     )
 
     dict_scores = return_dict_medidas(dict_medidas)
     path_medidas = os.path.join(path_output, "medidas")
     store_dict_scores(dict_scores, path_output=path_medidas)
     logger.debug(
-        "La puntuación de cada medida por provincia ha sido guardada en "
-        f"{path_medidas}\n\n...\n\nPasamos a puntuar los items"
+        "The score of each intervention per province has been stored in "
+        f"{path_medidas}\n\n...\n\nNext step is to score the items."
     )
 
     dict_items = return_dict_items(dict_scores)
     path_items = os.path.join(path_output, "items")
     store_dict_scores(dict_items, path_output=path_items)
     logger.debug(
-        "La puntuación de cada item por provincia ha sido guardada en "
-        f"{path_items}\n\n...\n\nPasamos a puntuar los ambitos"
+        "The score of each item per province has been stored in "
+        f"{path_items}\n\n...\n\nNext step is to score the fields of activity."
     )
 
     dict_field = return_dict_fields(dict_items, path_taxonomia=path_taxonomia)
@@ -75,13 +75,13 @@ def main(
     store_dict_scores(dict_field, path_output=path_score_field)
 
     logger.debug(
-        "La puntuación de cada ambito ha sido guardada en "
-        f"{path_score_field}\n\n...\n\nPasamos a guardar la informacion de movilidad"
+        "The score of each field per province has been stored in "
+        f"{path_score_field}\n\n...\n\nNext step is to compute the mobility data."
     )
 
     path_mobility = os.path.join(path_output, "mobility")
     mobility_report_to_csv(path_output=path_mobility)
-    logger.debug(f"La informacion de movilidad ha sido guardada en {path_mobility}\n")
+    logger.debug(f"Mobility data has been stored in {path_mobility}\n")
 
 
 if __name__ == "__main__":
