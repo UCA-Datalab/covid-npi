@@ -127,7 +127,7 @@ def return_item_ponderacion(
     try:
         mask_nan = taxonomia["nombre"].isna()
     except KeyError:
-        raise KeyError("La columna 'nombre' falta en la taxonomia")
+        raise KeyError("Column 'nombre' is missing in taxonomy.")
 
     taxonomia.loc[mask_nan, "nombre"] = (
         taxonomia.loc[mask_nan, "variable"].str[:3].str.upper()
