@@ -12,7 +12,7 @@ def medidas() -> pd.DataFrame:
 
 @pytest.fixture
 def taxonomy() -> pd.DataFrame:
-    path_taxonomy = "test/data/taxonomy.xlsx"
+    path_taxonomy = "test/data/taxonomia.xlsx"
     yield return_taxonomy(path_taxonomy=path_taxonomy, path_output=None)
 
 
