@@ -9,20 +9,26 @@ from covidnpi.utils.series import (
     cumulative_incidence,
     moving_average,
 )
+from covidnpi.utils.config import load_config
 
 
-def main(days: int = 7, path_output: str = "output"):
+def main(path_output: str = "output", path_config: str = "config.toml"):
     """Compute and store the incidence rates of each province in Spain
 
     Parameters
     ----------
-    days : int, optional
-        Number of days to apply the time window, by default 7
     path_output : str, optional
         Folder where the results are stored, by default "output"
+    path_config : str, optional
+        Config file
     """
+    # Load the raw incidence rates
     casos = load_casos_df()
+    # Change variable to Path type
     path_output = Path(path_output)
+    # Get the size of the time window
+    cfg_casos = load_config(path_config, key="casos")
+    days = cfg_casos["movavg"]
 
     # Initialize the dictionaries
     dict_daily = {}
