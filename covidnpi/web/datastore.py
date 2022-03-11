@@ -32,7 +32,7 @@ def store_scores_in_mongo(
     mongo = load_mongo(cfg_mongo)
 
     taxonomia = return_taxonomia(path_taxonomia=path_taxonomia)
-    list_field = taxonomia["field"].unique().tolist()
+    list_field = taxonomia["ambito"].unique().tolist()
     # Get the minimum date in datetime format
     date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
 
