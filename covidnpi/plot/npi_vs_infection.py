@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import typer
 from adjustText import adjust_text
-from covidnpi.utils.ambitos import list_ambitos
+from covidnpi.utils.fields import list_fields
 from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import (
@@ -24,7 +24,7 @@ def dataframe_of_npi_score_mean_by_date_province(path_data: Path) -> pd.DataFram
     Parameters
     ----------
     path_data : Path
-        Path to the data folder. Must contain the folder "score_ambito"
+        Path to the data folder. Must contain the folder "score_field"
 
     Returns
     -------
@@ -32,17 +32,17 @@ def dataframe_of_npi_score_mean_by_date_province(path_data: Path) -> pd.DataFram
         Dataframe with mean NPI scores, index is datetimes,
         columns are provinces codes.
     """
-    # Path to score_ambito
-    path_area = path_data / "score_ambito"
-    # List the ambitos of interest
-    list_amb = list_ambitos(path_data)
+    # Path to score_field
+    path_field = path_data / "score_field"
+    # List the fields of interest
+    list_amb = list_fields(path_data)
     logger.debug(
         f"Fields of activity used to compute the mean NPI: {', '.join(list_amb)}"
     )
-    # Initialize dictionary of areas
-    dict_ambito = {}
+    # Initialize dictionary of fields
+    dict_field = {}
     # Loop through each province
-    for path_file in path_area.iterdir():
+    for path_file in path_field.iterdir():
         # Province name
         province = path_file.name.split(".")[0]
         # Mean score by date
@@ -52,9 +52,9 @@ def dataframe_of_npi_score_mean_by_date_province(path_data: Path) -> pd.DataFram
         # Rename province if needed
         province = DICT_PROVINCE_RENAME.get(province, province)
         code = PROVINCIA_TO_ISOPROV.get(province, province)
-        # Compute the area under the curve and store
-        dict_ambito.update({code: ser})
-    return pd.DataFrame.from_dict(dict_ambito)
+        # Compute the field under the curve and store
+        dict_field.update({code: ser})
+    return pd.DataFrame.from_dict(dict_field)
 
 
 def dict_of_npi_score_mean_by_province(
@@ -68,7 +68,7 @@ def dict_of_npi_score_mean_by_province(
     Parameters
     ----------
     path_data : Path
-        Path to the data folder. Must contain the folder "score_ambito"
+        Path to the data folder. Must contain the folder "score_field"
     date_min : str, optional
         Minimum date with format "%d-%m-%Y", by default "15-09-2020"
     date_max : str, optional
@@ -77,7 +77,7 @@ def dict_of_npi_score_mean_by_province(
     Returns
     -------
     Dict
-        Province Code: NPI score area
+        Province Code: NPI score field
     """
     df = dataframe_of_npi_score_mean_by_date_province(path_data)
     # String to datetime
@@ -132,7 +132,7 @@ def dict_of_infection_mean_by_province(
     Returns
     -------
     Dict
-        Province Code: Infection area
+        Province Code: Infection field
     """
     df = dataframe_of_infection_by_date_province()
     # String to datetime

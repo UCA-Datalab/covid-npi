@@ -99,42 +99,42 @@ def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
 def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMY):
     """Calcula la score de cada ambito a partir de sus item"""
     ponderacion = return_item_ponderacion(path_taxonomia=path_taxonomia)
-    list_ambito = ponderacion["ambito"].unique()
-    for ambito in list_ambito:
-        pon_sub = ponderacion.query(f"ambito == '{ambito}'")
+    list_field = ponderacion["ambito"].unique()
+    for field in list_field:
+        pon_sub = ponderacion.query(f"ambito == '{field}'")
         pesos = pon_sub["ponderacion"].values
         items = pon_sub["nombre"]
-        df_afectado[ambito] = (df_afectado[items] * pesos).sum(axis=1).div(pesos.sum())
+        df_afectado[field] = (df_afectado[items] * pesos).sum(axis=1).div(pesos.sum())
         # Max value is 1
-        # assert df_afectado[ambito].max() <= 1, f"La puntuacion de {ambito} supera 1"
+        # assert df_afectado[field].max() <= 1, f"La puntuacion de {field} supera 1"
     return df_afectado
 
 
-def return_dict_ambitos(
+def return_dict_fields(
     dict_items: dict,
     path_taxonomia: str = PATH_TAXONOMY,
     verbose: bool = True,
 ) -> dict:
-    dict_ambito = {}
+    dict_field = {}
 
     for provincia, df_item in dict_items.items():
         if verbose:
             logger.debug(provincia)
         df_afectado = apply_porcentaje_afectado_to_items(df_item)
         df_afectado = score_ponderada(df_afectado, path_taxonomia=path_taxonomia)
-        dict_ambito.update({provincia: df_afectado.set_index("fecha")})
+        dict_field.update({provincia: df_afectado.set_index("fecha")})
 
-    return dict_ambito
+    return dict_field
 
 
 def main(
     path_items: str = "output/items",
-    path_output_ponderado: str = "output/score_ambito",
+    path_output_ponderado: str = "output/score_field",
     path_taxonomia: str = PATH_TAXONOMY,
 ):
     dict_items = load_dict_scores(path_items)
-    dict_ambito = return_dict_ambitos(dict_items, path_taxonomia=path_taxonomia)
-    store_dict_scores(dict_ambito, path_output=path_output_ponderado)
+    dict_field = return_dict_fields(dict_items, path_taxonomia=path_taxonomia)
+    store_dict_scores(dict_field, path_output=path_output_ponderado)
 
 
 if __name__ == "__main__":

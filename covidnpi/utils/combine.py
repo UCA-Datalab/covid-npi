@@ -75,8 +75,8 @@ def add_ccaa(df: pd.DataFrame, path_ccaa: str = "data/CCAA.csv") -> pd.DataFrame
     return df
 
 
-def combine_csv_ambito(
-    path_data: str = "output/score_ambito", path_output: str = "npi_stringency.csv"
+def combine_csv_field(
+    path_data: str = "output/score_field", path_output: str = "npi_stringency.csv"
 ) -> pd.DataFrame:
     df = combine_csv(path_data, "provincia")
     # Tomar las columnas relevantes y ordenar por fecha
@@ -86,4 +86,4 @@ def combine_csv_ambito(
 
 
 if __name__ == "__main__":
-    typer.run(combine_csv_ambito)
+    typer.run(combine_csv_field)

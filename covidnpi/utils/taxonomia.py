@@ -31,7 +31,7 @@ def read_taxonomia(path_taxonomia: str = PATH_TAXONOMY) -> pd.DataFrame:
             df.fillna(method="ffill", inplace=True)
         except KeyError:
             continue
-        # Add ambito
+        # Add field
         df["ambito"] = sheet
         list_df += [df]
 

@@ -2,7 +2,7 @@ import os
 
 import typer
 
-from covidnpi.score.ambitos import return_dict_ambitos
+from covidnpi.score.fields import return_dict_fields
 from covidnpi.score.islas import return_dict_islas
 from covidnpi.score.items import return_dict_items
 from covidnpi.score.medidas import return_dict_medidas
@@ -68,15 +68,15 @@ def main(
         f"{path_items}\n\n...\n\nPasamos a puntuar los ambitos"
     )
 
-    dict_ambito = return_dict_ambitos(dict_items, path_taxonomia=path_taxonomia)
-    dict_islas = return_dict_islas(dict_ambito)
-    dict_ambito = update_keep_old_keys(dict_ambito, dict_islas)
-    path_score_ambito = os.path.join(path_output, "score_ambito")
-    store_dict_scores(dict_ambito, path_output=path_score_ambito)
+    dict_field = return_dict_fields(dict_items, path_taxonomia=path_taxonomia)
+    dict_islas = return_dict_islas(dict_field)
+    dict_field = update_keep_old_keys(dict_field, dict_islas)
+    path_score_field = os.path.join(path_output, "score_field")
+    store_dict_scores(dict_field, path_output=path_score_field)
 
     logger.debug(
         "La puntuación de cada ambito ha sido guardada en "
-        f"{path_score_ambito}\n\n...\n\nPasamos a guardar la informacion de movilidad"
+        f"{path_score_field}\n\n...\n\nPasamos a guardar la informacion de movilidad"
     )
 
     path_mobility = os.path.join(path_output, "mobility")

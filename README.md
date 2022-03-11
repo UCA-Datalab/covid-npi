@@ -112,7 +112,7 @@ The name of the files does not matter, but it is important that they have a shee
 [ERROR] File could not be opened as province: base sheet is missing
 ```
 
-The `base` sheet describes one **intervention (NPI)** per row. Interventions apply to a specific area of activity (such as "culture" or "mobility") and may affect all the region or only part of it, during a certain period of time. The `base` sheet should contain the following columns:
+The `base` sheet describes one **intervention (NPI)** per row. Interventions apply to a specific field of activity (such as "culture" or "mobility") and may affect all the region or only part of it, during a certain period of time. The `base` sheet should contain the following columns:
 
 - `ambito` can take the values "autonómico" when the intervention affects the whole autonomous community, "provincial" when it applies to a province (see `provincia`), or "subprovincial" when it only affects part of a province (see `porcentaje_afectado`).
 - `comunidad_autonoma` contains the name of the autonomous community. Must be the same in the whole file.
@@ -131,13 +131,13 @@ The `base` sheet describes one **intervention (NPI)** per row. Interventions app
 
 ### Taxonomy
 
-Taxonomy is a xslx file, and must be placed in the same [datos_NPI](./datos_NPI) folder as the data above. Each sheet in the taxonomy corresponds to a specific area of intervention, such as "commerce", "education" or "outside sport". These sheets have the following columns:
+Taxonomy is a xslx file, and must be placed in the same [datos_NPI](./datos_NPI) folder as the data above. Each sheet in the taxonomy corresponds to a specific field of activity, such as "commerce", "education" or "outside sport". These sheets have the following columns:
 
 - `Código medida concreta` contains the specific code of the intervention (NP). Related to the column `codigo` of the NPI files.
 - `Media concreta` contains the description of the NPI. Not used by this module.
 - `Nombre item` contains the name of the item which the interventions are associated to.
 - `Construcción del item` contains the rules that describe how to compute the score of the item from the scores of the NPI associated to it.
-- `Ponderación del item` contains the weight (between 0 and 1) given to the item. It is used to compute the area score.
+- `Ponderación del item` contains the weight (between 0 and 1) given to the item. It is used to compute the field score.
 - `Criterio` contains the rules that describe how to score the NPI.
 
 ## Preprocess and Score Items
@@ -178,20 +178,20 @@ Where `path-config` leads to your copy of the config file.
 
 In this section we show use cases for the different functions.
 
-To load the NPI scores of several ambits for a given province:
+To load the NPI scores of several fields for a given province:
 
 ````python
-from covidnpi.web.dataloaders import return_ambits_by_province
+from covidnpi.web.dataloaders import return_fields_by_province
 
 # Parameters to define
 # province : The code of the province, in uppercase
 province = "M"
-# ambits : List containing the ambits
-ambits = ["deporte_exterior", "cultura", "movilidad"]
+# fields : List containing the fields
+fields = ["deporte_exterior", "cultura", "movilidad"]
 # path_config : Path to your config file
 path_config = "config.toml"
 
-dict_plot = return_ambits_by_province(province, ambits, path_config=path_config)
+dict_plot = return_fields_by_province(province, fields, path_config=path_config)
 # Output dict_plot will have the following format
 # {"deporte_exterior": {"x": [...], "y": [...]},
 #  "cultura": {"x": [...], "y": [...]},
@@ -199,20 +199,20 @@ dict_plot = return_ambits_by_province(province, ambits, path_config=path_config)
 # where x are dates and y are floats between 0 and 1
 ````
 
-To load the NPI scores of several provinces for a given ambit:
+To load the NPI scores of several provinces for a given field:
 
 ````python
 from covidnpi.web.dataloaders import return_provinces_by_ambit
 
 # Parameters to define
-# ambit : The name of the ambit, in lowercase
-ambit = "movilidad"
+# field : The name of the field, in lowercase
+field = "movilidad"
 # provinces : List of provinces codes
 provinces = ["M", "CA"]
 # path_config : Path to your config file
 path_config = "config.toml"
 
-dict_plot = return_provinces_by_ambit(ambit, provinces, path_config=path_config)
+dict_plot = return_provinces_by_ambit(field, provinces, path_config=path_config)
 # Output dict_plot will have the following format
 # {"M": {"x": [...], "y": [...]},
 #  "CA": {"x": [...], "y": [...]}}
@@ -253,17 +253,16 @@ dict_plot = return_growth_of_province(province, path_config=path_config)
 
 ## Glossary
 
-- **Ambit:** false friend. See "Area".
-- **Area (of activity):** Specific group of activities where NPI are applied. Examples are "commerce", "education" and "outside sports".
-- **Area Score:** Represents how restricted are the activities related to that area, from 0 (no restriction) to 1 (activity is not allowed). Area score is computed by weighting the scores of the items related to that area. The weights of each item are given by the taxonomy.
+- **Field (of activity):** Specific group of activities where NPI are applied. Examples are "commerce", "education" and "outside sports".
+- **Field Score:** Represents how restricted are the activities related to that field, from 0 (no restriction) to 1 (activity is not allowed). Field score is computed by weighting the scores of the items related to that field. The weights of each item are given by the taxonomy.
 - **Intervention:** see "Non-Pharmaceutical Intervention".
-- **Item:** An item is part of an area of activity. It relates to a specific topic within the area. For instance, the area "culture" has the items "museum" and "cinema" among others.
+- **Item:** An item is part of an field of activity. It relates to a specific topic within the field. For instance, the field "culture" has the items "museum" and "cinema" among others.
 - **Item Score:** Represents how restricted are the activities related to that item, from 0 (no restriction) to 1 (activity is not allowed). Item score is computed from the scores of the NPI related to that item, following the rules described in the taxonomy.
-- **Non-Pharmaceutical Intervention:** Interventions are restrictions over a specific area of activity (such as "culture" or "mobility") and may affect all the region or only part of it, during a certain period of time.
+- **Non-Pharmaceutical Intervention:** Interventions are restrictions over a specific field of activity (such as "culture" or "mobility") and may affect all the region or only part of it, during a certain period of time.
 - **NPI:** Initials of "Non-Pharmaceutical Intervention".
 - **NPI Score:** Severity of the NPI, how restrictive the intervention is. It has four levels: none (score of 0), low (0.2), medium (0.5) and high (score of 1).
-- **Score:** Level of restriction impossed by a NPI or a group of NPI, from 0 to 1. Scores are computed following the rules given by the taxonomy. NPI scores are used to compute item scores, while item scores are required to compute area scores.
-- **Taxonomy:** File that contains the rules to compute the sevirity of each NPI, and the score of items and areas of activity.
+- **Score:** Level of restriction impossed by a NPI or a group of NPI, from 0 to 1. Scores are computed following the rules given by the taxonomy. NPI scores are used to compute item scores, while item scores are required to compute field scores.
+- **Taxonomy:** File that contains the rules to compute the sevirity of each NPI, and the score of items and fields of activity.
 
 ## Contact
 

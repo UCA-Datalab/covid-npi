@@ -11,7 +11,7 @@ from covidnpi.web.mongo import load_mongo
 
 
 def store_scores_in_mongo(
-    path_output: Path = Path("output/score_ambito"),
+    path_output: Path = Path("output/score_field"),
     path_taxonomia: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
 ):
@@ -32,7 +32,7 @@ def store_scores_in_mongo(
     mongo = load_mongo(cfg_mongo)
 
     taxonomia = return_taxonomia(path_taxonomia=path_taxonomia)
-    list_ambito = taxonomia["ambito"].unique().tolist()
+    list_field = taxonomia["field"].unique().tolist()
     # Get the minimum date in datetime format
     date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
 
@@ -54,10 +54,10 @@ def store_scores_in_mongo(
             )
             continue
         logger.debug(f"\n{provincia}")
-        for ambito in list_ambito:
-            logger.debug(f"  {ambito}")
-            series = df[ambito].values.tolist()
-            dict_provincia.update({ambito: series})
+        for field in list_field:
+            logger.debug(f"  {field}")
+            series = df[field].values.tolist()
+            dict_provincia.update({field: series})
 
         try:
             col = mongo.get_col("scores")
@@ -149,7 +149,7 @@ def datastore(
     path_output = Path(path_output)
     logger.debug("\n-----\nStoring scores in mongo\n-----\n")
     store_scores_in_mongo(
-        path_output=path_output / "score_ambito",
+        path_output=path_output / "score_field",
         path_taxonomia=path_taxonomia,
         path_config=path_config,
     )

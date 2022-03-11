@@ -1,24 +1,26 @@
+from typing import Dict
+
 from covidnpi.utils.config import load_config
 from covidnpi.web.mongo import load_mongo
 
 DATE_MIN = "2020-07-01"
 
 
-def return_ambits_by_province(
-    code: str, ambits: tuple, path_config: str = "covidnpi/config.toml"
-):
-    """Loads the scores stored in mongo for a given combination of province and ambits
+def return_fields_by_province(
+    code: str, fields: tuple, path_config: str = "covidnpi/config.toml"
+) -> Dict:
+    """Loads the scores stored in mongo for a given combination of province and fields
 
     Parameters
     ----------
     code : str
-    ambits : tuple
+    fields : tuple
     path_config : str, optional
 
     Returns
     -------
     dict_plot : dict
-        {ambit: {x, y}}
+        {field: {x, y}}
         x are dates in string format, y are the score values
 
     """
@@ -31,16 +33,16 @@ def return_ambits_by_province(
 
     dict_plot = {}
 
-    for ambit in ambits:
+    for field in fields:
         try:
-            y = dict_provincia[ambit]
+            y = dict_provincia[field]
         except KeyError:
-            print(f"[ERROR] Ambito '{ambit}' no existe para '{code}'")
+            print(f"[ERROR] Ambito '{field}' no existe para '{code}'")
             y = [0] * len(x)
         except TypeError:
             print(f"[ERROR] Provincia '{code}' no encontrada")
             y = [0] * len(x)
-        dict_ambit = {
+        dict_field = {
             "x": x,
             "y": y,
             "y_max": 1,
@@ -48,19 +50,19 @@ def return_ambits_by_province(
             "x_max": x[-1],
             "x_min": DATE_MIN,
         }
-        dict_plot.update({ambit: dict_ambit})
+        dict_plot.update({field: dict_field})
 
     return dict_plot
 
 
-def return_provinces_by_ambit(
-    ambit: str, codes: tuple, path_config: str = "covidnpi/config.toml"
-):
-    """Loads the scores stored in mongo for a given combination of provinces and ambit
+def return_provinces_by_field(
+    field: str, codes: tuple, path_config: str = "covidnpi/config.toml"
+) -> Dict:
+    """Loads the scores stored in mongo for a given combination of provinces and field
 
     Parameters
     ----------
-    ambit : str
+    field : str
     codes : tuple
     path_config : str, optional
 
@@ -84,9 +86,9 @@ def return_provinces_by_ambit(
         dict_provincia = col.find_one({"code": code})
         try:
             x = dict_provincia["fechas"]
-            y = dict_provincia[ambit]
+            y = dict_provincia[field]
         except KeyError:
-            print(f"[ERROR] Ambito '{ambit}' no existe para '{code}'")
+            print(f"[ERROR] Ambito '{field}' no existe para '{code}'")
             y = [0] * len(x)
         except TypeError:
             print(f"[ERROR] Provincia '{code}' no encontrada")
@@ -104,7 +106,9 @@ def return_provinces_by_ambit(
     return dict_plot
 
 
-def return_incidence_of_province(code: str, path_config: str = "covidnpi/config.toml"):
+def return_incidence_of_province(
+    code: str, path_config: str = "covidnpi/config.toml"
+) -> Dict:
     """Loads the number of cases stored in mongo for a given province
 
     Parameters
@@ -141,7 +145,9 @@ def return_incidence_of_province(code: str, path_config: str = "covidnpi/config.
     return dict_plot
 
 
-def return_growth_of_province(code: str, path_config: str = "covidnpi/config.toml"):
+def return_growth_of_province(
+    code: str, path_config: str = "covidnpi/config.toml"
+) -> Dict:
     """Loads the growth of cases stored in mongo for a given province
 
     Parameters
