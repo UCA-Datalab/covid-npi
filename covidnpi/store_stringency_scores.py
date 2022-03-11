@@ -14,31 +14,31 @@ from covidnpi.utils.dictionaries import (
 from covidnpi.utils.log import logger
 from covidnpi.utils.mobility import mobility_report_to_csv
 from covidnpi.utils.preprocess import read_npi_and_build_dict
-from covidnpi.utils.taxonomia import PATH_TAXONOMY
+from covidnpi.utils.taxonomy import PATH_TAXONOMY
 
 
 def main(
     path_raw: str = "datos_NPI",
-    path_taxonomia: str = PATH_TAXONOMY,
+    path_taxonomy: str = PATH_TAXONOMY,
     path_output: str = "output",
 ):
     """Reads the raw data stored in `path_raw`, preprocess and scores it, while storing
     all the results in `path_output`. An additional path to the taxonomy xlsx file
-    must also be provided in `path_taxonomia`.
+    must also be provided in `path_taxonomy`.
 
     Parameters
     ----------
     path_raw : str, optional
         Path to raw data, by default "datos_NPI_2"
-    path_taxonomia : str, optional
-        Path to taxonomia xlsx file, by default `PATH_TAXONOMY`
+    path_taxonomy : str, optional
+        Path to taxonomy xlsx file, by default `PATH_TAXONOMY`
     path_output : str, optional
         Output folder, by default "output"
 
     """
     logger.debug(f"Reading raw data from {path_raw}")
     dict_medidas = read_npi_and_build_dict(
-        path_data=path_raw, path_taxonomia=path_taxonomia
+        path_data=path_raw, path_taxonomy=path_taxonomy
     )
 
     # Build output path
@@ -68,7 +68,7 @@ def main(
         f"{path_items}\n\n...\n\nNext step is to score the fields of activity."
     )
 
-    dict_field = return_dict_fields(dict_items, path_taxonomia=path_taxonomia)
+    dict_field = return_dict_fields(dict_items, path_taxonomy=path_taxonomy)
     dict_islas = return_dict_islas(dict_field)
     dict_field = update_keep_old_keys(dict_field, dict_islas)
     path_score_field = os.path.join(path_output, "score_field")

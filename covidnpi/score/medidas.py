@@ -11,7 +11,7 @@ from covidnpi.utils.dictionaries import (
     store_dict_condicion,
 )
 from covidnpi.utils.log import logger
-from covidnpi.utils.taxonomia import return_taxonomia, return_all_medidas
+from covidnpi.utils.taxonomy import return_taxonomy, return_all_medidas
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
@@ -126,12 +126,12 @@ def expand_nivel_educacion(df):
     return df_expanded
 
 
-def list_missing_codigos(taxonomia: pd.DataFrame, dict_condicion: dict):
+def list_missing_codigos(taxonomy: pd.DataFrame, dict_condicion: dict):
     """Avisa de que faltan ciertos codigos en la lista de condiciones"""
     codigos = "-".join([s for s in dict_condicion.values()])
     list_missing = []
     # Filtramos aquellas con bajo == "existe" porque no saldran en la lista
-    for codigo in taxonomia.query("bajo != 'existe'")["codigo"].unique():
+    for codigo in taxonomy.query("bajo != 'existe'")["codigo"].unique():
         if codigo not in codigos:
             list_missing.append(codigo)
     if len(list_missing) > 0:
@@ -140,7 +140,7 @@ def list_missing_codigos(taxonomia: pd.DataFrame, dict_condicion: dict):
 
 def add_score_medida(
     df: pd.DataFrame,
-    taxonomia: pd.DataFrame,
+    taxonomy: pd.DataFrame,
     path_out_conditions: str = "output/dict_condicion.json",
 ) -> pd.DataFrame:
     df_score = df.copy()
@@ -152,18 +152,14 @@ def add_score_medida(
     for nivel in ["alto", "medio"]:
         list_condiciones = []
         # Existe
-        existe = taxonomia.loc[
-            taxonomia[nivel].str.contains("existe"), "codigo"
-        ].unique()
+        existe = taxonomy.loc[taxonomy[nivel].str.contains("existe"), "codigo"].unique()
         if len(existe) > 0:
             list_condiciones.append(build_condicion_existe(existe))
         # Personas
         for pers in [6, 10, 100]:
             for condition in ["<=", "<"]:
-                personas_cond = taxonomia.loc[
-                    taxonomia[nivel].str.contains(
-                        f"{condition}{pers}(?!%)", regex=True
-                    ),
+                personas_cond = taxonomy.loc[
+                    taxonomy[nivel].str.contains(f"{condition}{pers}(?!%)", regex=True),
                     "codigo",
                 ].unique()
                 if len(personas_cond) > 0:
@@ -173,23 +169,23 @@ def add_score_medida(
                         )
                     )
         # Personas no especifica
-        no_especifica = taxonomia.loc[
-            taxonomia[nivel].str.contains("noseespecifica"), "codigo"
+        no_especifica = taxonomy.loc[
+            taxonomy[nivel].str.contains("noseespecifica"), "codigo"
         ].unique()
         if len(no_especifica) > 0:
             list_condiciones.append(build_condicion_no_especifica(no_especifica))
         # Porcentaje
         for por in [35]:
-            porcentaje_leq = taxonomia.loc[
-                taxonomia[nivel].str.contains(f"<={por}%"), "codigo"
+            porcentaje_leq = taxonomy.loc[
+                taxonomy[nivel].str.contains(f"<={por}%"), "codigo"
             ].unique()
             if len(porcentaje_leq) > 0:
                 list_condiciones.append(build_condicion_porcentaje(porcentaje_leq, por))
         # Hora
         for hor in [18]:
-            hora_leq = taxonomia.loc[
-                (taxonomia[nivel].str.contains(f"antesdelas{hor}:00"))
-                | (taxonomia[nivel].str.contains(f"antesoigualquelas{hor}:00")),
+            hora_leq = taxonomy.loc[
+                (taxonomy[nivel].str.contains(f"antesdelas{hor}:00"))
+                | (taxonomy[nivel].str.contains(f"antesoigualquelas{hor}:00")),
                 "codigo",
             ].unique()
             if len(hora_leq) > 0:
@@ -201,7 +197,7 @@ def add_score_medida(
     # Store dictionary
     store_dict_condicion(dict_condicion, path_output=path_out_conditions)
     # List missing codigos
-    list_missing_codigos(taxonomia, dict_condicion)
+    list_missing_codigos(taxonomy, dict_condicion)
 
     condicion_alto = dict_condicion["alto"]
     condicion_medio = dict_condicion["medio"]
@@ -235,7 +231,7 @@ def pivot_df_score(df_score: pd.DataFrame):
 
 def score_medidas(
     df: pd.DataFrame,
-    taxonomia: pd.DataFrame,
+    taxonomy: pd.DataFrame,
     path_out_conditions: str = "output/dict_condicion.json",
 ) -> pd.DataFrame:
     """Receives the medidas dataframe and outputs a new dataframe of scores
@@ -244,7 +240,7 @@ def score_medidas(
     ----------
     df : pd.DataFrame
         Dataframe of medidas
-    taxonomia : pd.DataFrame
+    taxonomy : pd.DataFrame
         Dataframe with taxonomy data
     path_out_conditions: str, optional
         Path where the extracted conditions are stored, by default "output/dict_condicion.json"
@@ -258,7 +254,7 @@ def score_medidas(
     df_sub = process_hora(df_sub)
     df_sub_extended = extend_fecha(df_sub)
     df_score = add_score_medida(
-        df_sub_extended, taxonomia, path_out_conditions=path_out_conditions
+        df_sub_extended, taxonomy, path_out_conditions=path_out_conditions
     )
     df_score = pivot_df_score(df_score)
     return df_score
@@ -279,12 +275,12 @@ def return_dict_medidas(dict_medidas: dict) -> dict:
     """
     dict_scores = {}
 
-    taxonomia = return_taxonomia()
+    taxonomy = return_taxonomy()
     all_medidas = return_all_medidas()
 
     for provincia, df_sub in dict_medidas.items():
         logger.debug(provincia)
-        df_score = score_medidas(df_sub, taxonomia)
+        df_score = score_medidas(df_sub, taxonomy)
         # Nos aseguramos de que todas las medidas estan en el df
         medidas_missing = list(set(all_medidas) - set(df_score.columns))
         for m in medidas_missing:

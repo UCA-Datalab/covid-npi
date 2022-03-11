@@ -2,7 +2,7 @@ import pandas as pd
 import typer
 from covidnpi.utils.dictionaries import load_dict_scores, store_dict_scores
 from covidnpi.utils.log import logger
-from covidnpi.utils.taxonomia import PATH_TAXONOMY, return_item_ponderacion
+from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_item_ponderacion
 
 
 def compute_proportion(df: pd.DataFrame, item: str):
@@ -96,9 +96,9 @@ def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
     return df_afectado
 
 
-def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMY):
+def score_ponderada(df_afectado: pd.DataFrame, path_taxonomy=PATH_TAXONOMY):
     """Calcula la score de cada ambito a partir de sus item"""
-    ponderacion = return_item_ponderacion(path_taxonomia=path_taxonomia)
+    ponderacion = return_item_ponderacion(path_taxonomy=path_taxonomy)
     list_field = ponderacion["ambito"].unique()
     for field in list_field:
         pon_sub = ponderacion.query(f"ambito == '{field}'")
@@ -112,7 +112,7 @@ def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMY):
 
 def return_dict_fields(
     dict_items: dict,
-    path_taxonomia: str = PATH_TAXONOMY,
+    path_taxonomy: str = PATH_TAXONOMY,
     verbose: bool = True,
 ) -> dict:
     dict_field = {}
@@ -121,7 +121,7 @@ def return_dict_fields(
         if verbose:
             logger.debug(provincia)
         df_afectado = apply_porcentaje_afectado_to_items(df_item)
-        df_afectado = score_ponderada(df_afectado, path_taxonomia=path_taxonomia)
+        df_afectado = score_ponderada(df_afectado, path_taxonomy=path_taxonomy)
         dict_field.update({provincia: df_afectado.set_index("fecha")})
 
     return dict_field
@@ -130,10 +130,10 @@ def return_dict_fields(
 def main(
     path_items: str = "output/items",
     path_output_ponderado: str = "output/score_field",
-    path_taxonomia: str = PATH_TAXONOMY,
+    path_taxonomy: str = PATH_TAXONOMY,
 ):
     dict_items = load_dict_scores(path_items)
-    dict_field = return_dict_fields(dict_items, path_taxonomia=path_taxonomia)
+    dict_field = return_dict_fields(dict_items, path_taxonomy=path_taxonomy)
     store_dict_scores(dict_field, path_output=path_output_ponderado)
 
 

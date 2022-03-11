@@ -6,13 +6,13 @@ import typer
 from covidnpi.utils.config import load_config
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import PROVINCIA_TO_ISOPROV
-from covidnpi.utils.taxonomia import PATH_TAXONOMY, return_taxonomia
+from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_taxonomy
 from covidnpi.web.mongo import load_mongo
 
 
 def store_scores_in_mongo(
     path_output: Path = Path("output/score_field"),
-    path_taxonomia: str = PATH_TAXONOMY,
+    path_taxonomy: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
 ):
     """Store NPI scores in mongo server
@@ -21,8 +21,8 @@ def store_scores_in_mongo(
     ----------
     path_output : Path, optional
         Path containing the outputs, that we want to store in mongo
-    path_taxonomia : str, optional
-        Path to taxonomia file
+    path_taxonomy : str, optional
+        Path to taxonomy file
     path_config : str, optional
         Config file contains the route and credentials of mongo server
 
@@ -31,8 +31,8 @@ def store_scores_in_mongo(
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
 
-    taxonomia = return_taxonomia(path_taxonomia=path_taxonomia)
-    list_field = taxonomia["ambito"].unique().tolist()
+    taxonomy = return_taxonomy(path_taxonomy=path_taxonomy)
+    list_field = taxonomy["ambito"].unique().tolist()
     # Get the minimum date in datetime format
     date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
 
@@ -129,7 +129,7 @@ def store_cases_in_mongo(
 
 def datastore(
     path_output: str = "output",
-    path_taxonomia: str = PATH_TAXONOMY,
+    path_taxonomy: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
 ):
     """Stores the data contained in the output folder in mongo
@@ -138,8 +138,8 @@ def datastore(
     ----------
     path_output : str, optional
         Path where the output is located
-    path_taxonomia : str, optional
-        Path to taxonomia xlsx file
+    path_taxonomy : str, optional
+        Path to taxonomy xlsx file
     path_config : str, optional
         Path to the config toml file
     path_regions : str, optional
@@ -150,7 +150,7 @@ def datastore(
     logger.debug("\n-----\nStoring scores in mongo\n-----\n")
     store_scores_in_mongo(
         path_output=path_output / "score_field",
-        path_taxonomia=path_taxonomia,
+        path_taxonomy=path_taxonomy,
         path_config=path_config,
     )
     logger.debug("\n-----\nStoring number of cases in mongo\n-----\n")

@@ -3,8 +3,8 @@ import pandas as pd
 PATH_TAXONOMY = "datos_NPI/Taxonomía_11052021.xlsx"
 
 
-def read_taxonomia(path_taxonomia: str = PATH_TAXONOMY) -> pd.DataFrame:
-    xl = pd.ExcelFile(path_taxonomia)
+def read_taxonomy(path_taxonomy: str = PATH_TAXONOMY) -> pd.DataFrame:
+    xl = pd.ExcelFile(path_taxonomy)
 
     list_sheet = xl.sheet_names
     list_df = []
@@ -47,10 +47,10 @@ def read_taxonomia(path_taxonomia: str = PATH_TAXONOMY) -> pd.DataFrame:
     return df
 
 
-def return_all_medidas(path_taxonomia: str = PATH_TAXONOMY):
+def return_all_medidas(path_taxonomy: str = PATH_TAXONOMY):
     """Returns a list of the relevant medidas"""
 
-    df = read_taxonomia(path_taxonomia=path_taxonomia)
+    df = read_taxonomy(path_taxonomy=path_taxonomy)
 
     list_codigos = df["codigo"].unique().tolist()
 
@@ -63,12 +63,12 @@ def return_all_medidas(path_taxonomia: str = PATH_TAXONOMY):
     return sorted(list_codigos)
 
 
-def classify_criteria(taxonomia: pd.DataFrame):
+def classify_criteria(taxonomy: pd.DataFrame):
     """Parses "Criterio" column into three categories:
     "alto", "medio", "bajo"
     """
     criterio = (
-        taxonomia["Criterio"]
+        taxonomy["Criterio"]
         .str.replace("\n", "")
         .str.lower()
         .str.replace(" ", "")
@@ -99,14 +99,14 @@ def classify_criteria(taxonomia: pd.DataFrame):
     return classified
 
 
-def return_taxonomia(
-    path_taxonomia: str = PATH_TAXONOMY, path_output: str = "output/taxonomia.csv"
+def return_taxonomy(
+    path_taxonomy: str = PATH_TAXONOMY, path_output: str = "output/taxonomy.csv"
 ):
-    taxonomia = read_taxonomia(path_taxonomia)
-    criterio = classify_criteria(taxonomia)
-    taxonomia = (
+    taxonomy = read_taxonomy(path_taxonomy)
+    criterio = classify_criteria(taxonomy)
+    taxonomy = (
         pd.merge(
-            taxonomia[["codigo", "item", "ambito"]],
+            taxonomy[["codigo", "item", "ambito"]],
             criterio,
             left_index=True,
             right_index=True,
@@ -114,29 +114,29 @@ def return_taxonomia(
         .sort_values(["ambito", "item", "codigo"])
         .drop_duplicates()
     )
-    # Store taxonomia
-    taxonomia.to_csv(path_output, index=False)
-    return taxonomia
+    # Store taxonomy
+    taxonomy.to_csv(path_output, index=False)
+    return taxonomy
 
 
 def return_item_ponderacion(
-    path_taxonomia: str = PATH_TAXONOMY,
+    path_taxonomy: str = PATH_TAXONOMY,
 ) -> pd.DataFrame:
-    taxonomia = read_taxonomia(path_taxonomia)
+    taxonomy = read_taxonomy(path_taxonomy)
     # Fill missing names with "variable" + item count
     try:
-        mask_nan = taxonomia["nombre"].isna()
+        mask_nan = taxonomy["nombre"].isna()
     except KeyError:
         raise KeyError("Column 'nombre' is missing in taxonomy.")
 
-    taxonomia.loc[mask_nan, "nombre"] = (
-        taxonomia.loc[mask_nan, "variable"].str[:3].str.upper()
+    taxonomy.loc[mask_nan, "nombre"] = (
+        taxonomy.loc[mask_nan, "variable"].str[:3].str.upper()
         + "_"
-        + taxonomia.loc[mask_nan, "item"].astype(str)
+        + taxonomy.loc[mask_nan, "item"].astype(str)
     )
     # Extract the ponderation of each item
     ponderacion = (
-        taxonomia[["ambito", "nombre", "ponderacion"]]
+        taxonomy[["ambito", "nombre", "ponderacion"]]
         .drop_duplicates()
         .reset_index(drop=True)
     )

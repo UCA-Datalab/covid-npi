@@ -93,7 +93,7 @@ def reverse_dictionary(d: dict) -> dict:
 def store_dict_condicion(
     dict_condicion: dict, path_output: str = "output/dict_condicion.json"
 ):
-    """Guarda un json con las condiciones aplicadas por la taxonomia"""
+    """Guarda un json con las condiciones aplicadas por la taxonomy"""
     if path_output is None:
         return
     with open(path_output, "w") as f:

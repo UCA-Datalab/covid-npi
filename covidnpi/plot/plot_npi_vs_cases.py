@@ -7,15 +7,12 @@ import numpy as np
 import pandas as pd
 import typer
 from adjustText import adjust_text
+from covidnpi.utils.cases import load_cases_df, return_cases_of_provincia_normed
 from covidnpi.utils.fields import list_fields
-from covidnpi.utils.cases import (
-    load_cases_df,
-    return_cases_of_provincia_normed,
-)
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import (
-    ISOPROV_TO_PROVINCIA,
     DICT_PROVINCE_RENAME,
+    ISOPROV_TO_PROVINCIA,
     PROVINCIA_TO_ISOPROV,
 )
 
@@ -97,8 +94,8 @@ def dict_of_npi_score_mean_by_province(
     return dict_npi
 
 
-def dataframe_of_infection_by_date_province() -> pd.DataFrame:
-    """Returns a dataframe with the daily number of infections
+def dataframe_of_cases_by_date_province() -> pd.DataFrame:
+    """Returns a dataframe with the daily number of casess
     per province (column) and date (row)
 
     Returns
@@ -118,11 +115,11 @@ def dataframe_of_infection_by_date_province() -> pd.DataFrame:
     return pd.DataFrame.from_dict(dict_ser)
 
 
-def dict_of_infection_mean_by_province(
+def dict_of_cases_mean_by_province(
     date_min: str = "15-09-2020",
     date_max: str = "08-05-2021",
 ) -> Dict:
-    """Returns a dictionary that contains the infection mean
+    """Returns a dictionary that contains the mean number of cases
     of each province.
 
     Parameters
@@ -135,21 +132,21 @@ def dict_of_infection_mean_by_province(
     Returns
     -------
     Dict
-        Province Code: Infection field
+        Province Code: Mean number of cases
     """
-    df = dataframe_of_infection_by_date_province()
+    df = dataframe_of_cases_by_date_province()
     # String to datetime
     date_min = dt.datetime.strptime(date_min, "%d-%m-%Y")
     date_max = dt.datetime.strptime(date_max, "%d-%m-%Y")
     # Limit dataframe within date range
     df = df[(df.index >= date_min) & (df.index <= date_max)]
-    # Initialize dictionary of infection per province
-    dict_infection = {}
-    # Compute the average infection of each province
+    # Initialize dictionary of cases per province
+    dict_cases = {}
+    # Compute the average cases of each province
     for column in df:
         ser = df[column]
-        dict_infection.update({column: ser.mean()})
-    return dict_infection
+        dict_cases.update({column: ser.mean()})
+    return dict_cases
 
 
 def main(
@@ -159,29 +156,27 @@ def main(
 ):
     path_data = Path(path_data)
 
-    # Dictionary of scores and infection
+    # Dictionary of scores and cases
     dict_scores = dict_of_npi_score_mean_by_province(
         path_data, date_min=date_min, date_max=date_max
     )
-    dict_infect = dict_of_infection_mean_by_province(
-        date_min=date_min, date_max=date_max
-    )
+    dict_infect = dict_of_cases_mean_by_province(date_min=date_min, date_max=date_max)
 
-    # List provinces, scores and infection
+    # List provinces, scores and cases
     list_provinces = []
     list_scores = []
     list_infect = []
     for province, score in dict_scores.items():
         try:
-            infection = dict_infect[province]
+            cases = dict_infect[province]
         except KeyError:
             logger.warning(f"Province {province} has no infected value. Skipped.")
             continue
         list_provinces.append(province)
         list_scores.append(score)
-        list_infect.append(infection)
+        list_infect.append(cases)
 
-    # Scatter plot of NPI vs infection
+    # Scatter plot of NPI vs cases
     plt.figure(dpi=160)
     plt.scatter(
         list_scores,
@@ -213,8 +208,8 @@ def main(
 
     # Labels and store the image
     plt.xlabel("Mean stringency index")
-    plt.ylabel("Infections per day (100,000 inhabitants)")
-    plt.savefig(path_data / "npi_vs_infection.png")
+    plt.ylabel("Cases per day (100,000 inhabitants)")
+    plt.savefig(path_data / "npi_vs_cases.png")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 from covidnpi.score.medidas import score_medidas
-from covidnpi.utils.taxonomia import return_taxonomia
+from covidnpi.utils.taxonomy import return_taxonomy
 
 
 @pytest.fixture
@@ -11,9 +11,9 @@ def medidas() -> pd.DataFrame:
 
 
 @pytest.fixture
-def taxonomia() -> pd.DataFrame:
-    path_taxonomia = "test/data/taxonomia.xlsx"
-    yield return_taxonomia(path_taxonomia=path_taxonomia, path_output=None)
+def taxonomy() -> pd.DataFrame:
+    path_taxonomy = "test/data/taxonomy.xlsx"
+    yield return_taxonomy(path_taxonomy=path_taxonomy, path_output=None)
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def sc_medidas() -> pd.DataFrame:
 
 
 def test_medidas(
-    medidas: pd.DataFrame, taxonomia: pd.DataFrame, sc_medidas: pd.DataFrame
+    medidas: pd.DataFrame, taxonomy: pd.DataFrame, sc_medidas: pd.DataFrame
 ):
-    sc_med = score_medidas(medidas, taxonomia, path_out_conditions=None).reset_index()
+    sc_med = score_medidas(medidas, taxonomy, path_out_conditions=None).reset_index()
     pd.testing.assert_frame_equal(sc_med, sc_medidas, check_names=False)

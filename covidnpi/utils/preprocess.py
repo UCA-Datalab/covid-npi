@@ -13,7 +13,7 @@ from covidnpi.utils.log import (
     raise_value_warning,
     raise_missing_warning,
 )
-from covidnpi.utils.taxonomia import return_all_medidas, PATH_TAXONOMY
+from covidnpi.utils.taxonomy import return_all_medidas, PATH_TAXONOMY
 from covidnpi.utils.regions import DICT_PROVINCE_RENAME, DICT_FILL_PROVINCIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE", "Base"]
@@ -180,10 +180,10 @@ def read_npi_data(
 
 
 def filter_relevant_medidas(
-    df: pd.DataFrame, path_taxonomia: str = PATH_TAXONOMY
+    df: pd.DataFrame, path_taxonomy: str = PATH_TAXONOMY
 ) -> pd.DataFrame:
     """Remove the interventions in `df` not appearing in the taxonomy."""
-    all_medidas = return_all_medidas(path_taxonomia=path_taxonomia)
+    all_medidas = return_all_medidas(path_taxonomy=path_taxonomy)
     mask_medidas = df["codigo"].isin(all_medidas)
     df_new = df[mask_medidas]
     dropped = sorted(df.loc[~mask_medidas, "codigo"].astype(str).unique())
@@ -444,7 +444,7 @@ def return_dict_provincia_to_medidas(df: pd.DataFrame) -> dict:
 
 def read_npi_and_build_dict(
     path_data: str = "datos_NPI",
-    path_taxonomia: str = PATH_TAXONOMY,
+    path_taxonomy: str = PATH_TAXONOMY,
 ):
     """Reads the folder containing the NPI and returns a dictionary
     {province: limitations}"""
@@ -465,7 +465,7 @@ def read_npi_and_build_dict(
             )
             continue
         # Filtramos las medidas relevantes
-        df_filtered = filter_relevant_medidas(df, path_taxonomia=path_taxonomia)
+        df_filtered = filter_relevant_medidas(df, path_taxonomy=path_taxonomy)
         # Corregimos las fechas
         df_filtered = process_fecha(df_filtered)
         # Renombramos la columna unidad
@@ -486,7 +486,7 @@ def read_npi_and_build_dict(
 
 def main(
     path_data: str = "datos_NPI",
-    path_taxonomia: str = PATH_TAXONOMY,
+    path_taxonomy: str = PATH_TAXONOMY,
     path_output: str = "output/medidas",
 ):
     """Reads the raw data, in path_data, preprocess it and stores the results in
@@ -495,12 +495,12 @@ def main(
     Parameters
     ----------
     path_data : str, optional
-    path_taxonomia : str, optional
+    path_taxonomy : str, optional
     path_output : str, optional
 
     """
     dict_provincia_to_medidas = read_npi_and_build_dict(
-        path_data=path_data, path_taxonomia=path_taxonomia
+        path_data=path_data, path_taxonomy=path_taxonomy
     )
     store_dict_provincia_to_medidas(dict_provincia_to_medidas, path_output=path_output)
 
