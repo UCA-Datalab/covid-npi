@@ -32,7 +32,7 @@ def compute_proportion(df: pd.DataFrame, item: str):
     ]
     if len(list_dates) > 0:
         logger.warning(
-            f"The sum of percentages of item {item} exceeds 100 in rows: {', '.join(list_dates)}"
+            f"The sum of percentages of item {item} exceeds 100 in dates: {', '.join(list_dates)}"
         )
         porcentaje_general[porcentaje_general < 0] = 0
 

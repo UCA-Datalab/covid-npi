@@ -13,7 +13,7 @@ from covidnpi.utils.regions import (
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
-def load_casos_df(
+def load_cases_df(
     link: str = "https://cnecovid.isciii.es/covid19/resources/"
     "casos_tecnica_provincia.csv",
 ) -> pd.DataFrame:
@@ -30,13 +30,13 @@ def load_casos_df(
         Number of cases of COVID by day and province
 
     """
-    logger.debug("Loading incidence data")
+    logger.debug("Loading cases data")
 
     def dateparse(x):
-        """This function is used to parse the dates of casos"""
+        """This function is used to parse the dates of cases"""
         return dt.datetime.strptime(x, "%Y-%m-%d")
 
-    casos = pd.read_csv(
+    cases = pd.read_csv(
         link,
         parse_dates=["fecha"],
         date_parser=dateparse,
@@ -44,32 +44,32 @@ def load_casos_df(
         na_values=["NC"],
     )
     # Correct some abbreviations
-    casos["provincia_iso"] = (
-        casos["provincia_iso"].fillna("Desconocido").replace(ISOPROV_REASSIGN)
+    cases["provincia_iso"] = (
+        cases["provincia_iso"].fillna("Desconocido").replace(ISOPROV_REASSIGN)
     )
 
     # List abbreviations not appearing in province codes
-    list_miss = set(casos["provincia_iso"].unique()) - set(ISOPROV_TO_PROVINCIA.keys())
+    list_miss = set(cases["provincia_iso"].unique()) - set(ISOPROV_TO_PROVINCIA.keys())
     if len(list_miss) > 0:
         logger.warning(
             f"The following codes are not assigned to any province: {','.join(list_miss)}"
         )
-    # List provinces not appearing in incidence
-    list_miss = set(ISOPROV_TO_PROVINCIA.keys()) - set(casos["provincia_iso"].unique())
+    # List provinces not appearing in cases
+    list_miss = set(ISOPROV_TO_PROVINCIA.keys()) - set(cases["provincia_iso"].unique())
     if len(list_miss) > 0:
         logger.warning(f"The following provinces are missing: {','.join(list_miss)}")
 
-    logger.debug("Done loading incidence data")
-    return casos
+    logger.debug("Done loading cases data")
+    return cases
 
 
-def return_casos_of_provincia(casos: pd.DataFrame, code: str) -> pd.Series:
+def return_cases_of_provincia(cases: pd.DataFrame, code: str) -> pd.Series:
     """Return the series of total cases of COVID per date, for a province
 
     Parameters
     ----------
-    casos : pandas.DataFrame
-        The dataframe returned by load_casos_df
+    cases : pandas.DataFrame
+        The dataframe returned by load_cases_df
     code : str
         Code of the province (example: "M" for "Madrid")
 
@@ -80,8 +80,8 @@ def return_casos_of_provincia(casos: pd.DataFrame, code: str) -> pd.Series:
 
     """
     # Query target province
-    casos_sub = casos.query(f"provincia_iso == '{code}'")
-    series = casos_sub.set_index("fecha")["num_casos"]
+    cases_sub = cases.query(f"provincia_iso == '{code}'")
+    series = cases_sub.set_index("fecha")["num_casos"]
 
     # Fill missing dates with NaN
     try:
@@ -92,8 +92,8 @@ def return_casos_of_provincia(casos: pd.DataFrame, code: str) -> pd.Series:
     return series
 
 
-def return_casos_of_provincia_normed(
-    casos: pd.DataFrame,
+def return_cases_of_provincia_normed(
+    cases: pd.DataFrame,
     code: str,
     per_inhabitants: int = 100000,
 ) -> pd.Series:
@@ -102,8 +102,8 @@ def return_casos_of_provincia_normed(
 
     Parameters
     ----------
-    casos : pandas.DataFrame
-        The dataframe returned by load_casos_df
+    cases : pandas.DataFrame
+        The dataframe returned by load_cases_df
     code : str
         Code of the province (example: "M" for "Madrid")
     per_inhabitants : int, optional
@@ -115,6 +115,6 @@ def return_casos_of_provincia_normed(
         Cases of COVID per date, per N inhabitants
 
     """
-    series = return_casos_of_provincia(casos, code)
+    series = return_cases_of_provincia(cases, code)
     pob = ISOPROV_TO_POBLACION[code]
     return per_inhabitants * series / pob

@@ -9,6 +9,6 @@ date_min = "21-06-2020"
 [npi]
 fillna_date_end = "today"  # "today" or "start"
 
-[casos]
+[cases]
 movavg = 7
-link = "https://cnecovid.isciii.es/covid19/resources/casos_tecnica_provincia.csv"
+link = "https://cnecovid.isciii.es/covid19/resources/cases_tecnica_provincia.csv"

@@ -106,7 +106,7 @@ def return_provinces_by_field(
     return dict_plot
 
 
-def return_incidence_of_province(
+def return_cases_of_province(
     code: str, path_config: str = "covidnpi/config.toml"
 ) -> Dict:
     """Loads the number of cases stored in mongo for a given province
@@ -125,18 +125,18 @@ def return_incidence_of_province(
     """
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
-    col = mongo.get_col("casos")
+    col = mongo.get_col("cases")
 
     x = col.find_one({"code": code})
     try:
         x_max = x["fechas"][-1]
     except KeyError:
-        print(f"[ERROR] El codigo '{code}' de 'casos' no tiene 'x'")
+        print(f"[ERROR] El codigo '{code}' de 'cases' no tiene 'x'")
         x_max = DATE_MIN
 
     dict_plot = {
         "x": x["fechas"],
-        "y": x["casos"],
+        "y": x["cases"],
         "y_max": 800,
         "y_min": 0,
         "x_max": x_max,
@@ -164,13 +164,13 @@ def return_growth_of_province(
     """
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
-    col = mongo.get_col("casos")
+    col = mongo.get_col("cases")
 
     x = col.find_one({"code": code})
     try:
         x_max = x["fechas"][-1]
     except KeyError:
-        print(f"[ERROR] El codigo '{code}' de 'casos' no tiene 'x'")
+        print(f"[ERROR] El codigo '{code}' de 'cases' no tiene 'x'")
         x_max = DATE_MIN
     dict_plot = {
         "x": x["fechas"],

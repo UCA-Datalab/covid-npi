@@ -310,8 +310,8 @@ def format_hora(df: pd.DataFrame) -> pd.DataFrame:
 def format_porcentaje_afectado(df: pd.DataFrame) -> pd.DataFrame:
     """Formats the column 'porcentaje_afectado'"""
     df = df.copy()
-    # En algunos casos aparece el nombre de una zona en lugar del porcentaje
-    # Convertimos esos casos a su porcentaje correspondiente
+    # En algunos cases aparece el nombre de una zona en lugar del porcentaje
+    # Convertimos esos cases a su porcentaje correspondiente
     # Tambien reemplazamos "," por "."
     try:
         df["porcentaje_afectado"] = (
@@ -330,7 +330,7 @@ def format_porcentaje_afectado(df: pd.DataFrame) -> pd.DataFrame:
     except KeyError:
         _raise_missing_column(df, "porcentaje_afectado")
 
-    # Convertimos a float y mostramos los casos donde salta error (que se dejan como NaN)
+    # Convertimos a float y mostramos los cases donde salta error (que se dejan como NaN)
     try:
         df["porcentaje_afectado"] = df["porcentaje_afectado"].astype(float)
     except TypeError:

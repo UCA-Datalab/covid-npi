@@ -2,7 +2,10 @@ import os
 
 import pandas as pd
 import typer
-from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
+from covidnpi.utils.cases import (
+    load_cases_df,
+    return_cases_of_provincia_normed,
+)
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import (
     ISOPROV_REASSIGN,
@@ -10,7 +13,7 @@ from covidnpi.utils.regions import (
     ISOPROV_TO_PROVINCIA,
 )
 from covidnpi.utils.rho import compute_rho
-from covidnpi.utils.series import compute_growth_rate, cumulative_incidence
+from covidnpi.utils.series import compute_growth_rate, cumulative_cases
 
 URL_MOBILITY = "https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv"
 
@@ -97,7 +100,7 @@ def mobility_report_to_csv(
         os.mkdir(path_output)
 
     mob = load_mobility_report()
-    casos = load_casos_df()
+    cases = load_cases_df()
 
     for code in mob["code"].unique():
         # Reassign code if needed
@@ -109,10 +112,10 @@ def mobility_report_to_csv(
             logger.warning(f"Omitted {code}")
             continue
         dict_reports = return_reports_of_provincia(mob, code)
-        series_casos = return_casos_of_provincia_normed(casos, code)
-        series_ia7 = cumulative_incidence(series_casos, 7)
-        series_growth = compute_growth_rate(series_casos, 7)
-        series_rho = compute_rho(series_casos)
+        series_cases = return_cases_of_provincia_normed(cases, code)
+        series_ia7 = cumulative_cases(series_cases, 7)
+        series_growth = compute_growth_rate(series_cases, 7)
+        series_rho = compute_rho(series_cases)
 
         # Store data
         df_store = (

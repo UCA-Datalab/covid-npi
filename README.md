@@ -219,9 +219,9 @@ dict_plot = return_provinces_by_ambit(field, provinces, path_config=path_config)
 # where x are dates and y are floats between 0 and 1
 ````
 
-To load the cumulative incidence in a given province:
+To load the cumulative cases in a given province:
 ````python
-from covidnpi.web.dataloaders import return_incidence_of_province
+from covidnpi.web.dataloaders import return_cases_of_province
 
 # Parameters to define
 # province : The code of the province, in uppercase
@@ -229,7 +229,7 @@ province = "M"
 # path_config : Path to your config file
 path_config = "config.toml"
 
-dict_plot = return_incidence_of_province(province, path_config=path_config)
+dict_plot = return_cases_of_province(province, path_config=path_config)
 # Output dict_plot will have the following format
 # {"x": [...], "y": [...]}
 # where x are dates and y are floats

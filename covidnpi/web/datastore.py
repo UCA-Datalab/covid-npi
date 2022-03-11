@@ -68,11 +68,11 @@ def store_scores_in_mongo(
             _ = mongo.insert_new_dict("scores", dict_provincia)
 
 
-def store_casos_in_mongo(
+def store_cases_in_mongo(
     path_output: Path = Path("output"),
     path_config: str = "covidnpi/config.toml",
 ):
-    """Store incidence and growth rate in mongo
+    """Store cases and growth rate in mongo
 
     Parameters
     ----------
@@ -85,9 +85,9 @@ def store_casos_in_mongo(
     # Initialize mongo
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
-    # Load Cumulative Incidence and Growth Rate
-    cfg_casos = load_config(path_config, key="casos")
-    days = cfg_casos["movavg"]
+    # Load Cumulative cases and Growth Rate
+    cfg_cases = load_config(path_config, key="cases")
+    days = cfg_cases["movavg"]
     df_cuminc = pd.read_csv(
         path_output / f"incidencia_acumulada_{days}.csv", index_col=0, parse_dates=True
     )
@@ -114,17 +114,17 @@ def store_casos_in_mongo(
         dict_provincia = {
             "code": code,
             "fechas": fechas,
-            "casos": ser_cuminc.values.tolist(),
+            "cases": ser_cuminc.values.tolist(),
             "crecimiento": ser_growth.values.tolist(),
         }
         # Store the information in mongo
         try:
-            col = mongo.get_col("casos")
+            col = mongo.get_col("cases")
             dict_found = col.find_one({"code": code})
             _ = dict_found["fechas"]
-            mongo.update_dict("casos", "code", code, dict_provincia)
+            mongo.update_dict("cases", "code", code, dict_provincia)
         except TypeError:
-            _ = mongo.insert_new_dict("casos", dict_provincia)
+            _ = mongo.insert_new_dict("cases", dict_provincia)
 
 
 def datastore(
@@ -154,7 +154,7 @@ def datastore(
         path_config=path_config,
     )
     logger.debug("\n-----\nStoring number of cases in mongo\n-----\n")
-    store_casos_in_mongo(path_output=path_output, path_config=path_config)
+    store_cases_in_mongo(path_output=path_output, path_config=path_config)
 
 
 if __name__ == "__main__":

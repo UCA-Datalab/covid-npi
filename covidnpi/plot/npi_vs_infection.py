@@ -8,7 +8,10 @@ import pandas as pd
 import typer
 from adjustText import adjust_text
 from covidnpi.utils.fields import list_fields
-from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
+from covidnpi.utils.cases import (
+    load_cases_df,
+    return_cases_of_provincia_normed,
+)
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import (
     ISOPROV_TO_PROVINCIA,
@@ -103,12 +106,12 @@ def dataframe_of_infection_by_date_province() -> pd.DataFrame:
     pd.DataFrame
         Pandas dataframe, index is datetime, columns are provinces codes
     """
-    casos = load_casos_df()
+    cases = load_cases_df()
     # Initialize dictionary of time series
     dict_ser = {}
     for _, code in PROVINCIA_TO_ISOPROV.items():
-        # Incidence by province for each 100,000 inhabitants
-        ser = return_casos_of_provincia_normed(casos, code)
+        # cases by province for each 100,000 inhabitants
+        ser = return_cases_of_provincia_normed(cases, code)
         # Index to datetime
         ser.index = pd.to_datetime(ser.index)
         dict_ser.update({code: ser})
