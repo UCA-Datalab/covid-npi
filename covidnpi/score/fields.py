@@ -6,7 +6,7 @@ from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_item_ponderacion
 
 
 def compute_proportion(df: pd.DataFrame, item: str):
-    """Calcula la score ponderada de un item concreto, teniendo en cuenta las medidas
+    """Calcula la score ponderada de un item concreto, teniendo en cuenta las interventions
     subprovinciales. Devuelve un dataframe con una sola fila por fecha"""
 
     df_sub = df[["fecha", "porcentaje_afectado", item]].copy()
@@ -15,11 +15,11 @@ def compute_proportion(df: pd.DataFrame, item: str):
     mask_autonomico = df_sub["porcentaje_afectado"] == 100
     df_sub.loc[mask_autonomico, item] = df_sub.loc[mask_autonomico, item].fillna(0)
 
-    # Los otros NaNs, que pertenecen a medidas subprovinciales no aplicadas, se eliminan
+    # Los otros NaNs, que pertenecen a interventions subprovinciales no aplicadas, se eliminan
     df_sub.dropna(inplace=True)
 
     # Calculamos el porcentaje de la provincia que es afectado de manera general
-    # (cuando se dan medidas subprovinciales)
+    # (cuando se dan interventions subprovinciales)
     porcentaje_general = (
         100
         - df_sub.query("porcentaje_afectado < 100")
@@ -36,13 +36,13 @@ def compute_proportion(df: pd.DataFrame, item: str):
         )
         porcentaje_general[porcentaje_general < 0] = 0
 
-    # Identificamos las medidas que se han aplicado exclusivamente con caracter general
+    # Identificamos las interventions que se han aplicado exclusivamente con caracter general
     mask_general = df_sub["porcentaje_afectado"] == 100
-    # Identificamos las medidas que han tenido caracter subprovincial
+    # Identificamos las interventions que han tenido caracter subprovincial
     mask_subprov = df_sub["fecha"].isin(porcentaje_general.index)
 
     try:
-        # Para las medidas que han tenido caracter subprovincial, cambiamos el porcentaje
+        # Para las interventions que han tenido caracter subprovincial, cambiamos el porcentaje
         # general de 100 a (100 - subprovincial)
         df_sub.loc[
             mask_general & mask_subprov, "porcentaje_afectado"
@@ -72,7 +72,7 @@ def compute_proportion(df: pd.DataFrame, item: str):
 
 
 def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
-    """Calcula la score ponderada de todos los item, teniendo el cuenta medidas
+    """Calcula la score ponderada de todos los item, teniendo el cuenta interventions
     subprovinciales. Devuelve un dataframe con una sola fila por fecha"""
 
     list_item = df_item.columns.tolist()

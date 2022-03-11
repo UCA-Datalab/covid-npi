@@ -7,11 +7,11 @@ import typer
 
 from covidnpi.utils.dictionaries import (
     store_dict_scores,
-    load_dict_medidas,
+    load_dict_interventions,
     store_dict_condicion,
 )
 from covidnpi.utils.log import logger
-from covidnpi.utils.taxonomy import return_taxonomy, return_all_medidas
+from covidnpi.utils.taxonomy import return_taxonomy, return_all_interventions
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
@@ -54,33 +54,35 @@ def extend_fecha(df: pd.DataFrame) -> pd.DataFrame:
     return df_extended
 
 
-def build_condicion_existe(lista_medidas):
-    condicion = [f"(codigo == '{medida}')" for medida in lista_medidas]
+def build_condicion_existe(lista_interventions):
+    condicion = [
+        f"(codigo == '{intervention}')" for intervention in lista_interventions
+    ]
     condicion = " | ".join(condicion)
     condicion = f"({condicion})"
     return condicion
 
 
-def build_condicion_porcentaje(lista_medidas, porcentaje):
-    condicion = build_condicion_existe(lista_medidas)
+def build_condicion_porcentaje(lista_interventions, porcentaje):
+    condicion = build_condicion_existe(lista_interventions)
     condicion_compuesta = f"({condicion} & (porcentaje <= {porcentaje}))"
     return condicion_compuesta
 
 
-def build_condicion_personas(lista_medidas, personas, condition: str = "<="):
-    condicion = build_condicion_existe(lista_medidas)
+def build_condicion_personas(lista_interventions, personas, condition: str = "<="):
+    condicion = build_condicion_existe(lista_interventions)
     condicion_compuesta = f"({condicion} & (personas {condition} {personas}))"
     return condicion_compuesta
 
 
-def build_condicion_no_especifica(lista_medidas):
-    condicion = build_condicion_existe(lista_medidas)
+def build_condicion_no_especifica(lista_interventions):
+    condicion = build_condicion_existe(lista_interventions)
     condicion_compuesta = f"({condicion} & (personas == @nan))"
     return condicion_compuesta
 
 
-def build_condicion_horario(lista_medidas, hora):
-    condicion = build_condicion_existe(lista_medidas)
+def build_condicion_horario(lista_interventions, hora):
+    condicion = build_condicion_existe(lista_interventions)
     condicion_compuesta = f"({condicion} & (hora <= {hora}))"
     return condicion_compuesta
 
@@ -138,14 +140,14 @@ def list_missing_codigos(taxonomy: pd.DataFrame, dict_condicion: dict):
         logger.error(f"Faltan codigos en condicones: {', '.join(list_missing)}")
 
 
-def add_score_medida(
+def add_score_intervention(
     df: pd.DataFrame,
     taxonomy: pd.DataFrame,
     path_out_conditions: str = "output/dict_condicion.json",
 ) -> pd.DataFrame:
     df_score = df.copy()
     # Asumimos que por defecto es baja
-    df_score["score_medida"] = 0.2
+    df_score["score_intervention"] = 0.2
 
     dict_condicion = {}
 
@@ -208,8 +210,8 @@ def add_score_medida(
     except TypeError:
         raise TypeError(f"Column with unproper type:\n{df.dtypes}")
 
-    df_score.loc[mask_medio, "score_medida"] = 0.5
-    df_score.loc[mask_alto, "score_medida"] = 1
+    df_score.loc[mask_medio, "score_intervention"] = 0.5
+    df_score.loc[mask_alto, "score_intervention"] = 1
 
     # df_score = expand_nivel_educacion(df_score)
 
@@ -217,29 +219,29 @@ def add_score_medida(
 
 
 def pivot_df_score(df_score: pd.DataFrame):
-    df_medida = df_score[["codigo", "score_medida"]].pivot(
-        columns="codigo", values="score_medida"
+    df_intervention = df_score[["codigo", "score_intervention"]].pivot(
+        columns="codigo", values="score_intervention"
     )
-    df_medida["fecha"] = df_score["fecha"].reset_index(drop=True)
-    df_medida["porcentaje_afectado"] = (
+    df_intervention["fecha"] = df_score["fecha"].reset_index(drop=True)
+    df_intervention["porcentaje_afectado"] = (
         df_score["porcentaje_afectado"].fillna(100).reset_index(drop=True)
     )
-    df_medida = df_medida.groupby(["fecha", "porcentaje_afectado"]).max()
+    df_intervention = df_intervention.groupby(["fecha", "porcentaje_afectado"]).max()
 
-    return df_medida
+    return df_intervention
 
 
-def score_medidas(
+def score_interventions(
     df: pd.DataFrame,
     taxonomy: pd.DataFrame,
     path_out_conditions: str = "output/dict_condicion.json",
 ) -> pd.DataFrame:
-    """Receives the medidas dataframe and outputs a new dataframe of scores
+    """Receives the interventions dataframe and outputs a new dataframe of scores
 
     Parameters
     ----------
     df : pd.DataFrame
-        Dataframe of medidas
+        Dataframe of interventions
     taxonomy : pd.DataFrame
         Dataframe with taxonomy data
     path_out_conditions: str, optional
@@ -248,24 +250,24 @@ def score_medidas(
     Returns
     -------
     pd.DataFrame
-        Dataframe of scores, each row being a date and each column a medida
+        Dataframe of scores, each row being a date and each column a intervention
     """
     df_sub = df.copy()
     df_sub = process_hora(df_sub)
     df_sub_extended = extend_fecha(df_sub)
-    df_score = add_score_medida(
+    df_score = add_score_intervention(
         df_sub_extended, taxonomy, path_out_conditions=path_out_conditions
     )
     df_score = pivot_df_score(df_score)
     return df_score
 
 
-def return_dict_medidas(dict_medidas: dict) -> dict:
+def return_dict_interventions(dict_interventions: dict) -> dict:
     """
 
     Parameters
     ----------
-    dict_medidas : dict
+    dict_interventions : dict
 
     Returns
     -------
@@ -276,23 +278,26 @@ def return_dict_medidas(dict_medidas: dict) -> dict:
     dict_scores = {}
 
     taxonomy = return_taxonomy()
-    all_medidas = return_all_medidas()
+    all_interventions = return_all_interventions()
 
-    for provincia, df_sub in dict_medidas.items():
+    for provincia, df_sub in dict_interventions.items():
         logger.debug(provincia)
-        df_score = score_medidas(df_sub, taxonomy)
-        # Nos aseguramos de que todas las medidas estan en el df
-        medidas_missing = list(set(all_medidas) - set(df_score.columns))
-        for m in medidas_missing:
+        df_score = score_interventions(df_sub, taxonomy)
+        # Nos aseguramos de que todas las interventions estan en el df
+        interventions_missing = list(set(all_interventions) - set(df_score.columns))
+        for m in interventions_missing:
             df_score[m] = np.nan
         dict_scores.update({provincia: df_score})
 
     return dict_scores
 
 
-def main(path_medidas: str = "output/medidas", path_output: str = "output/medidas"):
-    dict_medidas = load_dict_medidas(path_medidas=path_medidas)
-    dict_scores = return_dict_medidas(dict_medidas)
+def main(
+    path_interventions: str = "output/interventions",
+    path_output: str = "output/interventions",
+):
+    dict_interventions = load_dict_interventions(path_interventions=path_interventions)
+    dict_scores = return_dict_interventions(dict_interventions)
     store_dict_scores(dict_scores, path_output=path_output)
 
 

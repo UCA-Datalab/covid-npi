@@ -47,8 +47,8 @@ def read_taxonomy(path_taxonomy: str = PATH_TAXONOMY) -> pd.DataFrame:
     return df
 
 
-def return_all_medidas(path_taxonomy: str = PATH_TAXONOMY):
-    """Returns a list of the relevant medidas"""
+def return_all_interventions(path_taxonomy: str = PATH_TAXONOMY):
+    """Returns a list of the relevant interventions"""
 
     df = read_taxonomy(path_taxonomy=path_taxonomy)
 

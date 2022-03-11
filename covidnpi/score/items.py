@@ -125,10 +125,10 @@ def return_dict_items(
 
 
 def main(
-    path_medidas: str = "output/medidas",
+    path_interventions: str = "output/interventions",
     path_output: str = "output/items",
 ):
-    dict_scores = load_dict_scores(path_medidas)
+    dict_scores = load_dict_scores(path_interventions)
     dict_items = return_dict_items(dict_scores)
     store_dict_scores(dict_items, path_output=path_output)
 

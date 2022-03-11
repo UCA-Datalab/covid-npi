@@ -6,14 +6,14 @@ import pandas as pd
 import typer
 import xlrd
 
-from covidnpi.utils.dictionaries import store_dict_provincia_to_medidas
+from covidnpi.utils.dictionaries import store_dict_provincia_to_interventions
 from covidnpi.utils.log import (
     logger,
     raise_type_warning,
     raise_value_warning,
     raise_missing_warning,
 )
-from covidnpi.utils.taxonomy import return_all_medidas, PATH_TAXONOMY
+from covidnpi.utils.taxonomy import return_all_interventions, PATH_TAXONOMY
 from covidnpi.utils.regions import DICT_PROVINCE_RENAME, DICT_FILL_PROVINCIA
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE", "Base"]
@@ -71,7 +71,7 @@ DICT_ADD_PROVINCE = {
 
 DICT_CCAA_RENAME = {"autonomico": np.nan}
 
-LIST_MEDIDAS_NO_HORA = ["MV.3", "MV.4", "MV.7"]
+LIST_INTERVENTIONS_NO_HORA = ["MV.3", "MV.4", "MV.7"]
 
 DICT_FECHA_RENAME = {"06/112020": "2020-11-06", "ESTADO DE ALARMA": "2021-05-09"}
 
@@ -179,14 +179,14 @@ def read_npi_data(
     return df
 
 
-def filter_relevant_medidas(
+def filter_relevant_interventions(
     df: pd.DataFrame, path_taxonomy: str = PATH_TAXONOMY
 ) -> pd.DataFrame:
     """Remove the interventions in `df` not appearing in the taxonomy."""
-    all_medidas = return_all_medidas(path_taxonomy=path_taxonomy)
-    mask_medidas = df["codigo"].isin(all_medidas)
-    df_new = df[mask_medidas]
-    dropped = sorted(df.loc[~mask_medidas, "codigo"].astype(str).unique())
+    all_interventions = return_all_interventions(path_taxonomy=path_taxonomy)
+    mask_interventions = df["codigo"].isin(all_interventions)
+    df_new = df[mask_interventions]
+    dropped = sorted(df.loc[~mask_interventions, "codigo"].astype(str).unique())
     logger.debug(f"The following interventions have been ignored: {', '.join(dropped)}")
     return df_new
 
@@ -419,12 +419,12 @@ def return_dict_provincia_to_ccaa(df: pd.DataFrame, dict_add: dict = None) -> di
     return dict_provincia_to_ccaa
 
 
-def return_dict_provincia_to_medidas(df: pd.DataFrame) -> dict:
+def return_dict_provincia_to_interventions(df: pd.DataFrame) -> dict:
     """Generates a dictionary where each key is a province and its value is
     the dataframe containing the limitations applied in it"""
     dict_provincia_to_ccaa = return_dict_provincia_to_ccaa(df)
 
-    dict_provincia_to_medidas = {}
+    dict_provincia_to_interventions = {}
 
     for provincia, ccaa in dict_provincia_to_ccaa.items():
         df_sub = (
@@ -437,9 +437,9 @@ def return_dict_provincia_to_medidas(df: pd.DataFrame) -> dict:
             .reset_index(drop=True)
         )
         if not df_sub.empty:
-            dict_provincia_to_medidas.update({provincia: df_sub})
+            dict_provincia_to_interventions.update({provincia: df_sub})
 
-    return dict_provincia_to_medidas
+    return dict_provincia_to_interventions
 
 
 def read_npi_and_build_dict(
@@ -448,7 +448,7 @@ def read_npi_and_build_dict(
 ):
     """Reads the folder containing the NPI and returns a dictionary
     {province: limitations}"""
-    dict_provincia_to_medidas = {}
+    dict_provincia_to_interventions = {}
     for file in sorted(os.listdir(path_data)):
         logger.debug(f"...............\n{file}")
         path_file = os.path.join(path_data, file)
@@ -464,8 +464,8 @@ def read_npi_and_build_dict(
                 f"File {file} could not be opened as province: base sheet is missing\n...............\n"
             )
             continue
-        # Filtramos las medidas relevantes
-        df_filtered = filter_relevant_medidas(df, path_taxonomy=path_taxonomy)
+        # Filtramos las interventions relevantes
+        df_filtered = filter_relevant_interventions(df, path_taxonomy=path_taxonomy)
         # Corregimos las fechas
         df_filtered = process_fecha(df_filtered)
         # Renombramos la columna unidad
@@ -477,17 +477,17 @@ def read_npi_and_build_dict(
         df_pivot = pivot_unidad_valor(df_renamed)
         # Tomamos sólo las columnas que nos interesan
         df_output = select_columns(df_pivot)
-        # Construimos el diccionario de medidas y lo guardamos
-        dict_update = return_dict_provincia_to_medidas(df_output)
-        dict_provincia_to_medidas.update(dict_update)
+        # Construimos el diccionario de interventions y lo guardamos
+        dict_update = return_dict_provincia_to_interventions(df_output)
+        dict_provincia_to_interventions.update(dict_update)
         logger.debug(f"...............\n")
-    return dict_provincia_to_medidas
+    return dict_provincia_to_interventions
 
 
 def main(
     path_data: str = "datos_NPI",
     path_taxonomy: str = PATH_TAXONOMY,
-    path_output: str = "output/medidas",
+    path_output: str = "output/interventions",
 ):
     """Reads the raw data, in path_data, preprocess it and stores the results in
     path_output
@@ -499,10 +499,12 @@ def main(
     path_output : str, optional
 
     """
-    dict_provincia_to_medidas = read_npi_and_build_dict(
+    dict_provincia_to_interventions = read_npi_and_build_dict(
         path_data=path_data, path_taxonomy=path_taxonomy
     )
-    store_dict_provincia_to_medidas(dict_provincia_to_medidas, path_output=path_output)
+    store_dict_provincia_to_interventions(
+        dict_provincia_to_interventions, path_output=path_output
+    )
 
 
 if __name__ == "__main__":

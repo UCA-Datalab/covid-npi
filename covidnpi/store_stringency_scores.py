@@ -5,9 +5,9 @@ import typer
 from covidnpi.score.fields import return_dict_fields
 from covidnpi.score.islas import return_dict_islas
 from covidnpi.score.items import return_dict_items
-from covidnpi.score.medidas import return_dict_medidas
+from covidnpi.score.interventions import return_dict_interventions
 from covidnpi.utils.dictionaries import (
-    store_dict_provincia_to_medidas,
+    store_dict_provincia_to_interventions,
     store_dict_scores,
     update_keep_old_keys,
 )
@@ -37,7 +37,7 @@ def main(
 
     """
     logger.debug(f"Reading raw data from {path_raw}")
-    dict_medidas = read_npi_and_build_dict(
+    dict_interventions = read_npi_and_build_dict(
         path_data=path_raw, path_taxonomy=path_taxonomy
     )
 
@@ -45,19 +45,21 @@ def main(
     if not os.path.exists(path_output):
         os.mkdir(path_output)
 
-    path_medidas = os.path.join(path_output, "medidas")
-    store_dict_provincia_to_medidas(dict_medidas, path_output=path_medidas)
+    path_interventions = os.path.join(path_output, "interventions")
+    store_dict_provincia_to_interventions(
+        dict_interventions, path_output=path_interventions
+    )
     logger.debug(
-        f"The processed interventions have been stored in {path_medidas}\n\n...\n\n"
+        f"The processed interventions have been stored in {path_interventions}\n\n...\n\n"
         f"Next step is to score each intervention."
     )
 
-    dict_scores = return_dict_medidas(dict_medidas)
-    path_medidas = os.path.join(path_output, "medidas")
-    store_dict_scores(dict_scores, path_output=path_medidas)
+    dict_scores = return_dict_interventions(dict_interventions)
+    path_interventions = os.path.join(path_output, "interventions")
+    store_dict_scores(dict_scores, path_output=path_interventions)
     logger.debug(
         "The score of each intervention per province has been stored in "
-        f"{path_medidas}\n\n...\n\nNext step is to score the items."
+        f"{path_interventions}\n\n...\n\nNext step is to score the items."
     )
 
     dict_items = return_dict_items(dict_scores)

@@ -120,9 +120,9 @@ The `base` sheet describes one **intervention (NPI)** per row. Interventions app
 - `fecha_publicacion` contains the date of publication of the intervention. Format is "MM/DD/YY".
 - `fecha_inicio` contains the date of start of the intervention. Format is "MM/DD/YY".
 - `fecha_fin` contains the date of end of the intervention. Format is "MM/DD/YY".
-- `medida_concreta` contains the description of the intervention. Not used by this module.
+- `intervention_concreta` contains the description of the intervention. Not used by this module.
 - `codigo` or `cod_con` contains the specific code of the intervention.
-- `medida_generica` is not used by this module.
+- `intervention_generica` is not used by this module.
 - `cod_gen` is not used by this module.
 - `unidad` is only used by certain interventions, when certain value needs to be specified. This column contains the units of that value. Examples are "hora", "personas" and "porcentaje".
 - `valor` comes in conjunction with `unidad`. Contains the value.
@@ -133,7 +133,7 @@ The `base` sheet describes one **intervention (NPI)** per row. Interventions app
 
 Taxonomy is a xslx file, and must be placed in the same [datos_NPI](./datos_NPI) folder as the data above. Each sheet in the taxonomy corresponds to a specific field of activity, such as "commerce", "education" or "outside sport". These sheets have the following columns:
 
-- `Código medida concreta` contains the specific code of the intervention (NP). Related to the column `codigo` of the NPI files.
+- `Código intervention concreta` contains the specific code of the intervention (NP). Related to the column `codigo` of the NPI files.
 - `Media concreta` contains the description of the NPI. Not used by this module.
 - `Nombre item` contains the name of the item which the interventions are associated to.
 - `Construcción del item` contains the rules that describe how to compute the score of the item from the scores of the NPI associated to it.
