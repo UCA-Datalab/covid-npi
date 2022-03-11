@@ -145,13 +145,13 @@ Taxonomy is a xslx file, and must be placed in the same [datos_NPI](./datos_NPI)
 With the environment active, run the following command:
 
 ```
-python covidnpi/preprocess_and_score.py
+python covidnpi/store_stringency_scores.py
 ```
 
 To see an explanation of this script, run instead:
 
 ```
-python covidnpi/preprocess_and_score.py --help
+python covidnpi/store_stringency_scores.py --help
 ```
 
 ## Web Application

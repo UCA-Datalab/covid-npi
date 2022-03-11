@@ -1,19 +1,17 @@
 import datetime as dt
-import os
+from pathlib import Path
 
 import pandas as pd
 import typer
-from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
 from covidnpi.utils.config import load_config
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import PROVINCIA_TO_ISOPROV
-from covidnpi.utils.series import compute_growth_rate, cumulative_incidence
 from covidnpi.utils.taxonomia import PATH_TAXONOMY, return_taxonomia
 from covidnpi.web.mongo import load_mongo
 
 
 def store_scores_in_mongo(
-    path_output: str = "output/score_ambito",
+    path_output: Path = Path("output/score_ambito"),
     path_taxonomia: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
 ):
@@ -21,7 +19,7 @@ def store_scores_in_mongo(
 
     Parameters
     ----------
-    path_output : str, optional
+    path_output : Path, optional
         Path containing the outputs, that we want to store in mongo
     path_taxonomia : str, optional
         Path to taxonomia file
@@ -38,13 +36,12 @@ def store_scores_in_mongo(
     # Get the minimum date in datetime format
     date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
 
-    for file in os.listdir(path_output):
-        path_file = os.path.join(path_output, file)
+    for path_file in path_output.iterdir():
         df = pd.read_csv(path_file, index_col="fecha")
         # Filter dates previous to the minimum date
         mask_date = pd.to_datetime(df.index, format="%Y-%m-%d") >= date_min
         df = df[mask_date]
-        provincia = file.split(".")[0]
+        provincia = path_file.stem
         try:
             dict_provincia = {
                 "provincia": provincia,
@@ -72,54 +69,55 @@ def store_scores_in_mongo(
 
 
 def store_casos_in_mongo(
+    path_output: Path = Path("output"),
     path_config: str = "covidnpi/config.toml",
 ):
     """Store incidence and growth rate in mongo
 
     Parameters
     ----------
+    path_output : Path, optional
+        Path where the output is located
     path_config : str, optional
         Config file contains the route and credentials of mongo server
-    path_regions : str, optional
-        Regions file contains info about provinces and AC
 
     """
+    # Initialize mongo
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
-
+    # Load Cumulative Incidence and Growth Rate
     cfg_casos = load_config(path_config, key="casos")
+    days = cfg_casos["movavg"]
+    df_cuminc = pd.read_csv(
+        path_output / f"incidencia_acumulada_{days}.csv", index_col=0, parse_dates=True
+    )
+    df_growth = pd.read_csv(
+        path_output / f"incidencia_crecimiento_{days}.csv",
+        index_col=0,
+        parse_dates=True,
+    )
 
-    casos = load_casos_df(link=cfg_casos["link"])
-    list_code = casos["provincia_iso"].dropna().unique()
     # Get the minimum date in datetime format
     date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
 
-    for code in list_code:
-        dict_provincia = {}
-        try:
-            series = return_casos_of_provincia_normed(
-                casos,
-                code,
-            )
-            # Filter dates previous to the minimum date
-            mask_date = series.index >= date_min
-            series = series[mask_date]
-            logger.debug(f"{code}")
-        except KeyError:
-            logger.warning(f"{code} missing from poblacion")
-            continue
-        num = cumulative_incidence(series, cfg_casos["movavg"]).fillna(0)
-        growth = compute_growth_rate(series, cfg_casos["movavg"]).fillna(0)
-        fechas = [d.strftime("%Y-%m-%d") for d in num.index.tolist()]
-        dict_provincia.update(
-            {
-                "code": code,
-                "fechas": fechas,
-                "casos": num.values.tolist(),
-                "crecimiento": growth.values.tolist(),
-            }
-        )
-
+    # Loop through province codes
+    for code, ser_cuminc in df_cuminc.iteritems():
+        logger.debug(f"{code}")
+        # Filter dates previous to the minimum date
+        mask_date = ser_cuminc.index >= date_min
+        ser_cuminc = ser_cuminc[mask_date].copy()
+        # Get growth rate, filtered by date
+        ser_growth = df_growth.loc[mask_date, code].copy()
+        # Get dates in string format
+        fechas = [d.strftime("%Y-%m-%d") for d in ser_cuminc.index.tolist()]
+        # Define the dictionary to store in mongo
+        dict_provincia = {
+            "code": code,
+            "fechas": fechas,
+            "casos": ser_cuminc.values.tolist(),
+            "crecimiento": ser_growth.values.tolist(),
+        }
+        # Store the information in mongo
         try:
             col = mongo.get_col("casos")
             dict_found = col.find_one({"code": code})
@@ -130,7 +128,7 @@ def store_casos_in_mongo(
 
 
 def datastore(
-    path_output: str = "output/score_ambito",
+    path_output: str = "output",
     path_taxonomia: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
 ):
@@ -139,7 +137,7 @@ def datastore(
     Parameters
     ----------
     path_output : str, optional
-        Path where the output of the preprocess_and_score script is located
+        Path where the output is located
     path_taxonomia : str, optional
         Path to taxonomia xlsx file
     path_config : str, optional
@@ -148,14 +146,15 @@ def datastore(
         Path to the regions file
 
     """
+    path_output = Path(path_output)
     logger.debug("\n-----\nStoring scores in mongo\n-----\n")
     store_scores_in_mongo(
-        path_output=path_output,
+        path_output=path_output / "score_ambito",
         path_taxonomia=path_taxonomia,
         path_config=path_config,
     )
     logger.debug("\n-----\nStoring number of cases in mongo\n-----\n")
-    store_casos_in_mongo(path_config=path_config)
+    store_casos_in_mongo(path_output=path_output, path_config=path_config)
 
 
 if __name__ == "__main__":
