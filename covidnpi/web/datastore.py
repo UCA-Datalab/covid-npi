@@ -1,6 +1,7 @@
 import datetime as dt
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import typer
 from covidnpi.utils.config import load_config
@@ -15,7 +16,17 @@ def store_scores_in_mongo(
     path_taxonomy: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
 ):
-    """Store NPI scores in mongo server
+    """Store NPI scores in mongo server. Format:
+    [
+        {
+            "provincia": str,
+            "code": int,
+            "dates": List[str],
+            `field`: List[float],
+            "mean": {`field`: float},
+            "median": {`field`: float},
+        }
+    ]
 
     Parameters
     ----------
@@ -54,10 +65,21 @@ def store_scores_in_mongo(
             )
             continue
         logger.debug(f"\n{provincia}")
+
+        # Initialize list of scores
+        list_mean = []
+        list_median = []
+
+        # Loop through fields of activity
         for field in list_field:
             logger.debug(f"  {field}")
             series = df[field].values.tolist()
             dict_provincia.update({field: series})
+            list_mean.append(np.mean(series))
+            list_median.append(np.median(series))
+
+        # Include statistics
+        dict_provincia.update({"mean": list_mean, "median": list_median})
 
         try:
             col = mongo.get_col("scores")
