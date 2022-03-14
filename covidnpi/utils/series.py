@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 
 
-def cumulative_incidence(x: pd.Series, w: int) -> pd.Series:
-    """Computes the cumulative incidence of a series
+def cumulative_cases(x: pd.Series, w: int) -> pd.Series:
+    """Computes the cumulative cases of a series
 
     Parameters
     ----------
@@ -36,7 +36,7 @@ def moving_average(x: pd.Series, w: int) -> pd.Series:
     pandas.Series
 
     """
-    x_movavg = cumulative_incidence(x, w) / w
+    x_movavg = cumulative_cases(x, w) / w
     return x_movavg
 
 

@@ -5,14 +5,14 @@ from covidnpi.utils.log import logger
 from covidnpi.utils.regions import ISLA_TO_PERCENTAGE
 
 
-def aggregate_score_isles(dict_islas: dict, dict_ambito: dict) -> pd.DataFrame:
+def aggregate_score_isles(dict_islas: dict, dict_field: dict) -> pd.DataFrame:
     """Aggregates the scores of isles, normalizing by population percentage
 
     Parameters
     ----------
     dict_islas : dict
         Contains couples of {island: population percentage}
-    dict_ambito : dict
+    dict_field : dict
         Contains couples of {island: pd.DataFrame of scores}
 
     Returns
@@ -29,19 +29,19 @@ def aggregate_score_isles(dict_islas: dict, dict_ambito: dict) -> pd.DataFrame:
     assert sum(dict_islas.values()) == 1, "The percentage does not sum 1"
     for isle, percentage in dict_islas.items():
         try:
-            list_df.append(dict_ambito[isle].copy() * percentage)
+            list_df.append(dict_field[isle].copy() * percentage)
         except KeyError:
             raise KeyError(f"Falta la isla: {isle}")
     return reduce(lambda x, y: x.add(y, fill_value=0), list_df)
 
 
-def return_dict_score_islas(dict_ambito: dict) -> dict:
+def return_dict_islas(dict_field: dict) -> dict:
     """Given a dictionary of scores by island, returns a dictionary
     of scores by group of islands
 
     Parameters
     ----------
-    dict_ambito : dict
+    dict_field : dict
         Contains couples of {island: pd.DataFrame of scores}
 
     Returns
@@ -56,7 +56,7 @@ def return_dict_score_islas(dict_ambito: dict) -> dict:
     for ccaa, dict_islas in ISLA_TO_PERCENTAGE.items():
         logger.debug(ccaa)
         try:
-            df = aggregate_score_isles(dict_islas, dict_ambito)
+            df = aggregate_score_isles(dict_islas, dict_field)
             dict_ccaa.update({ccaa: df})
         except KeyError as er:
             logger.error(f"No se pudo calcular {ccaa}. {er}")

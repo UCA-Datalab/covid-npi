@@ -36,33 +36,33 @@ def extract_codes_to_dict(df: pd.DataFrame, category: str):
     return d
 
 
-def store_dict_provincia_to_medidas(
-    dict_medidas, path_output: str = "../output/medidas"
+def store_dict_provincia_to_interventions(
+    dict_interventions, path_output: str = "../output/interventions"
 ):
     if not os.path.exists(path_output):
         os.mkdir(path_output)
 
-    for provincia, df_medida in dict_medidas.items():
+    for provincia, df_intervention in dict_interventions.items():
         path_file = os.path.join(path_output, provincia.split("/")[0] + ".csv")
         # Remove file if it exist
         if os.path.exists(path_file):
             os.remove(path_file)
         # Store new file
-        df_medida.to_csv(path_file, index=False)
+        df_intervention.to_csv(path_file, index=False)
 
 
-def load_dict_medidas(path_medidas: str = "output/medidas"):
-    dict_medidas = {}
-    list_files = os.listdir(path_medidas)
+def load_dict_interventions(path_interventions: str = "output/interventions"):
+    dict_interventions = {}
+    list_files = os.listdir(path_interventions)
     for file in list_files:
         provincia = file.rsplit(".")[0]
-        path_file = os.path.join(path_medidas, file)
+        path_file = os.path.join(path_interventions, file)
         df = pd.read_csv(path_file)
-        dict_medidas.update({provincia: df})
-    return dict_medidas
+        dict_interventions.update({provincia: df})
+    return dict_interventions
 
 
-def store_dict_scores(dict_scores, path_output: str = "output/score_medidas"):
+def store_dict_scores(dict_scores, path_output: str = "output/interventions"):
     if not os.path.exists(path_output):
         os.mkdir(path_output)
 
@@ -74,7 +74,7 @@ def store_dict_scores(dict_scores, path_output: str = "output/score_medidas"):
             logger.error(f"Provincia {provincia} no puede guardarse: {er}")
 
 
-def load_dict_scores(path_scores: str = "output/score_medidas"):
+def load_dict_scores(path_scores: str = "output/interventions"):
     dict_scores = {}
     list_files = os.listdir(path_scores)
     for file in list_files:
@@ -93,7 +93,7 @@ def reverse_dictionary(d: dict) -> dict:
 def store_dict_condicion(
     dict_condicion: dict, path_output: str = "output/dict_condicion.json"
 ):
-    """Guarda un json con las condiciones aplicadas por la taxonomia"""
+    """Guarda un json con las condiciones aplicadas por la taxonomy"""
     if path_output is None:
         return
     with open(path_output, "w") as f:

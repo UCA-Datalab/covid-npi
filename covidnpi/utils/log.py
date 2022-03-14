@@ -61,7 +61,7 @@ def raise_type_warning(
         list_msg[j] = f"     {idx + 2} ... {df.loc[idx, col]}"
 
     logger.warning(
-        f"La columna '{col}' contiene {typing} - Pasados a NaN:\n" + "\n".join(list_msg)
+        f"Column '{col}' contains {typing} - Changed to NaN:\n" + "\n".join(list_msg)
     )
 
 
@@ -72,7 +72,7 @@ def raise_value_warning(df: pd.DataFrame, list_idx: list, col: str):
         list_msg[j] = f"     {idx + 2} ... {df.loc[idx, col]}"
 
     logger.warning(
-        f"La columna '{col}' contiene valores sospechosos:\n" + "\n".join(list_msg)
+        f"Column '{col}' contains suspicious values:\n" + "\n".join(list_msg)
     )
 
 
@@ -84,4 +84,4 @@ def raise_missing_warning(df: pd.DataFrame, list_idx: list, col: str):
     for j, idx in enumerate(list_idx):
         list_msg[j] = f"     {idx + 2} ... {df.loc[idx, col]}"
 
-    logger.warning(f"La columna '{col}' ha perdido valores:\n" + "\n".join(list_msg))
+    logger.warning(f"Column '{col}' has lost values:\n" + "\n".join(list_msg))

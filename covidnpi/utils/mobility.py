@@ -2,11 +2,18 @@ import os
 
 import pandas as pd
 import typer
-from covidnpi.utils.casos import load_casos_df, return_casos_of_provincia_normed
+from covidnpi.utils.cases import (
+    load_cases_df,
+    return_cases_of_provincia_normed,
+)
 from covidnpi.utils.log import logger
-from covidnpi.utils.regions import CODE_REASSIGN, CODE_TO_FILENAME, CODE_TO_PROVINCIA
+from covidnpi.utils.regions import (
+    ISOPROV_REASSIGN,
+    ISOPROV_TO_FILENAME,
+    ISOPROV_TO_PROVINCIA,
+)
 from covidnpi.utils.rho import compute_rho
-from covidnpi.utils.series import compute_growth_rate, cumulative_incidence
+from covidnpi.utils.series import compute_growth_rate, cumulative_cases
 
 URL_MOBILITY = "https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv"
 
@@ -93,22 +100,22 @@ def mobility_report_to_csv(
         os.mkdir(path_output)
 
     mob = load_mobility_report()
-    casos = load_casos_df()
+    cases = load_cases_df()
 
     for code in mob["code"].unique():
         # Reassign code if needed
-        code = CODE_REASSIGN.get(code, code)
+        code = ISOPROV_REASSIGN.get(code, code)
         try:
-            provincia = CODE_TO_PROVINCIA[code]
+            provincia = ISOPROV_TO_PROVINCIA[code]
             logger.debug(f"{code} - {provincia}")
         except KeyError:
             logger.warning(f"Omitted {code}")
             continue
         dict_reports = return_reports_of_provincia(mob, code)
-        series_casos = return_casos_of_provincia_normed(casos, code)
-        series_ia7 = cumulative_incidence(series_casos, 7)
-        series_growth = compute_growth_rate(series_casos, 7)
-        series_rho = compute_rho(series_casos)
+        series_cases = return_cases_of_provincia_normed(cases, code)
+        series_ia7 = cumulative_cases(series_cases, 7)
+        series_growth = compute_growth_rate(series_cases, 7)
+        series_rho = compute_rho(series_cases)
 
         # Store data
         df_store = (
@@ -116,7 +123,7 @@ def mobility_report_to_csv(
             .assign(ia7=series_ia7, growth_rate=series_growth, rho=series_rho)
             .rename_axis("date", axis=0)
         )
-        filename = CODE_TO_FILENAME[code]
+        filename = ISOPROV_TO_FILENAME[code]
         df_store.to_csv(os.path.join(path_output, f"{filename}.csv"))
 
 

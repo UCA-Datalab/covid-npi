@@ -1,6 +1,6 @@
 from covidnpi.utils.dictionaries import reverse_dictionary
 
-POSTAL_TO_CODE = {
+POSTAL_TO_ISOPROV = {
     "01": "VI",
     "02": "AB",
     "03": "A",
@@ -55,33 +55,33 @@ POSTAL_TO_CODE = {
     "52": "ML",
 }
 
-CODE_TO_POSTAL = reverse_dictionary(POSTAL_TO_CODE)
+ISOPROV_TO_POSTAL = reverse_dictionary(POSTAL_TO_ISOPROV)
 
-CODE_TO_PROVINCIA = {
-    "A": "Alacant",
+ISOPROV_TO_PROVINCIA = {
+    "A": "Alicante",
     "AB": "Albacete",
     "AL": "Almería",
     "AV": "Ávila",
     "B": "Barcelona",
     "BA": "Badajoz",
-    "BI": "Bizkaia",
+    "BI": "Vizcaya",
     "BU": "Burgos",
-    "C": "A Coruña",
+    "C": "La Coruña",
     "CA": "Cádiz",
     "CC": "Cáceres",
     "CE": "Ceuta",
     "CO": "Córdoba",
     "CR": "Ciudad Real",
-    "CS": "Castelló",
+    "CS": "Castellón",
     "CU": "Cuenca",
     "GC": "Las Palmas",
-    "GI": "Girona",
+    "GI": "Gerona",
     "GR": "Granada",
     "GU": "Guadalajara",
     "H": "Huelva",
     "HU": "Huesca",
     "J": "Jaén",
-    "L": "Lleida",
+    "L": "Lérida",
     "LE": "León",
     "LO": "La Rioja",
     "LU": "Lugo",
@@ -89,11 +89,11 @@ CODE_TO_PROVINCIA = {
     "MA": "Málaga",
     "ML": "Melilla",
     "MU": "Murcia",
-    "NA": "Nafarroa",
-    "OR": "Ourense",
+    "NA": "Navarra",
+    "OR": "Orense",
     "O": "Asturias",
     "P": "Palencia",
-    "PM": "Illes Balears",
+    "PM": "Islas Baleares",
     "PO": "Pontevedra",
     "SA": "Salamanca",
     "TF": "Sta. Cruz de Tenerife",
@@ -101,20 +101,30 @@ CODE_TO_PROVINCIA = {
     "SG": "Segovia",
     "SE": "Sevilla",
     "SO": "Soria",
-    "SS": "Gipuzkoa",
+    "SS": "Guipúzcoa​",
     "T": "Tarragona",
     "TE": "Teruel",
     "TO": "Toledo",
-    "V": "Valéncia",
+    "V": "Valencia",
     "VA": "Valladolid",
     "VI": "Álava",
     "ZA": "Zamora",
     "Z": "Zaragoza",
 }
 
-CODE_REASSIGN = {"AS": "O", "CB": "S", "IB": "PM", "MD": "M", "MC": "MU", "NC": "NA"}
+# Reassign ISO of CCAA to ISO of province
+# For CCAA with only one province
+ISOPROV_REASSIGN = {
+    "AS": "O",
+    "CB": "S",
+    "IB": "PM",
+    "MD": "M",
+    "ME": "ML",
+    "MC": "MU",
+    "NC": "NA",
+}
 
-PROVINCIA_TO_CODE = {
+PROVINCIA_TO_ISOPROV = {
     "alava": "VI",
     "albacete": "AB",
     "alicante": "A",
@@ -141,7 +151,7 @@ PROVINCIA_TO_CODE = {
     "huesca": "HU",
     "jaen": "J",
     "leon": "LE",
-    "lleida": "L",
+    "lerida": "L",
     "rioja_la": "LO",
     "lugo": "LU",
     "madrid": "M",
@@ -171,13 +181,14 @@ PROVINCIA_TO_CODE = {
     "zaragoza": "Z",
 }
 
-CODE_TO_FILENAME = reverse_dictionary(PROVINCIA_TO_CODE)
+ISOPROV_TO_FILENAME = reverse_dictionary(PROVINCIA_TO_ISOPROV)
 
 DICT_PROVINCE_RENAME = {
     "a_coruna": "coruna_la",
     "cyl": "",
     "guipuzkoa": "guipuzcoa",
     "grancanaria": "gran_canaria",
+    "lleida": "lerida",
 }
 
 DICT_FILL_PROVINCIA = {
@@ -199,7 +210,7 @@ ISLA_TO_PROVINCIA = {
     "menorca": "tenerife",
 }
 
-CODE_TO_POBLACION = {
+ISOPROV_TO_POBLACION = {
     "AB": 388270,
     "A": 1879888,
     "AL": 727945,

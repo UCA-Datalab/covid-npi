@@ -2,11 +2,11 @@ import pandas as pd
 import typer
 from covidnpi.utils.dictionaries import load_dict_scores, store_dict_scores
 from covidnpi.utils.log import logger
-from covidnpi.utils.taxonomia import PATH_TAXONOMIA, return_item_ponderacion
+from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_item_ponderacion
 
 
 def compute_proportion(df: pd.DataFrame, item: str):
-    """Calcula la score ponderada de un item concreto, teniendo en cuenta las medidas
+    """Calcula la score ponderada de un item concreto, teniendo en cuenta las interventions
     subprovinciales. Devuelve un dataframe con una sola fila por fecha"""
 
     df_sub = df[["fecha", "porcentaje_afectado", item]].copy()
@@ -15,11 +15,11 @@ def compute_proportion(df: pd.DataFrame, item: str):
     mask_autonomico = df_sub["porcentaje_afectado"] == 100
     df_sub.loc[mask_autonomico, item] = df_sub.loc[mask_autonomico, item].fillna(0)
 
-    # Los otros NaNs, que pertenecen a medidas subprovinciales no aplicadas, se eliminan
+    # Los otros NaNs, que pertenecen a interventions subprovinciales no aplicadas, se eliminan
     df_sub.dropna(inplace=True)
 
     # Calculamos el porcentaje de la provincia que es afectado de manera general
-    # (cuando se dan medidas subprovinciales)
+    # (cuando se dan interventions subprovinciales)
     porcentaje_general = (
         100
         - df_sub.query("porcentaje_afectado < 100")
@@ -32,17 +32,17 @@ def compute_proportion(df: pd.DataFrame, item: str):
     ]
     if len(list_dates) > 0:
         logger.warning(
-            f"La suma de porcentajes para {item} supera 100 en: {', '.join(list_dates)}"
+            f"The sum of percentages of item {item} exceeds 100 in dates: {', '.join(list_dates)}"
         )
         porcentaje_general[porcentaje_general < 0] = 0
 
-    # Identificamos las medidas que se han aplicado exclusivamente con caracter general
+    # Identificamos las interventions que se han aplicado exclusivamente con caracter general
     mask_general = df_sub["porcentaje_afectado"] == 100
-    # Identificamos las medidas que han tenido caracter subprovincial
+    # Identificamos las interventions que han tenido caracter subprovincial
     mask_subprov = df_sub["fecha"].isin(porcentaje_general.index)
 
     try:
-        # Para las medidas que han tenido caracter subprovincial, cambiamos el porcentaje
+        # Para las interventions que han tenido caracter subprovincial, cambiamos el porcentaje
         # general de 100 a (100 - subprovincial)
         df_sub.loc[
             mask_general & mask_subprov, "porcentaje_afectado"
@@ -72,7 +72,7 @@ def compute_proportion(df: pd.DataFrame, item: str):
 
 
 def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
-    """Calcula la score ponderada de todos los item, teniendo el cuenta medidas
+    """Calcula la score ponderada de todos los item, teniendo el cuenta interventions
     subprovinciales. Devuelve un dataframe con una sola fila por fecha"""
 
     list_item = df_item.columns.tolist()
@@ -96,45 +96,45 @@ def apply_porcentaje_afectado_to_items(df_item: pd.DataFrame):
     return df_afectado
 
 
-def score_ponderada(df_afectado: pd.DataFrame, path_taxonomia=PATH_TAXONOMIA):
+def score_ponderada(df_afectado: pd.DataFrame, path_taxonomy=PATH_TAXONOMY):
     """Calcula la score de cada ambito a partir de sus item"""
-    ponderacion = return_item_ponderacion(path_taxonomia=path_taxonomia)
-    list_ambito = ponderacion["ambito"].unique()
-    for ambito in list_ambito:
-        pon_sub = ponderacion.query(f"ambito == '{ambito}'")
+    ponderacion = return_item_ponderacion(path_taxonomy=path_taxonomy)
+    list_field = ponderacion["ambito"].unique()
+    for field in list_field:
+        pon_sub = ponderacion.query(f"ambito == '{field}'")
         pesos = pon_sub["ponderacion"].values
         items = pon_sub["nombre"]
-        df_afectado[ambito] = (df_afectado[items] * pesos).sum(axis=1).div(pesos.sum())
+        df_afectado[field] = (df_afectado[items] * pesos).sum(axis=1).div(pesos.sum())
         # Max value is 1
-        # assert df_afectado[ambito].max() <= 1, f"La puntuacion de {ambito} supera 1"
+        # assert df_afectado[field].max() <= 1, f"La puntuacion de {field} supera 1"
     return df_afectado
 
 
-def return_dict_score_ambitos(
+def return_dict_fields(
     dict_items: dict,
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_taxonomy: str = PATH_TAXONOMY,
     verbose: bool = True,
 ) -> dict:
-    dict_ambito = {}
+    dict_field = {}
 
     for provincia, df_item in dict_items.items():
         if verbose:
             logger.debug(provincia)
         df_afectado = apply_porcentaje_afectado_to_items(df_item)
-        df_afectado = score_ponderada(df_afectado, path_taxonomia=path_taxonomia)
-        dict_ambito.update({provincia: df_afectado.set_index("fecha")})
+        df_afectado = score_ponderada(df_afectado, path_taxonomy=path_taxonomy)
+        dict_field.update({provincia: df_afectado.set_index("fecha")})
 
-    return dict_ambito
+    return dict_field
 
 
 def main(
-    path_score_items: str = "output/score_items",
-    path_output_ponderado: str = "output/score_ambito",
-    path_taxonomia: str = PATH_TAXONOMIA,
+    path_items: str = "output/items",
+    path_output_ponderado: str = "output/score_field",
+    path_taxonomy: str = PATH_TAXONOMY,
 ):
-    dict_items = load_dict_scores(path_score_items)
-    dict_ambito = return_dict_score_ambitos(dict_items, path_taxonomia=path_taxonomia)
-    store_dict_scores(dict_ambito, path_output=path_output_ponderado)
+    dict_items = load_dict_scores(path_items)
+    dict_field = return_dict_fields(dict_items, path_taxonomy=path_taxonomy)
+    store_dict_scores(dict_field, path_output=path_output_ponderado)
 
 
 if __name__ == "__main__":

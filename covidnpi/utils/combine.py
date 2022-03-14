@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 import typer
 from covidnpi.utils.regions import (
-    CODE_TO_POSTAL,
-    CODE_TO_PROVINCIA,
+    ISOPROV_TO_POSTAL,
+    ISOPROV_TO_PROVINCIA,
     ISLA_TO_PROVINCIA,
-    PROVINCIA_TO_CODE,
+    PROVINCIA_TO_ISOPROV,
 )
 
 COLS_AMBITO = [
@@ -59,10 +59,10 @@ def add_unidad_territorial(df: pd.DataFrame) -> pd.DataFrame:
 
 def add_province_code(df: pd.DataFrame) -> pd.DataFrame:
     # Get codes
-    code = df["provincia"].map(PROVINCIA_TO_CODE)
+    code = df["provincia"].map(PROVINCIA_TO_ISOPROV)
     # Replace province name and add code
-    df["provincia"] = code.map(CODE_TO_PROVINCIA)
-    df.insert(loc=1, column="cod_prov", value=code.map(CODE_TO_POSTAL))
+    df["provincia"] = code.map(ISOPROV_TO_PROVINCIA)
+    df.insert(loc=1, column="cod_prov", value=code.map(ISOPROV_TO_POSTAL))
     return df
 
 
@@ -75,8 +75,8 @@ def add_ccaa(df: pd.DataFrame, path_ccaa: str = "data/CCAA.csv") -> pd.DataFrame
     return df
 
 
-def combine_csv_ambito(
-    path_data: str = "output/score_ambito", path_output: str = "npi_stringency.csv"
+def combine_csv_field(
+    path_data: str = "output/score_field", path_output: str = "npi_stringency.csv"
 ) -> pd.DataFrame:
     df = combine_csv(path_data, "provincia")
     # Tomar las columnas relevantes y ordenar por fecha
@@ -86,4 +86,4 @@ def combine_csv_ambito(
 
 
 if __name__ == "__main__":
-    typer.run(combine_csv_ambito)
+    typer.run(combine_csv_field)
