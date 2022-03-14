@@ -29,7 +29,7 @@ def return_fields_by_province(
     col = mongo.get_col("scores")
 
     dict_provincia = col.find_one({"code": code})
-    x = dict_provincia["fechas"]
+    x = dict_provincia["dates"]
 
     dict_plot = {}
 
@@ -85,7 +85,7 @@ def return_provinces_by_field(
     for code in codes:
         dict_provincia = col.find_one({"code": code})
         try:
-            x = dict_provincia["fechas"]
+            x = dict_provincia["dates"]
             y = dict_provincia[field]
         except KeyError:
             print(f"[ERROR] Ambito '{field}' no existe para '{code}'")
@@ -129,13 +129,13 @@ def return_cases_of_province(
 
     x = col.find_one({"code": code})
     try:
-        x_max = x["fechas"][-1]
+        x_max = x["dates"][-1]
     except KeyError:
         print(f"[ERROR] El codigo '{code}' de 'cases' no tiene 'x'")
         x_max = DATE_MIN
 
     dict_plot = {
-        "x": x["fechas"],
+        "x": x["dates"],
         "y": x["cases"],
         "y_max": 800,
         "y_min": 0,
@@ -168,13 +168,13 @@ def return_growth_of_province(
 
     x = col.find_one({"code": code})
     try:
-        x_max = x["fechas"][-1]
+        x_max = x["dates"][-1]
     except KeyError:
         print(f"[ERROR] El codigo '{code}' de 'cases' no tiene 'x'")
         x_max = DATE_MIN
     dict_plot = {
-        "x": x["fechas"],
-        "y": x["crecimiento"],
+        "x": x["dates"],
+        "y": x["growth_rate"],
         "y_max": 200,
         "y_min": -100,
         "x_max": x_max,

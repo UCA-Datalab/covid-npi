@@ -46,7 +46,7 @@ def store_scores_in_mongo(
             dict_provincia = {
                 "provincia": provincia,
                 "code": PROVINCIA_TO_ISOPROV[provincia],
-                "fechas": df.index.tolist(),
+                "dates": df.index.tolist(),
             }
         except KeyError:
             logger.debug(
@@ -62,7 +62,7 @@ def store_scores_in_mongo(
         try:
             col = mongo.get_col("scores")
             dict_found = col.find_one({"provincia": provincia})
-            _ = dict_found["fechas"]
+            _ = dict_found["dates"]
             mongo.update_dict("scores", "provincia", provincia, dict_provincia)
         except TypeError:
             _ = mongo.insert_new_dict("scores", dict_provincia)
@@ -113,15 +113,15 @@ def store_cases_in_mongo(
         # Define the dictionary to store in mongo
         dict_provincia = {
             "code": code,
-            "fechas": fechas,
+            "dates": fechas,
             "cases": ser_cuminc.values.tolist(),
-            "crecimiento": ser_growth.values.tolist(),
+            "growth_rate": ser_growth.values.tolist(),
         }
         # Store the information in mongo
         try:
             col = mongo.get_col("cases")
             dict_found = col.find_one({"code": code})
-            _ = dict_found["fechas"]
+            _ = dict_found["dates"]
             mongo.update_dict("cases", "code", code, dict_provincia)
         except TypeError:
             _ = mongo.insert_new_dict("cases", dict_provincia)
