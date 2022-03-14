@@ -208,8 +208,8 @@ def return_field_statistics_by_province(
     list_fields = x["fields"]
     list_fields.append(list_fields[0])
     list_plot = []
-    for key in ["mean", "median"]:
+    for key in cfg_mongo["statistics"]:
         r = x[key]
-        r.append[r[0]]
+        r.append(r[0])
         list_plot.append({"r": r, "theta": list_fields, "name": key.capitalize()})
     return list_plot
