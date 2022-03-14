@@ -88,6 +88,8 @@ def store_scores_in_mongo(
             mongo.update_dict("scores", "provincia", provincia, dict_provincia)
         except TypeError:
             _ = mongo.insert_new_dict("scores", dict_provincia)
+        except KeyError as er:
+            raise KeyError(f"Error in collection 'scores': {er}")
 
 
 def store_cases_in_mongo(
@@ -147,6 +149,8 @@ def store_cases_in_mongo(
             mongo.update_dict("cases", "code", code, dict_provincia)
         except TypeError:
             _ = mongo.insert_new_dict("cases", dict_provincia)
+        except KeyError as er:
+            raise KeyError(f"Error in collection 'cases': {er}")
 
 
 def datastore(
