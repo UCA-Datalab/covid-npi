@@ -69,6 +69,7 @@ def store_scores_in_mongo(
         # Initialize list of scores
         list_mean = []
         list_median = []
+        list_std = []
 
         # Loop through fields of activity
         for field in list_field:
@@ -77,10 +78,16 @@ def store_scores_in_mongo(
             dict_provincia.update({field: series})
             list_mean.append(np.mean(series))
             list_median.append(np.median(series))
+            list_std.append(np.std(series))
 
         # Include statistics
         dict_provincia.update(
-            {"mean": list_mean, "median": list_median, "fields": list_field}
+            {
+                "Mean": list_mean,
+                "Median": list_median,
+                "Standard Deviation": list_std,
+                "fields": list_field,
+            }
         )
 
         try:
