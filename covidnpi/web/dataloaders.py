@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 from covidnpi.utils.config import load_config
 from covidnpi.web.mongo import load_mongo
@@ -181,3 +181,35 @@ def return_growth_of_province(
         "x_min": DATE_MIN,
     }
     return dict_plot
+
+
+def return_field_statistics_by_province(
+    code: str, path_config: str = "covidnpi/config.toml"
+) -> List[Dict]:
+    """Loads the list of statistics by field, for a given province
+
+    Parameters
+    ----------
+    code : str
+        Province code
+    path_config : str, optional
+        Path to config, by default "covidnpi/config.toml"
+
+    Returns
+    -------
+    List[Dict]
+        List of dictionaries with format {"r": List[float], "theta": List[str], "name": str}
+    """
+    cfg_mongo = load_config(path_config, key="mongo")
+    mongo = load_mongo(cfg_mongo)
+    col = mongo.get_col("scores")
+
+    x = col.find_one({"code": code})
+    list_fields = x["fields"]
+    list_fields.append(list_fields[0])
+    list_plot = []
+    for key in ["mean", "median"]:
+        r = x[key]
+        r.append[r[0]]
+        list_plot.append({"r": r, "theta": list_fields, "name": key.capitalize()})
+    return list_plot

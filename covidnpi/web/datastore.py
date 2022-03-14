@@ -79,7 +79,9 @@ def store_scores_in_mongo(
             list_median.append(np.median(series))
 
         # Include statistics
-        dict_provincia.update({"mean": list_mean, "median": list_median})
+        dict_provincia.update(
+            {"mean": list_mean, "median": list_median, "fields": list_field}
+        )
 
         try:
             col = mongo.get_col("scores")
