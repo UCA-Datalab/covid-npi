@@ -85,7 +85,7 @@ def store_scores_in_mongo(
             {
                 "Mean": list_mean,
                 "Median": list_median,
-                "Standard Deviation": list_std,
+                "Standard deviation": list_std,
                 "fields": [s.replace("_", " ").capitalize() for s in list_field],
             }
         )
