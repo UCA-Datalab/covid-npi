@@ -34,7 +34,7 @@ def return_fields_by_province(
     except TypeError:
         print(f"[ERROR] No data for code '{code}', from collection 'cases'.")
         return {
-            "No data": {
+            field: {
                 "x": [],
                 "y": [],
                 "y_max": 1,
@@ -42,6 +42,7 @@ def return_fields_by_province(
                 "x_max": DATE_MIN,
                 "x_min": DATE_MIN,
             }
+            for field in fields
         }
 
     dict_plot = {}
