@@ -32,7 +32,7 @@ def return_fields_by_province(
     try:
         x = dict_provincia["dates"]
     except TypeError:
-        print(f"[ERROR] No data for code '{code}', from collection 'cases'.")
+        print(f"[ERROR] No data for code '{code}', from collection 'cases'")
         return {
             field: {
                 "x": [],
@@ -51,10 +51,10 @@ def return_fields_by_province(
         try:
             y = dict_provincia[field]
         except KeyError:
-            print(f"[ERROR] Field '{field}' not found for '{code}'.")
+            print(f"[ERROR] Field '{field}' not found for '{code}'")
             y = [0] * len(x)
         except TypeError:
-            print(f"[ERROR] Province '{code}' not found.")
+            print(f"[ERROR] Province '{code}' not found")
             y = [0] * len(x)
         dict_field = {
             "x": x,
@@ -102,10 +102,10 @@ def return_provinces_by_field(
             x = dict_provincia["dates"]
             y = dict_provincia[field]
         except KeyError:
-            print(f"[ERROR] Field '{field}' not found for '{code}'.")
+            print(f"[ERROR] Field '{field}' not found for '{code}'")
             y = [0] * len(x)
         except TypeError:
-            print(f"[ERROR] Province '{code}' not found.")
+            print(f"[ERROR] Province '{code}' not found")
             y = [0] * len(x)
         dict_code = {
             "x": x,
