@@ -1,10 +1,12 @@
 import datetime as dt
 from pathlib import Path
+from xmlrpc.client import ServerProxy
 
 import numpy as np
 import pandas as pd
 import typer
 from covidnpi.utils.config import load_config
+from scipy.stats import variation, iqr
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import PROVINCIA_TO_ISOPROV
 from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_taxonomy
@@ -19,12 +21,13 @@ def store_scores_in_mongo(
     """Store NPI scores in mongo server. Format:
     [
         {
-            "provincia": str,
+            "province": str,
             "code": int,
             "dates": List[str],
             `field`: List[float],
-            "mean": {`field`: float},
-            "median": {`field`: float},
+            "Mean": {`field`: float},
+            "Median": {`field`: float},
+            [Other statistics]
         }
     ]
 
@@ -55,7 +58,7 @@ def store_scores_in_mongo(
         provincia = path_file.stem
         try:
             dict_provincia = {
-                "provincia": provincia,
+                "province": provincia,
                 "code": PROVINCIA_TO_ISOPROV[provincia],
                 "dates": df.index.tolist(),
             }
@@ -66,28 +69,42 @@ def store_scores_in_mongo(
             continue
         logger.debug(f"\n{provincia}")
 
-        # Initialize list of scores
+        # Initialize list of statistics
         list_mean = []
         list_median = []
+        list_std = []
+        list_iqr = []
+        list_var = []
 
         # Loop through fields of activity
         for field in list_field:
             logger.debug(f"  {field}")
             series = df[field].values.tolist()
             dict_provincia.update({field: series})
+            # Compute all statistics
             list_mean.append(np.mean(series))
             list_median.append(np.median(series))
+            list_std.append(np.std(series))
+            list_iqr.append(iqr(series))
+            list_var.append(variation(series))
 
         # Include statistics
         dict_provincia.update(
-            {"mean": list_mean, "median": list_median, "fields": list_field}
+            {
+                "Mean": list_mean,
+                "Median": list_median,
+                "Standard deviation": list_std,
+                "Interquantile range": list_iqr,
+                "Coefficient of variation": list_var,
+                "fields": [s.replace("_", " ").capitalize() for s in list_field],
+            }
         )
 
         try:
             col = mongo.get_col("scores")
-            dict_found = col.find_one({"provincia": provincia})
+            dict_found = col.find_one({"province": provincia})
             _ = dict_found["dates"]
-            mongo.update_dict("scores", "provincia", provincia, dict_provincia)
+            mongo.update_dict("scores", "province", provincia, dict_provincia)
         except TypeError:
             _ = mongo.insert_new_dict("scores", dict_provincia)
         except KeyError as er:
@@ -159,6 +176,7 @@ def datastore(
     path_output: str = "output",
     path_taxonomy: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
+    free_memory: bool = False,
 ):
     """Stores the data contained in the output folder in mongo
 
@@ -172,8 +190,18 @@ def datastore(
         Path to the config toml file
     path_regions : str, optional
         Path to the regions file
+    free_memory : bool, optional
+        If True, free the memory of the database before loading new data, by default False
 
     """
+
+    if free_memory:
+        logger.debug("\n-----\nFreeing memory in mongo\n-----\n")
+        cfg = load_config(path_config, "mongo")
+        mongo = load_mongo(cfg)
+        mongo.remove_collection("scores")
+        mongo.remove_collection("cases")
+
     path_output = Path(path_output)
     logger.debug("\n-----\nStoring scores in mongo\n-----\n")
     store_scores_in_mongo(

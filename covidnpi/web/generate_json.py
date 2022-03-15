@@ -45,8 +45,13 @@ def json_fields(path_config: str, path_json: str):
     col = mongo.get_col("scores")
     dict_provincia = col.find_one({"code": "M"})
     list_fields = [k for k in dict_provincia.keys()]
-    for remove in ["code", "provincia", "dates", "_id"]:
-        list_fields.remove(remove)
+    for remove in ["code", "province", "dates", "_id"]:
+        try:
+            list_fields.remove(remove)
+        except ValueError:
+            logger.warning(
+                f"Could not remove key '{remove}' from list: {', '.join(list_fields)}"
+            )
 
     list_json = []
     for value in list_fields:

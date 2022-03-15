@@ -29,7 +29,20 @@ def return_fields_by_province(
     col = mongo.get_col("scores")
 
     dict_provincia = col.find_one({"code": code})
-    x = dict_provincia["dates"]
+    try:
+        x = dict_provincia["dates"]
+    except TypeError:
+        print(f"[ERROR] No data for code '{code}', from collection 'cases'.")
+        return {
+            "No data": {
+                "x": [],
+                "y": [],
+                "y_max": 1,
+                "y_min": 0,
+                "x_max": DATE_MIN,
+                "x_min": DATE_MIN,
+            }
+        }
 
     dict_plot = {}
 
@@ -37,10 +50,10 @@ def return_fields_by_province(
         try:
             y = dict_provincia[field]
         except KeyError:
-            print(f"[ERROR] Ambito '{field}' no existe para '{code}'")
+            print(f"[ERROR] Field '{field}' not found for '{code}'.")
             y = [0] * len(x)
         except TypeError:
-            print(f"[ERROR] Provincia '{code}' no encontrada")
+            print(f"[ERROR] Province '{code}' not found.")
             y = [0] * len(x)
         dict_field = {
             "x": x,
@@ -88,10 +101,10 @@ def return_provinces_by_field(
             x = dict_provincia["dates"]
             y = dict_provincia[field]
         except KeyError:
-            print(f"[ERROR] Ambito '{field}' no existe para '{code}'")
+            print(f"[ERROR] Field '{field}' not found for '{code}'.")
             y = [0] * len(x)
         except TypeError:
-            print(f"[ERROR] Provincia '{code}' no encontrada")
+            print(f"[ERROR] Province '{code}' not found.")
             y = [0] * len(x)
         dict_code = {
             "x": x,
@@ -129,14 +142,18 @@ def return_cases_of_province(
 
     x = col.find_one({"code": code})
     try:
-        x_max = x["dates"][-1]
-    except KeyError:
-        print(f"[ERROR] El codigo '{code}' de 'cases' no tiene 'x'")
+        dates = x["dates"]
+        cases = x["cases"]
+        x_max = dates[-1]
+    except (KeyError, TypeError) as er:
+        print(f"[ERROR] No data for code '{code}', from collection 'cases': {er}")
+        dates = []
+        cases = []
         x_max = DATE_MIN
 
     dict_plot = {
-        "x": x["dates"],
-        "y": x["cases"],
+        "x": dates,
+        "y": cases,
         "y_max": 800,
         "y_min": 0,
         "x_max": x_max,
@@ -168,13 +185,18 @@ def return_growth_of_province(
 
     x = col.find_one({"code": code})
     try:
-        x_max = x["dates"][-1]
-    except KeyError:
-        print(f"[ERROR] El codigo '{code}' de 'cases' no tiene 'x'")
+        dates = x["dates"]
+        gr = x["growth_rate"]
+        x_max = dates[-1]
+    except (KeyError, TypeError) as er:
+        print(f"[ERROR] No data for code '{code}', from collection 'cases': {er}")
+        dates = []
+        gr = []
         x_max = DATE_MIN
+
     dict_plot = {
-        "x": x["dates"],
-        "y": x["growth_rate"],
+        "x": dates,
+        "y": gr,
         "y_max": 200,
         "y_min": -100,
         "x_max": x_max,
@@ -209,7 +231,10 @@ def return_field_statistics_by_province(
     list_fields.append(list_fields[0])
     list_plot = []
     for key in cfg_mongo["statistics"]:
-        r = x[key]
+        try:
+            r = x[key]
+        except KeyError:
+            continue
         r.append(r[0])
-        list_plot.append({"r": r, "theta": list_fields, "name": key.capitalize()})
+        list_plot.append({"r": r, "theta": list_fields, "name": key})
     return list_plot
