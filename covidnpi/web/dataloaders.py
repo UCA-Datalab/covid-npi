@@ -209,7 +209,10 @@ def return_field_statistics_by_province(
     list_fields.append(list_fields[0])
     list_plot = []
     for key in cfg_mongo["statistics"]:
-        r = x[key]
+        try:
+            r = x[key]
+        except KeyError:
+            continue
         r.append(r[0])
         list_plot.append({"r": r, "theta": list_fields, "name": key})
     return list_plot
