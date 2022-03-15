@@ -25,8 +25,9 @@ def store_scores_in_mongo(
             "code": int,
             "dates": List[str],
             `field`: List[float],
-            "mean": {`field`: float},
-            "median": {`field`: float},
+            "Mean": {`field`: float},
+            "Median": {`field`: float},
+            [Other statistics]
         }
     ]
 
