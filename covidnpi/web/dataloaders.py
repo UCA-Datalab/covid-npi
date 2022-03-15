@@ -29,7 +29,10 @@ def return_fields_by_province(
     col = mongo.get_col("scores")
 
     dict_provincia = col.find_one({"code": code})
-    x = dict_provincia["dates"]
+    try:
+        x = dict_provincia["dates"]
+    except TypeError:
+        raise TypeError(f"No data for code '{code}', from collection 'cases'")
 
     dict_plot = {}
 
@@ -131,7 +134,7 @@ def return_cases_of_province(
     try:
         x_max = x["dates"][-1]
     except KeyError:
-        print(f"[ERROR] El codigo '{code}' de 'cases' no tiene 'x'")
+        print(f"[ERROR] No 'dates' for code '{code}', from collection 'cases'")
         x_max = DATE_MIN
     except TypeError:
         raise TypeError(f"No data for code '{code}', from collection 'cases'")
