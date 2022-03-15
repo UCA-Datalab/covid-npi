@@ -19,7 +19,7 @@ def store_scores_in_mongo(
     """Store NPI scores in mongo server. Format:
     [
         {
-            "provincia": str,
+            "province": str,
             "code": int,
             "dates": List[str],
             `field`: List[float],
@@ -55,7 +55,7 @@ def store_scores_in_mongo(
         provincia = path_file.stem
         try:
             dict_provincia = {
-                "provincia": provincia,
+                "province": provincia,
                 "code": PROVINCIA_TO_ISOPROV[provincia],
                 "dates": df.index.tolist(),
             }
@@ -92,9 +92,9 @@ def store_scores_in_mongo(
 
         try:
             col = mongo.get_col("scores")
-            dict_found = col.find_one({"provincia": provincia})
+            dict_found = col.find_one({"province": provincia})
             _ = dict_found["dates"]
-            mongo.update_dict("scores", "provincia", provincia, dict_provincia)
+            mongo.update_dict("scores", "province", provincia, dict_provincia)
         except TypeError:
             _ = mongo.insert_new_dict("scores", dict_provincia)
         except KeyError as er:
