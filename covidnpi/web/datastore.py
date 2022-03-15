@@ -176,6 +176,7 @@ def datastore(
     path_output: str = "output",
     path_taxonomy: str = PATH_TAXONOMY,
     path_config: str = "covidnpi/config.toml",
+    free_memory: bool = False,
 ):
     """Stores the data contained in the output folder in mongo
 
@@ -189,8 +190,18 @@ def datastore(
         Path to the config toml file
     path_regions : str, optional
         Path to the regions file
+    free_memory : bool, optional
+        If True, free the memory of the database before loading new data, by default False
 
     """
+
+    if free_memory:
+        logger.debug("\n-----\nFreeing memory in mongo\n-----\n")
+        cfg = load_config(path_config, "mongo")
+        mongo = load_mongo(cfg)
+        mongo.remove_collection("scores")
+        mongo.remove_collection("cases")
+
     path_output = Path(path_output)
     logger.debug("\n-----\nStoring scores in mongo\n-----\n")
     store_scores_in_mongo(

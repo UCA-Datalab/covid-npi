@@ -11,6 +11,7 @@ def main(
     path_config: str = "config.toml",
     path_json_provincia: str = "output/provincias.json",
     path_json_fields: str = "output/fields.json",
+    free_memory: bool = False,
 ):
     """Runs all the process needed to initalize the web:
     - Store the data in mongo
@@ -28,10 +29,15 @@ def main(
         Path where the provinces json is stored, must end in a file with json format
     path_json_fields : str, optional
         Path where the fields json is stored, must end in a file with json format
+    free_memory : bool, optional
+        If True, free the memory of the database before loading new data, by default False
 
     """
     datastore(
-        path_output=path_output, path_taxonomy=path_taxonomy, path_config=path_config
+        path_output=path_output,
+        path_taxonomy=path_taxonomy,
+        path_config=path_config,
+        free_memory=free_memory,
     )
     generate_json(
         path_config=path_config,
