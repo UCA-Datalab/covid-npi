@@ -1,10 +1,12 @@
 import datetime as dt
 from pathlib import Path
+from xmlrpc.client import ServerProxy
 
 import numpy as np
 import pandas as pd
 import typer
 from covidnpi.utils.config import load_config
+from scipy.stats import variation, iqr
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import PROVINCIA_TO_ISOPROV
 from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_taxonomy
@@ -66,19 +68,24 @@ def store_scores_in_mongo(
             continue
         logger.debug(f"\n{provincia}")
 
-        # Initialize list of scores
+        # Initialize list of statistics
         list_mean = []
         list_median = []
         list_std = []
+        list_iqr = []
+        list_var = []
 
         # Loop through fields of activity
         for field in list_field:
             logger.debug(f"  {field}")
             series = df[field].values.tolist()
             dict_provincia.update({field: series})
+            # Compute all statistics
             list_mean.append(np.mean(series))
             list_median.append(np.median(series))
             list_std.append(np.std(series))
+            list_iqr.append(iqr(series))
+            list_var.append(variation(series))
 
         # Include statistics
         dict_provincia.update(
@@ -86,6 +93,8 @@ def store_scores_in_mongo(
                 "Mean": list_mean,
                 "Median": list_median,
                 "Standard deviation": list_std,
+                "Interquantile range": list_iqr,
+                "Coefficient of variation": list_var,
                 "fields": [s.replace("_", " ").capitalize() for s in list_field],
             }
         )

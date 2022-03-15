@@ -5,7 +5,7 @@ password = ""
 database = ""
 chunks = 10
 date_min = "21-06-2020"
-statistics = ["Mean", "Median", "Standard deviation"]
+statistics = ["Mean", "Median", "Standard deviation", "Interquantile range", "Coefficient of variation"]
 
 [npi]
 fillna_date_end = "today"  # "today" or "start"
