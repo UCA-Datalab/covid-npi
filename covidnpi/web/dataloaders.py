@@ -273,7 +273,17 @@ def return_scores_boxplot_of_field(
     # Loop through boxplot lines
     for key, color in cfg_mongo["boxplot"].items():
         try:
-            list_out.append({"x": list_dates, "y": x[key], "color": color, "name": key})
+            list_out.append(
+                {
+                    "x": list_dates,
+                    "y": x[key],
+                    "color": color,
+                    "name": key,
+                    "fill": "tonexty",
+                }
+            )
         except KeyError:
             print(f"[ERROR] Key '{key}' not found in boxplot '{code}'. Skipped!")
+    # Do not color last
+    list_out[-1].update({"fill": "none"})
     return list_out
