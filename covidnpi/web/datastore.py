@@ -1,16 +1,15 @@
 import datetime as dt
 from pathlib import Path
-from xmlrpc.client import ServerProxy
 
 import numpy as np
 import pandas as pd
 import typer
 from covidnpi.utils.config import load_config
-from scipy.stats import variation, iqr
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import PROVINCIA_TO_ISOPROV
 from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_taxonomy
 from covidnpi.web.mongo import load_mongo
+from scipy.stats import iqr, variation
 
 
 def store_scores_in_mongo(
@@ -170,6 +169,53 @@ def store_cases_in_mongo(
             _ = mongo.insert_new_dict("cases", dict_provincia)
         except KeyError as er:
             raise KeyError(f"Error in collection 'cases': {er}")
+
+
+def store_boxplot_in_mongo(path_config: str = "covidnpi/config.toml"):
+    """Store functional boxplot statistics in mongo
+
+    Parameters
+    ----------
+    path_config : str, optional
+        Config file contains the route and credentials of mongo server
+
+    """
+    cfg_mongo = load_config(path_config, key="mongo")
+    mongo = load_mongo(cfg_mongo)
+    col = mongo.get_col("scores")
+    # Define whole range of dates, to be common for all provinces
+    list_dates = [dt.datetime.strptime(d, "%Y-%m-%d") for d in col.distinct("dates")]
+    index = pd.date_range(min(list_dates), max(list_dates))
+    list_dates = index.format(formatter=lambda x: x.strftime("%Y-%m-%d"))
+    # List provinces and fields of activity
+    list_provinces = col.distinct("province")
+    list_fields = col.find_one({"province": list_provinces[0]})["fields"]
+    list_fields = [field.lower().replace(" ", "_") for field in list_fields]
+    # Initialize the first dictionary, that will contain the scores per field,
+    # for all provinces
+    dict_fields = {field: [] for field in list_fields}
+    for province in list_provinces:
+        dict_prov = col.find_one({"province": province})
+        dates = dict_prov["dates"]
+        for field in list_fields:
+            ser = pd.Series(dict_prov[field], index=dates)
+            dict_fields[field].append(ser.reindex(index, fill_value=0))
+    # Compute the statistics per field
+    dict_boxplot = {field: {} for field in list_fields}
+    for field in list_fields:
+        ar = np.array(dict_fields[field])
+        dict_boxplot[field].update({"median": np.median(ar, axis=0).tolist()})
+    dict_boxplot.update({"id": "boxplot", "dates": list_dates})
+    # Store the information in mongo
+    try:
+        col = mongo.get_col("scores")
+        dict_found = col.find_one({"id": "boxplot"})
+        _ = dict_found["dates"]
+        mongo.update_dict("scores", "id", "boxplot", dict_boxplot)
+    except TypeError:
+        _ = mongo.insert_new_dict("scores", dict_boxplot)
+    except KeyError as er:
+        raise KeyError(f"Error in collection 'cases': {er}")
 
 
 def datastore(
