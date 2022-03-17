@@ -27,10 +27,11 @@ DICT_SCORES_STATISTICS = {
 
 DICT_BOXPLOT_COLOR = {
     "code": "color",
-    "min": "#FFFFFF",
+    "min": "#6BB9EE",
     "low_whisker": "#6BB9EE",
     "q25": "#FFC0CB",
     "median": "#8B008B",
+    "median*": "#000000",
     "q75": "#8B008B",
     "up_whisker": "#FFC0CB",
     "max": "#6BB9EE",
@@ -249,9 +250,12 @@ def store_boxplot_in_mongo(
             "code": code,
             "dates": list_dates,
             "min": np.min(ar, axis=0).tolist(),
+            "low_whisker": np.quantile(ar, 0.05, axis=0).tolist(),
             "q25": np.quantile(ar, 0.25, axis=0).tolist(),
             "median": np.median(ar, axis=0).tolist(),
+            "median*": (np.median(ar, axis=0) * 1.03).tolist(),
             "q75": np.quantile(ar, 0.75, axis=0).tolist(),
+            "up_whisker": np.quantile(ar, 0.95, axis=0).tolist(),
             "max": np.max(ar, axis=0).tolist(),
         }
         # Store the information in mongo
