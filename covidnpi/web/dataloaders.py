@@ -260,15 +260,21 @@ def return_scores_boxplot_of_field(
     """
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
-    col = mongo.get_col("scores")
 
-    x = col.find_one({"id": "boxplot"})
-    list_dates = x["dates"]
+    # Search boxplot in both collections
+    for collection in ["scores", "cases"]:
+        col = mongo.get_col(collection)
+        x = col.find_one({"id": "boxplot"})
+        try:
 
-    try:
-        dict_field = x[code]
-    except KeyError:
-        print(f"[ERROR] Field '{code}' not found in boxplot.")
+            list_dates = x["dates"]
+            dict_field = x[code]
+            break
+        except (KeyError, TypeError) as er:
+            print(f"[INFO] Code '{code}' not in collection '{collection}': {er}")
+            pass
+    else:
+        print(f"[ERROR] Code '{code}' not found in boxplot.")
         return [{"x": [], "y": [], "color": "#FFFFFF", "name": "No data"}]
 
     list_out = []
