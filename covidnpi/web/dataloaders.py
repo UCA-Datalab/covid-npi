@@ -285,5 +285,5 @@ def return_scores_boxplot_of_field(
                 {"x": list_dates, "y": dict_field[key], "color": color, "name": key}
             )
         except KeyError:
-            print(f"[ERROR] Key '{key}' not found in boxplot '{code}'.")
+            print(f"[ERROR] Key '{key}' not found in boxplot '{code}'. Skipped!")
     return list_out
