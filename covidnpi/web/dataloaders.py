@@ -277,7 +277,7 @@ def return_scores_boxplot_of_field(
                 "name": "No data",
                 "fill": "none",
             }
-        ] * 2
+        ]
 
     list_out = []
     # Loop through boxplot lines
