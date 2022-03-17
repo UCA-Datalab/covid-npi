@@ -7,7 +7,7 @@ import typer
 from covidnpi.utils.regions import (
     ISOPROV_TO_POSTAL,
     ISOPROV_TO_PROVINCIA,
-    ISLA_TO_PROVINCIA,
+    ISLA_TO_PROVINCIA_LOWER,
     PROVINCIA_LOWER_TO_ISOPROV,
 )
 
@@ -49,7 +49,7 @@ def combine_csv(path: Union[Path, str], colname: str) -> pd.DataFrame:
 def add_unidad_territorial(df: pd.DataFrame) -> pd.DataFrame:
     # Check for islands
     unidad = df["provincia"].copy()
-    province = df["provincia"].replace(ISLA_TO_PROVINCIA)
+    province = df["provincia"].replace(ISLA_TO_PROVINCIA_LOWER)
     # Create unidad_territorial column, that contains the islands
     df.insert(loc=2, column="unidad_territorial", value=unidad)
     df.loc[unidad == province, "unidad_territorial"] = np.nan
