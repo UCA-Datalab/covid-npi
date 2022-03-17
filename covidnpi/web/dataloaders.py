@@ -28,7 +28,7 @@ def return_scores_of_fields_by_province(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("scores")
 
-    dict_provincia = col.find_one({"code": code, "id": "scores"})
+    dict_provincia = col.find_one({"code": code})
     try:
         x = dict_provincia["dates"]
     except TypeError:
@@ -97,7 +97,7 @@ def return_scores_of_provinces_by_field(
     x = [DATE_MIN]
 
     for code in codes:
-        dict_provincia = col.find_one({"code": code, "id": "scores"})
+        dict_provincia = col.find_one({"code": code})
         try:
             x = dict_provincia["dates"]
             y = dict_provincia[field]
@@ -141,7 +141,7 @@ def return_cases_of_province(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("cases")
 
-    x = col.find_one({"code": code, "id": "cases"})
+    x = col.find_one({"code": code})
     try:
         dates = x["dates"]
         cases = x["cases"]
@@ -184,7 +184,7 @@ def return_growth_of_province(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("cases")
 
-    x = col.find_one({"code": code, "id": "cases"})
+    x = col.find_one({"code": code})
     try:
         dates = x["dates"]
         gr = x["growth_rate"]
@@ -227,7 +227,7 @@ def return_statistics_of_field_by_province(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("scores")
 
-    x = col.find_one({"code": code, "id": "scores"})
+    x = col.find_one({"code": code})
     list_fields = x["fields"]
     list_fields.append(list_fields[0])
     list_plot = []
@@ -261,29 +261,19 @@ def return_scores_boxplot_of_field(
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
 
-    # Search boxplot in both collections
-    for collection in ["scores", "cases"]:
-        col = mongo.get_col(collection)
-        x = col.find_one({"id": "boxplot"})
-        try:
-
-            list_dates = x["dates"]
-            dict_field = x[code]
-            break
-        except (KeyError, TypeError) as er:
-            print(f"[INFO] Code '{code}' not in collection '{collection}': {er}")
-            pass
-    else:
-        print(f"[ERROR] Code '{code}' not found in boxplot.")
+    col = mongo.get_col("boxplot")
+    x = col.find_one({"code": code})
+    try:
+        list_dates = x["dates"]
+    except (KeyError, TypeError) as er:
+        print(f"[ERROR] Code '{code}' not found in 'boxplot'")
         return [{"x": [], "y": [], "color": "#FFFFFF", "name": "No data"}]
 
     list_out = []
     # Loop through boxplot lines
     for key, color in cfg_mongo["boxplot"].items():
         try:
-            list_out.append(
-                {"x": list_dates, "y": dict_field[key], "color": color, "name": key}
-            )
+            list_out.append({"x": list_dates, "y": x[key], "color": color, "name": key})
         except KeyError:
             print(f"[ERROR] Key '{key}' not found in boxplot '{code}'. Skipped!")
     return list_out

@@ -60,7 +60,6 @@ def store_scores_in_mongo(
         provincia = path_file.stem
         try:
             dict_provincia = {
-                "id": "scores",
                 "province": provincia,
                 "code": PROVINCIA_LOWER_TO_ISOPROV[provincia],
                 "dates": df.index.tolist(),
@@ -105,7 +104,7 @@ def store_scores_in_mongo(
 
         try:
             col = mongo.get_col("scores")
-            dict_found = col.find_one({"province": provincia, "id": "scores"})
+            dict_found = col.find_one({"province": provincia})
             _ = dict_found["dates"]
             mongo.update_dict("scores", "province", provincia, dict_provincia)
         except TypeError:
@@ -158,7 +157,6 @@ def store_cases_in_mongo(
         fechas = [d.strftime("%Y-%m-%d") for d in ser_cuminc.index.tolist()]
         # Define the dictionary to store in mongo
         dict_provincia = {
-            "id": "cases",
             "code": code,
             "province": ISOPROV_TO_PROVINCIA_LOWER[code],
             "dates": fechas,
@@ -170,7 +168,7 @@ def store_cases_in_mongo(
         # Store the information in mongo
         try:
             col = mongo.get_col("cases")
-            dict_found = col.find_one({"code": code, "id": "cases"})
+            dict_found = col.find_one({"code": code})
             _ = dict_found["dates"]
             mongo.update_dict("cases", "code", code, dict_provincia)
         except TypeError:
@@ -200,9 +198,7 @@ def store_boxplot_in_mongo(
     # List provinces and statistics
     list_provinces = col.distinct("province")
     if collection == "scores":
-        list_codes = col.find_one({"province": list_provinces[0], "id": "scores"})[
-            "fields"
-        ]
+        list_codes = col.find_one({"province": list_provinces[0]})["fields"]
         list_codes = [code.lower().replace(" ", "_") for code in list_codes]
     elif collection == "cases":
         list_codes = ["cases", "ci", "gr", "growth_rate"]
@@ -212,35 +208,33 @@ def store_boxplot_in_mongo(
     # for all provinces
     dict_codes = {code: [] for code in list_codes}
     for province in list_provinces:
-        dict_prov = col.find_one({"province": province, "id": collection})
+        dict_prov = col.find_one({"province": province})
         dates = [dt.datetime.strptime(d, "%Y-%m-%d") for d in dict_prov["dates"]]
         for code in list_codes:
             ser = pd.Series(dict_prov[code], index=dates)
             dict_codes[code].append(ser.reindex(index, fill_value=0))
     # Compute the statistics per code
-    dict_boxplot = {code: {} for code in list_codes}
     for code in list_codes:
         ar = np.array(dict_codes[code])
-        dict_boxplot[code].update(
-            {
-                "min": np.min(ar, axis=0).tolist(),
-                "q25": np.quantile(ar, 0.25, axis=0).tolist(),
-                "median": np.median(ar, axis=0).tolist(),
-                "q75": np.quantile(ar, 0.75, axis=0).tolist(),
-                "max": np.max(ar, axis=0).tolist(),
-            }
-        )
-    dict_boxplot.update({"id": "boxplot", "dates": list_dates})
-    # Store the information in mongo
-    try:
-        col = mongo.get_col(collection)
-        dict_found = col.find_one({"id": "boxplot"})
-        _ = dict_found["dates"]
-        mongo.update_dict(collection, "id", "boxplot", dict_boxplot)
-    except TypeError:
-        _ = mongo.insert_new_dict(collection, dict_boxplot)
-    except KeyError as er:
-        raise KeyError(f"Error in collection 'cases': {er}")
+        dict_boxplot = {
+            "code": code,
+            "dates": list_dates,
+            "min": np.min(ar, axis=0).tolist(),
+            "q25": np.quantile(ar, 0.25, axis=0).tolist(),
+            "median": np.median(ar, axis=0).tolist(),
+            "q75": np.quantile(ar, 0.75, axis=0).tolist(),
+            "max": np.max(ar, axis=0).tolist(),
+        }
+        # Store the information in mongo
+        try:
+            col = mongo.get_col("boxplot")
+            dict_found = col.find_one({"code": code})
+            _ = dict_found["dates"]
+            mongo.update_dict("boxplot", "code", code, dict_boxplot)
+        except TypeError:
+            _ = mongo.insert_new_dict("boxplot", dict_boxplot)
+        except KeyError as er:
+            raise KeyError(f"Error in collection 'cases': {er}")
 
 
 def datastore(
@@ -270,8 +264,9 @@ def datastore(
         logger.debug("\n-----\nFreeing memory in mongo\n-----\n")
         cfg = load_config(path_config, "mongo")
         mongo = load_mongo(cfg)
-        mongo.remove_collection("scores")
+        mongo.remove_collection("boxplot")
         mongo.remove_collection("cases")
+        mongo.remove_collection("scores")
 
     path_output = Path(path_output)
     logger.debug("\n-----\nStoring scores in mongo\n-----\n")
