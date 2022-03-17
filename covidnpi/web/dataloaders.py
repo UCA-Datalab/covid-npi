@@ -266,7 +266,7 @@ def return_scores_boxplot_of_field(
     try:
         list_dates = x["dates"]
     except (KeyError, TypeError) as er:
-        print(f"[ERROR] Code '{code}' not found in 'boxplot'")
+        print(f"[ERROR] Code '{code}' not found in 'boxplot': {er}")
         return [{"x": [], "y": [], "color": "#FFFFFF", "name": "No data"}]
 
     list_out = []
