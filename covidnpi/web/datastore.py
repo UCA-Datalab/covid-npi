@@ -257,6 +257,8 @@ def datastore(
     )
     logger.debug("\n-----\nStoring number of cases in mongo\n-----\n")
     store_cases_in_mongo(path_output=path_output, path_config=path_config)
+    logger.debug("\n-----\nStoring boxplots in mongo\n-----\n")
+    store_boxplot_in_mongo(path_config=path_config)
 
 
 if __name__ == "__main__":
