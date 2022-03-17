@@ -204,7 +204,15 @@ def store_boxplot_in_mongo(path_config: str = "covidnpi/config.toml"):
     dict_boxplot = {field: {} for field in list_fields}
     for field in list_fields:
         ar = np.array(dict_fields[field])
-        dict_boxplot[field].update({"median": np.median(ar, axis=0).tolist()})
+        dict_boxplot[field].update(
+            {
+                "min": np.min(ar, axis=0).tolist(),
+                "q25": np.quantile(ar, 0.25, axis=0).tolist(),
+                "median": np.median(ar, axis=0).tolist(),
+                "q75": np.quantile(ar, 0.75, axis=0).tolist(),
+                "max": np.max(ar, axis=0).tolist(),
+            }
+        )
     dict_boxplot.update({"id": "boxplot", "dates": list_dates})
     # Store the information in mongo
     try:
