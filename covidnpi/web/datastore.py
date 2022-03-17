@@ -161,7 +161,9 @@ def store_cases_in_mongo(
             "province": ISOPROV_TO_PROVINCIA_LOWER[code],
             "dates": fechas,
             "cases": ser_cuminc.values.tolist(),
+            "ci": ser_cuminc.values.tolist(),  # Repeated to ease access
             "growth_rate": ser_growth.values.tolist(),
+            "gr": ser_growth.values.tolist(),  # Repeated to ease access
         }
         # Store the information in mongo
         try:
@@ -195,28 +197,27 @@ def store_boxplot_in_mongo(
     list_dates = index.format(formatter=lambda x: x.strftime("%Y-%m-%d"))
     # List provinces and statistics
     list_provinces = col.distinct("province")
-    print(list_provinces)
     if collection == "scores":
-        list_fields = col.find_one({"province": list_provinces[0]})["fields"]
-        list_fields = [field.lower().replace(" ", "_") for field in list_fields]
+        list_codes = col.find_one({"province": list_provinces[0]})["fields"]
+        list_codes = [code.lower().replace(" ", "_") for code in list_codes]
     elif collection == "cases":
-        list_fields = ["cases", "growth_rate"]
+        list_codes = ["cases", "ci", "gr", "growth_rate"]
     else:
         raise ValueError(f"Unexpected collection: '{collection}'")
-    # Initialize the first dictionary, that will contain the scores per field,
+    # Initialize the first dictionary, that will contain the scores per code,
     # for all provinces
-    dict_fields = {field: [] for field in list_fields}
+    dict_codes = {code: [] for code in list_codes}
     for province in list_provinces:
         dict_prov = col.find_one({"province": province})
         dates = dict_prov["dates"]
-        for field in list_fields:
-            ser = pd.Series(dict_prov[field], index=dates)
-            dict_fields[field].append(ser.reindex(index, fill_value=0))
-    # Compute the statistics per field
-    dict_boxplot = {field: {} for field in list_fields}
-    for field in list_fields:
-        ar = np.array(dict_fields[field])
-        dict_boxplot[field].update(
+        for code in list_codes:
+            ser = pd.Series(dict_prov[code], index=dates)
+            dict_codes[code].append(ser.reindex(index, fill_value=0))
+    # Compute the statistics per code
+    dict_boxplot = {code: {} for code in list_codes}
+    for code in list_codes:
+        ar = np.array(dict_codes[code])
+        dict_boxplot[code].update(
             {
                 "min": np.min(ar, axis=0).tolist(),
                 "q25": np.quantile(ar, 0.25, axis=0).tolist(),
