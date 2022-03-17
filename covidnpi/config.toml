@@ -7,6 +7,15 @@ chunks = 10
 date_min = "21-06-2020"
 statistics = ["Mean", "Median", "Standard deviation", "Interquantile range", "Coefficient of variation"]
 
+[mongo.boxplot]
+min = "#4589"
+low_whisker = "#4589"
+q25 = "#4589"
+median = "#4589"
+q75 = "#4589"
+up_whisker = "#4589"
+max = "#4589"
+
 [npi]
 fillna_date_end = "today"  # "today" or "start"
 
