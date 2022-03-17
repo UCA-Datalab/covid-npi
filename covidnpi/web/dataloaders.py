@@ -28,7 +28,7 @@ def return_scores_of_fields_by_province(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("scores")
 
-    dict_provincia = col.find_one({"code": code})
+    dict_provincia = col.find_one({"code": code, "id": "scores"})
     try:
         x = dict_provincia["dates"]
     except TypeError:
@@ -97,7 +97,7 @@ def return_scores_of_provinces_by_field(
     x = [DATE_MIN]
 
     for code in codes:
-        dict_provincia = col.find_one({"code": code})
+        dict_provincia = col.find_one({"code": code, "id": "scores"})
         try:
             x = dict_provincia["dates"]
             y = dict_provincia[field]
@@ -141,7 +141,7 @@ def return_cases_of_province(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("cases")
 
-    x = col.find_one({"code": code})
+    x = col.find_one({"code": code, "id": "cases"})
     try:
         dates = x["dates"]
         cases = x["cases"]
@@ -184,7 +184,7 @@ def return_growth_of_province(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("cases")
 
-    x = col.find_one({"code": code})
+    x = col.find_one({"code": code, "id": "cases"})
     try:
         dates = x["dates"]
         gr = x["growth_rate"]
@@ -227,7 +227,7 @@ def return_statistics_of_field_by_province(
     mongo = load_mongo(cfg_mongo)
     col = mongo.get_col("scores")
 
-    x = col.find_one({"code": code})
+    x = col.find_one({"code": code, "id": "scores"})
     list_fields = x["fields"]
     list_fields.append(list_fields[0])
     list_plot = []
