@@ -282,6 +282,9 @@ def return_scores_boxplot_of_field(
     list_out = []
     # Loop through boxplot lines
     for key, color in dict_color.items():
+        # Skip unwanted keys
+        if (key == "_id") or (key == "code"):
+            continue
         try:
             list_out.append(
                 {
