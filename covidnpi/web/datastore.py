@@ -209,7 +209,7 @@ def store_boxplot_in_mongo(
     dict_codes = {code: [] for code in list_codes}
     for province in list_provinces:
         dict_prov = col.find_one({"province": province})
-        dates = dict_prov["dates"]
+        dates = [dt.datetime.strptime(d, "%Y-%m-%d") for d in dict_prov["dates"]]
         for code in list_codes:
             ser = pd.Series(dict_prov[code], index=dates)
             dict_codes[code].append(ser.reindex(index, fill_value=0))
