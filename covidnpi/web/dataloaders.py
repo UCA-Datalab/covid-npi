@@ -230,8 +230,9 @@ def return_statistics_of_field_by_province(
     x = col.find_one({"code": code})
     list_fields = x["fields"]
     list_fields.append(list_fields[0])
+    list_statistics = col.find_one({"code": "statistics"})
     list_plot = []
-    for key in cfg_mongo["statistics"]:
+    for key in list_statistics["list"]:
         try:
             r = x[key]
         except KeyError:
@@ -263,6 +264,7 @@ def return_scores_boxplot_of_field(
 
     col = mongo.get_col("boxplot")
     x = col.find_one({"code": code})
+    dict_color = col.find_one({"code": "color"})
     try:
         list_dates = x["dates"]
     except (KeyError, TypeError) as er:
@@ -271,7 +273,7 @@ def return_scores_boxplot_of_field(
 
     list_out = []
     # Loop through boxplot lines
-    for key, color in cfg_mongo["boxplot"].items():
+    for key, color in dict_color.items():
         try:
             list_out.append(
                 {

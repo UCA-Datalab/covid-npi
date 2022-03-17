@@ -14,6 +14,28 @@ from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_taxonomy
 from covidnpi.web.mongo import load_mongo
 from scipy.stats import iqr, variation
 
+DICT_SCORES_STATISTICS = {
+    "code": "statistics",
+    "list": [
+        "Mean",
+        "Median",
+        "Standard deviation",
+        "Interquantile range",
+        "Coefficient of variation",
+    ],
+}
+
+DICT_BOXPLOT_COLOR = {
+    "code": "color",
+    "min": "#FFFFFF",
+    "low_whisker": "#6BB9EE",
+    "q25": "#FFC0CB",
+    "median": "#8B008B",
+    "q75": "#8B008B",
+    "up_whisker": "#FFC0CB",
+    "max": "#6BB9EE",
+}
+
 
 def store_scores_in_mongo(
     path_output: Path = Path("output/score_field"),
@@ -111,6 +133,13 @@ def store_scores_in_mongo(
             _ = mongo.insert_new_dict("scores", dict_provincia)
         except KeyError as er:
             raise KeyError(f"Error in collection 'scores': {er}")
+    # Store list of statistics
+    try:
+        dict_found = col.find_one({"code": "statistics"})
+        _ = dict_found["list"]
+        mongo.update_dict("scores", "code", "statistics", DICT_SCORES_STATISTICS)
+    except TypeError:
+        _ = mongo.insert_new_dict("scores", DICT_SCORES_STATISTICS)
 
 
 def store_cases_in_mongo(
@@ -235,6 +264,13 @@ def store_boxplot_in_mongo(
             _ = mongo.insert_new_dict("boxplot", dict_boxplot)
         except KeyError as er:
             raise KeyError(f"Error in collection 'cases': {er}")
+    # Include color dictionary
+    try:
+        dict_found = col.find_one({"code": "color"})
+        _ = dict_found["median"]
+        mongo.update_dict("boxplot", "code", "color", DICT_BOXPLOT_COLOR)
+    except TypeError:
+        _ = mongo.insert_new_dict("boxplot", DICT_BOXPLOT_COLOR)
 
 
 def datastore(
