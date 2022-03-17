@@ -269,7 +269,7 @@ def return_scores_boxplot_of_field(
         dict_field = x[code]
     except KeyError:
         print(f"[ERROR] Field '{code}' not found in boxplot.")
-        return [{"x": [], "y": [], "color": "#0000", "name": "No data"}]
+        return [{"x": [], "y": [], "color": "#FFFFFF", "name": "No data"}]
 
     list_out = []
     # Loop through boxplot lines
