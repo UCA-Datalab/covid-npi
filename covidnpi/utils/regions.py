@@ -124,7 +124,7 @@ ISOPROV_REASSIGN = {
     "NC": "NA",
 }
 
-PROVINCIA_TO_ISOPROV = {
+PROVINCIA_LOWER_TO_ISOPROV = {
     "alava": "VI",
     "albacete": "AB",
     "alicante": "A",
@@ -181,7 +181,7 @@ PROVINCIA_TO_ISOPROV = {
     "zaragoza": "Z",
 }
 
-ISOPROV_TO_FILENAME = reverse_dictionary(PROVINCIA_TO_ISOPROV)
+ISOPROV_TO_PROVINCIA_LOWER = reverse_dictionary(PROVINCIA_LOWER_TO_ISOPROV)
 
 DICT_PROVINCE_RENAME = {
     "a_coruna": "coruna_la",

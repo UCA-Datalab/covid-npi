@@ -13,7 +13,7 @@ from covidnpi.utils.log import logger
 from covidnpi.utils.regions import (
     DICT_PROVINCE_RENAME,
     ISOPROV_TO_PROVINCIA,
-    PROVINCIA_TO_ISOPROV,
+    PROVINCIA_LOWER_TO_ISOPROV,
 )
 
 
@@ -51,7 +51,7 @@ def dataframe_of_npi_score_mean_by_date_province(path_data: Path) -> pd.DataFram
         ser.index = pd.to_datetime(ser.index)
         # Rename province if needed
         province = DICT_PROVINCE_RENAME.get(province, province)
-        code = PROVINCIA_TO_ISOPROV.get(province, province)
+        code = PROVINCIA_LOWER_TO_ISOPROV.get(province, province)
         # Compute the field under the curve and store
         dict_field.update({code: ser})
     return pd.DataFrame.from_dict(dict_field)
@@ -106,7 +106,7 @@ def dataframe_of_cases_by_date_province() -> pd.DataFrame:
     cases = load_cases_df()
     # Initialize dictionary of time series
     dict_ser = {}
-    for _, code in PROVINCIA_TO_ISOPROV.items():
+    for _, code in PROVINCIA_LOWER_TO_ISOPROV.items():
         # cases by province for each 100,000 inhabitants
         ser = return_cases_of_provincia_normed(cases, code)
         # Index to datetime

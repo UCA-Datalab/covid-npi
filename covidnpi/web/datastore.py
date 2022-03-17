@@ -6,7 +6,10 @@ import pandas as pd
 import typer
 from covidnpi.utils.config import load_config
 from covidnpi.utils.log import logger
-from covidnpi.utils.regions import PROVINCIA_TO_ISOPROV
+from covidnpi.utils.regions import (
+    ISOPROV_TO_PROVINCIA_LOWER,
+    PROVINCIA_LOWER_TO_ISOPROV,
+)
 from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_taxonomy
 from covidnpi.web.mongo import load_mongo
 from scipy.stats import iqr, variation
@@ -58,7 +61,7 @@ def store_scores_in_mongo(
         try:
             dict_provincia = {
                 "province": provincia,
-                "code": PROVINCIA_TO_ISOPROV[provincia],
+                "code": PROVINCIA_LOWER_TO_ISOPROV[provincia],
                 "dates": df.index.tolist(),
             }
         except KeyError:
@@ -155,6 +158,7 @@ def store_cases_in_mongo(
         # Define the dictionary to store in mongo
         dict_provincia = {
             "code": code,
+            "province": ISOPROV_TO_PROVINCIA_LOWER[code],
             "dates": fechas,
             "cases": ser_cuminc.values.tolist(),
             "growth_rate": ser_growth.values.tolist(),
@@ -171,7 +175,9 @@ def store_cases_in_mongo(
             raise KeyError(f"Error in collection 'cases': {er}")
 
 
-def store_boxplot_in_mongo(path_config: str = "covidnpi/config.toml"):
+def store_boxplot_in_mongo(
+    path_config: str = "covidnpi/config.toml", collection: str = "scores"
+):
     """Store functional boxplot statistics in mongo
 
     Parameters
@@ -182,15 +188,21 @@ def store_boxplot_in_mongo(path_config: str = "covidnpi/config.toml"):
     """
     cfg_mongo = load_config(path_config, key="mongo")
     mongo = load_mongo(cfg_mongo)
-    col = mongo.get_col("scores")
+    col = mongo.get_col(collection)
     # Define whole range of dates, to be common for all provinces
     list_dates = [dt.datetime.strptime(d, "%Y-%m-%d") for d in col.distinct("dates")]
     index = pd.date_range(min(list_dates), max(list_dates))
     list_dates = index.format(formatter=lambda x: x.strftime("%Y-%m-%d"))
-    # List provinces and fields of activity
+    # List provinces and statistics
     list_provinces = col.distinct("province")
-    list_fields = col.find_one({"province": list_provinces[0]})["fields"]
-    list_fields = [field.lower().replace(" ", "_") for field in list_fields]
+    print(list_provinces)
+    if collection == "scores":
+        list_fields = col.find_one({"province": list_provinces[0]})["fields"]
+        list_fields = [field.lower().replace(" ", "_") for field in list_fields]
+    elif collection == "cases":
+        list_fields = ["cases", "growth_rate"]
+    else:
+        raise ValueError(f"Unexpected collection: '{collection}'")
     # Initialize the first dictionary, that will contain the scores per field,
     # for all provinces
     dict_fields = {field: [] for field in list_fields}
@@ -216,12 +228,12 @@ def store_boxplot_in_mongo(path_config: str = "covidnpi/config.toml"):
     dict_boxplot.update({"id": "boxplot", "dates": list_dates})
     # Store the information in mongo
     try:
-        col = mongo.get_col("scores")
+        col = mongo.get_col(collection)
         dict_found = col.find_one({"id": "boxplot"})
         _ = dict_found["dates"]
-        mongo.update_dict("scores", "id", "boxplot", dict_boxplot)
+        mongo.update_dict(collection, "id", "boxplot", dict_boxplot)
     except TypeError:
-        _ = mongo.insert_new_dict("scores", dict_boxplot)
+        _ = mongo.insert_new_dict(collection, dict_boxplot)
     except KeyError as er:
         raise KeyError(f"Error in collection 'cases': {er}")
 
@@ -229,7 +241,7 @@ def store_boxplot_in_mongo(path_config: str = "covidnpi/config.toml"):
 def datastore(
     path_output: str = "output",
     path_taxonomy: str = PATH_TAXONOMY,
-    path_config: str = "covidnpi/config.toml",
+    path_config: str = "config.toml",
     free_memory: bool = False,
 ):
     """Stores the data contained in the output folder in mongo
@@ -263,10 +275,12 @@ def datastore(
         path_taxonomy=path_taxonomy,
         path_config=path_config,
     )
+    logger.debug("\n-----\nStoring boxplots in mongo\n-----\n")
+    store_boxplot_in_mongo(path_config=path_config, collection="scores")
     logger.debug("\n-----\nStoring number of cases in mongo\n-----\n")
     store_cases_in_mongo(path_output=path_output, path_config=path_config)
-    logger.debug("\n-----\nStoring boxplots in mongo\n-----\n")
-    store_boxplot_in_mongo(path_config=path_config)
+    logger.debug("\n-----\nStoring cases boxplots in mongo\n-----\n")
+    store_boxplot_in_mongo(path_config=path_config, collection="cases")
 
 
 if __name__ == "__main__":
