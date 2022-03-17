@@ -276,8 +276,20 @@ def return_scores_boxplot_of_field(
                 "color": "#FFFFFF",
                 "name": "No data",
                 "fill": "none",
+                "y_max": 0,
+                "y_min": 1,
+                "x_max": DATE_MIN,
+                "x_min": DATE_MIN,
             }
         ]
+
+    # Define Y limits
+    if code == "gr":
+        y_min, y_max = -100, 200
+    elif code == "ci":
+        y_min, y_max = 0, 800
+    else:
+        y_min, y_max = 0, 1
 
     list_out = []
     # Loop through boxplot lines
@@ -293,6 +305,10 @@ def return_scores_boxplot_of_field(
                     "color": color,
                     "name": key,
                     "fill": "tonexty",
+                    "y_max": y_max,
+                    "y_min": y_min,
+                    "x_max": list_dates[-1],
+                    "x_min": DATE_MIN,
                 }
             )
         except KeyError:

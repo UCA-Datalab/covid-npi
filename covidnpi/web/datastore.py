@@ -30,8 +30,8 @@ DICT_BOXPLOT_COLOR = {
     "min": "#6BB9EE",
     "q05": "#6BB9EE",
     "q25": "#FFC0CB",
-    "median": "#8B008B",
-    "median*": "#000000",
+    "q49": "#8B008B",
+    "q51": "#000000",
     "q75": "#8B008B",
     "q95": "#FFC0CB",
     "max": "#6BB9EE",
@@ -252,8 +252,8 @@ def store_boxplot_in_mongo(
             "min": np.min(ar, axis=0).tolist(),
             "q05": np.quantile(ar, 0.05, axis=0).tolist(),
             "q25": np.quantile(ar, 0.25, axis=0).tolist(),
-            "median": np.median(ar, axis=0).tolist(),
-            "median*": (np.median(ar, axis=0) * 1.03).tolist(),
+            "q49": np.quantile(ar, 0.49, axis=0).tolist(),
+            "q51": np.quantile(ar, 0.51, axis=0).tolist(),
             "q75": np.quantile(ar, 0.75, axis=0).tolist(),
             "q95": np.quantile(ar, 0.95, axis=0).tolist(),
             "max": np.max(ar, axis=0).tolist(),
@@ -271,7 +271,7 @@ def store_boxplot_in_mongo(
     # Include color dictionary
     try:
         dict_found = col.find_one({"code": "color"})
-        _ = dict_found["median"]
+        _ = dict_found["code"]
         mongo.update_dict("boxplot", "code", "color", DICT_BOXPLOT_COLOR)
     except TypeError:
         _ = mongo.insert_new_dict("boxplot", DICT_BOXPLOT_COLOR)
