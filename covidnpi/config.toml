@@ -4,7 +4,8 @@ username = ""
 password = ""
 database = ""
 chunks = 10
-date_min = "21-06-2020"
+date_min = "2020-07-01"
+date_max = "2021-05-09"
 
 [npi]
 fillna_date_end = "today"  # "today" or "start"

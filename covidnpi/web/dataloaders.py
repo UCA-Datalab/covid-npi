@@ -3,8 +3,6 @@ from typing import Dict, List
 from covidnpi.utils.config import load_config
 from covidnpi.web.mongo import load_mongo
 
-DATE_MIN = "2020-07-01"
-
 
 def return_scores_of_fields_by_province(
     code: str, fields: tuple, path_config: str = "covidnpi/config.toml"
@@ -39,8 +37,8 @@ def return_scores_of_fields_by_province(
                 "y": [],
                 "y_max": 1,
                 "y_min": 0,
-                "x_max": DATE_MIN,
-                "x_min": DATE_MIN,
+                "x_max": cfg_mongo["date_max"],
+                "x_min": cfg_mongo["date_min"],
             }
             for field in fields
         }
@@ -61,8 +59,8 @@ def return_scores_of_fields_by_province(
             "y": y,
             "y_max": 1,
             "y_min": 0,
-            "x_max": x[-1],
-            "x_min": DATE_MIN,
+            "x_max": cfg_mongo["date_max"],
+            "x_min": cfg_mongo["date_min"],
         }
         dict_plot.update({field: dict_field})
 
@@ -94,7 +92,7 @@ def return_scores_of_provinces_by_field(
     dict_plot = {}
 
     # Initialize x
-    x = [DATE_MIN]
+    x = [cfg_mongo["date_min"]]
 
     for code in codes:
         dict_provincia = col.find_one({"code": code})
@@ -112,8 +110,8 @@ def return_scores_of_provinces_by_field(
             "y": y,
             "y_max": 1,
             "y_min": 0,
-            "x_max": x[-1],
-            "x_min": DATE_MIN,
+            "x_max": cfg_mongo["date_max"],
+            "x_min": cfg_mongo["date_min"],
         }
         dict_plot.update({code: dict_code})
 
@@ -145,26 +143,24 @@ def return_cases_of_province(
     try:
         dates = x["dates"]
         cases = x["cases"]
-        x_max = dates[-1]
     except (KeyError, TypeError) as er:
         print(f"[ERROR] No data for code '{code}', from collection 'cases': {er}")
         dates = []
         cases = []
-        x_max = DATE_MIN
 
     dict_plot = {
         "x": dates,
         "y": cases,
         "y_max": 800,
         "y_min": 0,
-        "x_max": x_max,
-        "x_min": DATE_MIN,
+        "x_max": cfg_mongo["date_max"],
+        "x_min": cfg_mongo["date_min"],
     }
     return dict_plot
 
 
 def return_growth_of_province(
-    code: str, path_config: str = "covidnpi/config.toml"
+    code: str, path_config: str = "covidnpi/config.toml", logarithmic: bool = True
 ) -> Dict:
     """Loads the growth of cases stored in mongo for a given province
 
@@ -172,6 +168,8 @@ def return_growth_of_province(
     ----------
     code : str
     path_config : str, optional
+    logarithmic : bool, optional
+        Return LR instead of GR, by default True
 
     Returns
     -------
@@ -185,23 +183,29 @@ def return_growth_of_province(
     col = mongo.get_col("cases")
 
     x = col.find_one({"code": code})
+    if logarithmic:
+        key = "logarithmic_growth_rate"
+        y_max = 1.2
+        y_min = -1.2
+    else:
+        key = "growth_rate"
+        y_max = 200
+        y_min = -100
     try:
         dates = x["dates"]
-        gr = x["growth_rate"]
-        x_max = dates[-1]
+        gr = x[key]
     except (KeyError, TypeError) as er:
         print(f"[ERROR] No data for code '{code}', from collection 'cases': {er}")
         dates = []
         gr = []
-        x_max = DATE_MIN
 
     dict_plot = {
         "x": dates,
         "y": gr,
-        "y_max": 200,
-        "y_min": -100,
-        "x_max": x_max,
-        "x_min": DATE_MIN,
+        "y_max": y_max,
+        "y_min": y_min,
+        "x_max": cfg_mongo["date_max"],
+        "x_min": cfg_mongo["date_min"],
     }
     return dict_plot
 
@@ -278,8 +282,8 @@ def return_scores_boxplot_of_field(
                 "fill": "none",
                 "y_max": 0,
                 "y_min": 1,
-                "x_max": DATE_MIN,
-                "x_min": DATE_MIN,
+                "x_max": cfg_mongo["date_max"],
+                "x_min": cfg_mongo["date_min"],
             }
         ]
 
@@ -307,8 +311,8 @@ def return_scores_boxplot_of_field(
                     "fill": "tonexty",
                     "y_max": y_max,
                     "y_min": y_min,
-                    "x_max": list_dates[-1],
-                    "x_min": DATE_MIN,
+                    "x_max": cfg_mongo["date_max"],
+                    "x_min": cfg_mongo["date_min"],
                 }
             )
         except KeyError:
