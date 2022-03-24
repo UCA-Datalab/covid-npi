@@ -171,6 +171,11 @@ def store_cases_in_mongo(
         index_col=0,
         parse_dates=True,
     )
+    df_lr = pd.read_csv(
+        path_output / f"incidencia_crecimiento_log_{days}.csv",
+        index_col=0,
+        parse_dates=True,
+    )
 
     # Get the minimum date in datetime format
     date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
@@ -183,6 +188,8 @@ def store_cases_in_mongo(
         ser_cuminc = ser_cuminc[mask_date].copy()
         # Get growth rate, filtered by date
         ser_growth = df_growth.loc[mask_date, code].copy()
+        # Get logarithmic growth rate
+        ser_lr = df_lr.loc[mask_date, code].copy()
         # Get dates in string format
         fechas = [d.strftime("%Y-%m-%d") for d in ser_cuminc.index.tolist()]
         # Define the dictionary to store in mongo
@@ -194,6 +201,8 @@ def store_cases_in_mongo(
             "ci": ser_cuminc.values.tolist(),  # Repeated to ease access
             "growth_rate": ser_growth.values.tolist(),
             "gr": ser_growth.values.tolist(),  # Repeated to ease access
+            "logarithmic_growth_rate": ser_lr.values.tolist(),
+            "lr": ser_lr.values.tolist(),  # Repeated to ease access
         }
         # Store the information in mongo
         try:
