@@ -368,5 +368,8 @@ def return_scores_boxplot_of_field(
         except KeyError:
             print(f"[ERROR] Key '{key}' not found in boxplot '{code}'. Skipped!")
     # Do not color last
-    list_out[0].update({"fill": "none"})
+    try:
+        list_out[0].update({"fill": "none"})
+    except IndexError:
+        print(f"Returning an empty list for field: {code}")
     return list_out
