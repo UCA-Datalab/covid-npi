@@ -339,9 +339,11 @@ def return_scores_boxplot_of_field(
 
     # Define Y limits
     if code == "gr":
-        y_min, y_max = -100, 200
+        y_min, y_max = -100, 1000
+    elif code == "lr":
+        y_min, y_max = -1.2, 1.2
     elif code == "ci":
-        y_min, y_max = 0, 800
+        y_min, y_max = 0, 1200
     else:
         y_min, y_max = 0, 1
 
