@@ -281,7 +281,9 @@ def return_statistics_of_field_by_province(
         except KeyError:
             continue
         r.append(r[0])
-        list_plot.append({"r": r, "theta": list_fields, "name": key})
+        list_plot.append(
+            {"r": r, "theta": list_fields, "name": key, "type": x["types"][key]}
+        )
     return list_plot
 
 

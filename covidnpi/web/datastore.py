@@ -73,7 +73,7 @@ def store_scores_in_mongo(
     taxonomy = return_taxonomy(path_taxonomy=path_taxonomy)
     list_field = taxonomy["ambito"].unique().tolist()
     # Get the minimum date in datetime format
-    date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
+    date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%Y-%m-%d")
 
     for path_file in path_output.iterdir():
         df = pd.read_csv(path_file, index_col="fecha")
@@ -122,6 +122,13 @@ def store_scores_in_mongo(
                 "Interquantile range": list_iqr,
                 "Coefficient of variation": list_var,
                 "fields": [s.replace("_", " ").capitalize() for s in list_field],
+                "types": {
+                    "Mean": "Localization",
+                    "Median": "Localization",
+                    "Standard deviation": "Dispersion",
+                    "Interquantile range": "Dispersion",
+                    "Coefficient of variation": "Dispersion",
+                },
             }
         )
 
@@ -178,7 +185,7 @@ def store_cases_in_mongo(
     )
 
     # Get the minimum date in datetime format
-    date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%d-%m-%Y")
+    date_min = dt.datetime.strptime(cfg_mongo["date_min"], "%Y-%m-%d")
 
     # Loop through province codes
     for code, ser_cuminc in df_cuminc.iteritems():
