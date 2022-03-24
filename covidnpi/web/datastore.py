@@ -123,11 +123,11 @@ def store_scores_in_mongo(
                 "Coefficient of variation": list_var,
                 "fields": [s.replace("_", " ").capitalize() for s in list_field],
                 "types": {
-                    "Mean": "Localization",
-                    "Median": "Localization",
-                    "Standard deviation": "Dispersion",
-                    "Interquantile range": "Dispersion",
-                    "Coefficient of variation": "Dispersion",
+                    "Mean": "localization",
+                    "Median": "localization",
+                    "Standard deviation": "dispersion",
+                    "Interquantile range": "dispersion",
+                    "Coefficient of variation": "dispersion",
                 },
             }
         )
