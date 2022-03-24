@@ -14,6 +14,18 @@ from covidnpi.utils.taxonomy import PATH_TAXONOMY, return_taxonomy
 from covidnpi.web.mongo import load_mongo
 from scipy.stats import iqr, variation
 
+DICT_FIELDS = {
+    "ceremonias": "Ceremonies and religious celebrations",
+    "comercio": "Commerce",
+    "cultura": "Culture",
+    "deporte_exterior": "Outdoor sports",
+    "deporte_interior": "Indoor sports",
+    "distancia_social": "Social distance",
+    "movilidad": "Mobility",
+    "restauracion_exterior": "Outdoor bars and restaurants",
+    "restauracion_interior": "Indoor bars and restaurants",
+}
+
 DICT_SCORES_STATISTICS = {
     "code": "statistics",
     "list": [
@@ -119,7 +131,8 @@ def store_scores_in_mongo(
         for field in list_field:
             logger.debug(f"  {field}")
             series = df[field].values.tolist()
-            dict_provincia.update({field: series})
+            # Store field name in English
+            dict_provincia.update({DICT_FIELDS.get(field, field): series})
             # Compute all statistics
             list_mean.append(np.mean(series))
             list_q25.append(np.quantile(series, 0.25))
@@ -139,7 +152,7 @@ def store_scores_in_mongo(
                 "Standard deviation": list_std,
                 "Interquantile range": list_iqr,
                 "Coefficient of variation": list_var,
-                "fields": [s.replace("_", " ").capitalize() for s in list_field],
+                "fields": [DICT_FIELDS.get(s, s) for s in list_field],
             }
         )
 
@@ -256,7 +269,6 @@ def store_boxplot_in_mongo(
     list_provinces = col.distinct("province")
     if collection == "scores":
         list_codes = col.find_one({"province": list_provinces[0]})["fields"]
-        list_codes = [code.lower().replace(" ", "_") for code in list_codes]
     elif collection == "cases":
         list_codes = ["cases", "ci", "gr", "growth_rate"]
     else:
