@@ -1,5 +1,8 @@
+import datetime as dt
 from typing import Dict, List, Tuple
 
+import numpy as np
+import pandas as pd
 from covidnpi.utils.config import load_config
 from covidnpi.web.mongo import load_mongo
 
@@ -19,14 +22,11 @@ def slice_dates(x: List, cfg: Dict) -> Tuple:
     Tuple
         Position of minimum and maximum dates
     """
-    try:
-        idx_min = x.index(cfg["date_min"])
-    except ValueError:
-        idx_min = 0
-    try:
-        idx_max = x.index(cfg["date_max"])
-    except ValueError:
-        idx_max = len(x)
+    dates = pd.to_datetime(x, format="%Y-%m-%d")
+    date_min = dt.datetime.strptime(cfg["date_min"], "%Y-%m-%d")
+    date_max = dt.datetime.strptime(cfg["date_max"], "%Y-%m-%d") + dt.timedelta(days=1)
+    idx_min = np.argmax(dates >= date_min)
+    idx_max = np.argwhere(dates <= date_max)[-1][0]
     return idx_min, idx_max
 
 
@@ -180,12 +180,10 @@ def return_cases_of_province(
         cases = []
 
     idx_min, idx_max = slice_dates(dates, cfg_mongo)
-    dates = dates[idx_min:idx_max]
-    cases = cases[idx_min:idx_max]
 
     dict_plot = {
-        "x": dates,
-        "y": cases,
+        "x": dates[idx_min:idx_max],
+        "y": cases[idx_min:idx_max],
         "y_max": 800,
         "y_min": 0,
         "x_max": cfg_mongo["date_max"],
@@ -235,12 +233,10 @@ def return_growth_of_province(
         gr = []
 
     idx_min, idx_max = slice_dates(dates, cfg_mongo)
-    dates = dates[idx_min:idx_max]
-    gr = gr[idx_min:idx_max]
 
     dict_plot = {
-        "x": dates,
-        "y": gr,
+        "x": dates[idx_min:idx_max],
+        "y": gr[idx_min:idx_max],
         "y_max": y_max,
         "y_min": y_min,
         "x_max": cfg_mongo["date_max"],
