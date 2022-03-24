@@ -1,7 +1,33 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from covidnpi.utils.config import load_config
 from covidnpi.web.mongo import load_mongo
+
+
+def slice_dates(x: List, cfg: Dict) -> Tuple:
+    """Locate position of minimum and maximum dates
+
+    Parameters
+    ----------
+    x : List
+        List of dates, sorted
+    cfg : Dict
+        Config with keys "date_min" and "date_max"
+
+    Returns
+    -------
+    Tuple
+        Position of minimum and maximum dates
+    """
+    try:
+        idx_min = x.index(cfg["date_min"])
+    except ValueError:
+        idx_min = 0
+    try:
+        idx_max = x.index(cfg["date_max"])
+    except ValueError:
+        idx_max = len(x)
+    return idx_min, idx_max
 
 
 def return_scores_of_fields_by_province(
@@ -44,10 +70,12 @@ def return_scores_of_fields_by_province(
         }
 
     dict_plot = {}
+    idx_min, idx_max = slice_dates(x, cfg_mongo)
+    x = x[idx_min:idx_max]
 
     for field in fields:
         try:
-            y = dict_provincia[field]
+            y = dict_provincia[field][idx_min:idx_max]
         except KeyError:
             print(f"[ERROR] Field '{field}' not found for '{code}'")
             y = [0] * len(x)
@@ -105,6 +133,9 @@ def return_scores_of_provinces_by_field(
         except TypeError:
             print(f"[ERROR] Province '{code}' not found")
             y = [0] * len(x)
+        idx_min, idx_max = slice_dates(x, cfg_mongo)
+        x = x[idx_min:idx_max]
+        y = y[idx_min:idx_max]
         dict_code = {
             "x": x,
             "y": y,
@@ -147,6 +178,10 @@ def return_cases_of_province(
         print(f"[ERROR] No data for code '{code}', from collection 'cases': {er}")
         dates = []
         cases = []
+
+    idx_min, idx_max = slice_dates(dates, cfg_mongo)
+    dates = dates[idx_min:idx_max]
+    cases = cases[idx_min:idx_max]
 
     dict_plot = {
         "x": dates,
@@ -198,6 +233,10 @@ def return_growth_of_province(
         print(f"[ERROR] No data for code '{code}', from collection 'cases': {er}")
         dates = []
         gr = []
+
+    idx_min, idx_max = slice_dates(dates, cfg_mongo)
+    dates = dates[idx_min:idx_max]
+    gr = gr[idx_min:idx_max]
 
     dict_plot = {
         "x": dates,
@@ -287,6 +326,10 @@ def return_scores_boxplot_of_field(
             }
         ]
 
+    # Define X limits
+    idx_min, idx_max = slice_dates(list_dates, cfg_mongo)
+    list_dates = list_dates[idx_min:idx_max]
+
     # Define Y limits
     if code == "gr":
         y_min, y_max = -100, 200
@@ -305,7 +348,7 @@ def return_scores_boxplot_of_field(
             list_out.append(
                 {
                     "x": list_dates,
-                    "y": x[key],
+                    "y": x[key][idx_min:idx_max],
                     "color": color,
                     "name": key,
                     "fill": "tonexty",
