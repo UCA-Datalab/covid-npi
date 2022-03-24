@@ -273,16 +273,17 @@ def return_statistics_of_field_by_province(
     x = col.find_one({"code": code})
     list_fields = x["fields"]
     list_fields.append(list_fields[0])
-    list_statistics = col.find_one({"code": "statistics"})
+    list_statistics = col.find_one({"code": "statistics"})["list"]
+    dict_types = col.find_one({"code": "statistics"})["types"]
     list_plot = []
-    for key in list_statistics["list"]:
+    for key in list_statistics:
         try:
             r = x[key]
         except KeyError:
             continue
         r.append(r[0])
         list_plot.append(
-            {"r": r, "theta": list_fields, "name": key, "type": x["types"][key]}
+            {"r": r, "theta": list_fields, "name": key, "type": dict_types[key]}
         )
     return list_plot
 

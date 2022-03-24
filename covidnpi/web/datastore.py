@@ -18,12 +18,24 @@ DICT_SCORES_STATISTICS = {
     "code": "statistics",
     "list": [
         "Mean",
+        "q25",
         "Median",
+        "q75",
         "Standard deviation",
         "Interquantile range",
         "Coefficient of variation",
     ],
+    "types": {
+        "Mean": "localization",
+        "q25": "localization",
+        "Median": "localization",
+        "q75": "localization",
+        "Standard deviation": "dispersion",
+        "Interquantile range": "dispersion",
+        "Coefficient of variation": "dispersion",
+    },
 }
+
 
 DICT_BOXPLOT_COLOR = {
     "code": "color",
@@ -96,7 +108,9 @@ def store_scores_in_mongo(
 
         # Initialize list of statistics
         list_mean = []
+        list_q25 = []
         list_median = []
+        list_q75 = []
         list_std = []
         list_iqr = []
         list_var = []
@@ -108,7 +122,9 @@ def store_scores_in_mongo(
             dict_provincia.update({field: series})
             # Compute all statistics
             list_mean.append(np.mean(series))
+            list_q25.append(np.quantile(series, 0.25))
             list_median.append(np.median(series))
+            list_q75.append(np.quantile(series, 0.75))
             list_std.append(np.std(series))
             list_iqr.append(iqr(series))
             list_var.append(variation(series))
@@ -117,18 +133,13 @@ def store_scores_in_mongo(
         dict_provincia.update(
             {
                 "Mean": list_mean,
+                "q25": list_q25,
                 "Median": list_median,
+                "q75": list_q75,
                 "Standard deviation": list_std,
                 "Interquantile range": list_iqr,
                 "Coefficient of variation": list_var,
                 "fields": [s.replace("_", " ").capitalize() for s in list_field],
-                "types": {
-                    "Mean": "localization",
-                    "Median": "localization",
-                    "Standard deviation": "dispersion",
-                    "Interquantile range": "dispersion",
-                    "Coefficient of variation": "dispersion",
-                },
             }
         )
 
