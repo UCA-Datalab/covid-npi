@@ -270,7 +270,14 @@ def store_boxplot_in_mongo(
     if collection == "scores":
         list_codes = col.find_one({"province": list_provinces[0]})["fields"]
     elif collection == "cases":
-        list_codes = ["cases", "ci", "gr", "growth_rate"]
+        list_codes = [
+            "cases",
+            "ci",
+            "gr",
+            "growth_rate",
+            "lr",
+            "logarithmic_growth_rate",
+        ]
     else:
         raise ValueError(f"Unexpected collection: '{collection}'")
     # Initialize the first dictionary, that will contain the scores per code,
