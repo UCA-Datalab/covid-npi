@@ -23,10 +23,18 @@ def slice_dates(x: List, cfg: Dict) -> Tuple:
         Position of minimum and maximum dates
     """
     dates = pd.to_datetime(x, format="%Y-%m-%d")
-    date_min = dt.datetime.strptime(cfg["date_min"], "%Y-%m-%d")
-    date_max = dt.datetime.strptime(cfg["date_max"], "%Y-%m-%d") + dt.timedelta(days=1)
-    idx_min = np.argmax(dates >= date_min)
-    idx_max = np.argwhere(dates <= date_max)[-1][0]
+    try:
+        date_min = dt.datetime.strptime(cfg["date_min"], "%Y-%m-%d")
+        idx_min = np.argmax(dates >= date_min)
+    except (ValueError, KeyError) as er:
+        print(f"Could not get minimum date. Defaulting to first. {er}")
+        idx_min = 0
+    try:
+        date_max = dt.datetime.strptime(cfg["date_max"], "%Y-%m-%d")
+        idx_max = np.argwhere(dates <= date_max)[-1][0] + 1
+    except (ValueError, KeyError) as er:
+        print(f"Could not get maximum date. Defaulting to last. {er}")
+        idx_max = len(x)
     return idx_min, idx_max
 
 
