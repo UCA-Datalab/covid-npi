@@ -61,11 +61,11 @@ def main(path_output: str = "output", path_config: str = "config.toml"):
         dict_mean.update({provincia: ser_mean})
 
     # Store all cases rates
-    pd.DataFrame(dict_daily).to_csv(path_output / "incidencia_diaria.csv")
-    pd.DataFrame(dict_acum).to_csv(path_output / f"incidencia_acumulada_{days}.csv")
-    pd.DataFrame(dict_growth).to_csv(path_output / f"incidencia_crecimiento_{days}.csv")
-    pd.DataFrame(dict_lr).to_csv(path_output / f"incidencia_crecimiento_log_{days}.csv")
-    pd.DataFrame(dict_mean).to_csv(path_output / f"incidencia_media_{days}.csv")
+    pd.DataFrame(dict_daily).to_csv(path_output / "covid_cases_daily.csv")
+    pd.DataFrame(dict_acum).to_csv(path_output / f"covid_cases_cumulative_{days}.csv")
+    pd.DataFrame(dict_growth).to_csv(path_output / f"covid_growth_rate_{days}.csv")
+    pd.DataFrame(dict_lr).to_csv(path_output / f"covid_growth_rate_log_{days}.csv")
+    pd.DataFrame(dict_mean).to_csv(path_output / f"covid_cases_average_{days}.csv")
 
 
 if __name__ == "__main__":
