@@ -32,7 +32,7 @@ def slice_dates(x: List, cfg: Dict) -> Tuple:
     try:
         date_max = dt.datetime.strptime(cfg["date_max"], "%Y-%m-%d")
         idx_max = np.argwhere(dates <= date_max)[-1][0] + 1
-    except (ValueError, KeyError) as er:
+    except (ValueError, KeyError, IndexError) as er:
         print(f"Could not get maximum date. Defaulting to last. {er}")
         idx_max = len(x)
     return idx_min, idx_max
