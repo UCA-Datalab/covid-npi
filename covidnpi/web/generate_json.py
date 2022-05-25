@@ -64,7 +64,7 @@ def json_fields(path_config: str, path_json: str):
 
 def generate_json(
     path_config: str = "covidnpi/config.toml",
-    path_json_provincia: str = "output/provincias.json",
+    path_json_provincia: str = "output/provinces.json",
     path_json_fields: str = "output/fields.json",
 ):
     """Generates and stores both provinces and fields json

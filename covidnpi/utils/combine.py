@@ -7,8 +7,8 @@ import typer
 from covidnpi.utils.regions import (
     ISOPROV_TO_POSTAL,
     ISOPROV_TO_PROVINCIA,
-    ISLA_TO_PROVINCIA,
-    PROVINCIA_TO_ISOPROV,
+    ISLA_TO_PROVINCIA_LOWER,
+    PROVINCIA_LOWER_TO_ISOPROV,
 )
 
 COLS_AMBITO = [
@@ -49,7 +49,7 @@ def combine_csv(path: Union[Path, str], colname: str) -> pd.DataFrame:
 def add_unidad_territorial(df: pd.DataFrame) -> pd.DataFrame:
     # Check for islands
     unidad = df["provincia"].copy()
-    province = df["provincia"].replace(ISLA_TO_PROVINCIA)
+    province = df["provincia"].replace(ISLA_TO_PROVINCIA_LOWER)
     # Create unidad_territorial column, that contains the islands
     df.insert(loc=2, column="unidad_territorial", value=unidad)
     df.loc[unidad == province, "unidad_territorial"] = np.nan
@@ -59,7 +59,7 @@ def add_unidad_territorial(df: pd.DataFrame) -> pd.DataFrame:
 
 def add_province_code(df: pd.DataFrame) -> pd.DataFrame:
     # Get codes
-    code = df["provincia"].map(PROVINCIA_TO_ISOPROV)
+    code = df["provincia"].map(PROVINCIA_LOWER_TO_ISOPROV)
     # Replace province name and add code
     df["provincia"] = code.map(ISOPROV_TO_PROVINCIA)
     df.insert(loc=1, column="cod_prov", value=code.map(ISOPROV_TO_POSTAL))

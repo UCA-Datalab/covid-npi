@@ -14,7 +14,10 @@ from covidnpi.utils.log import (
     raise_missing_warning,
 )
 from covidnpi.utils.taxonomy import return_all_interventions, PATH_TAXONOMY
-from covidnpi.utils.regions import DICT_PROVINCE_RENAME, DICT_FILL_PROVINCIA
+from covidnpi.utils.regions import (
+    DICT_RENAME_PROVINCIA_LOWER,
+    DICT_FILL_PROVINCIA_LOWER,
+)
 
 LIST_BASE_SHEET = ["base", "base-regional-provincias", "BASE", "Base"]
 
@@ -120,7 +123,7 @@ def read_npi_data(
     if col_rename is None:
         col_rename = DICT_COL_RENAME
     if province_rename is None:
-        province_rename = DICT_PROVINCE_RENAME
+        province_rename = DICT_RENAME_PROVINCIA_LOWER
     if ccaa_rename is None:
         ccaa_rename = DICT_CCAA_RENAME
     if list_col_text is None:
@@ -169,7 +172,7 @@ def read_npi_data(
 
     # Algunas provincias no rellenan la columna "provincia", la rellenamos nosotros
     if df["provincia"].isnull().all():
-        for key, value in DICT_FILL_PROVINCIA.items():
+        for key, value in DICT_FILL_PROVINCIA_LOWER.items():
             if f"Medidas_{key}" in path_com:
                 df["provincia"] = df["provincia"].fillna(value)
                 logger.warning(f"Column 'provincia' has been filled with '{value}'.")

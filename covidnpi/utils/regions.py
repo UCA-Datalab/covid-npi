@@ -124,7 +124,7 @@ ISOPROV_REASSIGN = {
     "NC": "NA",
 }
 
-PROVINCIA_TO_ISOPROV = {
+PROVINCIA_LOWER_TO_ISOPROV = {
     "alava": "VI",
     "albacete": "AB",
     "alicante": "A",
@@ -181,9 +181,9 @@ PROVINCIA_TO_ISOPROV = {
     "zaragoza": "Z",
 }
 
-ISOPROV_TO_FILENAME = reverse_dictionary(PROVINCIA_TO_ISOPROV)
+ISOPROV_TO_PROVINCIA_LOWER = reverse_dictionary(PROVINCIA_LOWER_TO_ISOPROV)
 
-DICT_PROVINCE_RENAME = {
+DICT_RENAME_PROVINCIA_LOWER = {
     "a_coruna": "coruna_la",
     "cyl": "",
     "guipuzkoa": "guipuzcoa",
@@ -191,7 +191,7 @@ DICT_PROVINCE_RENAME = {
     "lleida": "lerida",
 }
 
-DICT_FILL_PROVINCIA = {
+DICT_FILL_PROVINCIA_LOWER = {
     "CTB": "cantabria",
     "CEU": "ceuta",
     "MEL": "melilla",
@@ -200,7 +200,7 @@ DICT_FILL_PROVINCIA = {
     "RIO": "rioja_la",
 }
 
-ISLA_TO_PROVINCIA = {
+ISLA_TO_PROVINCIA_LOWER = {
     "elhierro": "gran_canaria",
     "formentera": "tenerife",
     "fuerteventura": "gran_canaria",

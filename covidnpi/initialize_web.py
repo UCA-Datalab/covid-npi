@@ -9,7 +9,7 @@ def main(
     path_output: str = "output",
     path_taxonomy: str = PATH_TAXONOMY,
     path_config: str = "config.toml",
-    path_json_provincia: str = "output/provincias.json",
+    path_json_provincia: str = "output/provinces.json",
     path_json_fields: str = "output/fields.json",
     free_memory: bool = False,
 ):

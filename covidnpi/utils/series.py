@@ -53,10 +53,10 @@ def compute_growth_rate(series: pd.Series, days: int) -> pd.Series:
     -------
     pandas.Series
         Growth of the series per date (in percentage)
-
     """
     x = moving_average(series, days)
     idx = x.index
+    # GR = ( IA7(t) - IA7(t-7) ) * 100 / IA7(t-7)
     g = np.divide(x.values, x.shift(days).values)
     # Replace infs with NaN
     g[g == np.inf] = np.nan
@@ -64,3 +64,27 @@ def compute_growth_rate(series: pd.Series, days: int) -> pd.Series:
     # Center around 0 and change to percentage
     g = (g - 1) * 100
     return g
+
+
+def compute_logarithmic_growth_rate(series: pd.Series, days: int) -> pd.Series:
+    """Computes the logarithmic growth of a series, comparing intervals of time
+
+    Parameters
+    ----------
+    series : pandas.Series
+    days : int
+        Size of the intervals
+
+    Returns
+    -------
+    pandas.Series
+        Logarithmic growth of the series per date
+    """
+    x = moving_average(series, days)
+    idx = x.index
+    # LR = ln( 1 + GR / 100 ) = ln( IA7(t) / IA7(t - 7) )
+    lr = np.log(np.divide(x.values, x.shift(days).values))
+    # Replace infs with NaN
+    lr[lr == np.inf] = np.nan
+    lr[lr == -np.inf] = np.nan
+    return pd.Series(lr, index=idx)

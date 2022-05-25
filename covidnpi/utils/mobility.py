@@ -9,7 +9,7 @@ from covidnpi.utils.cases import (
 from covidnpi.utils.log import logger
 from covidnpi.utils.regions import (
     ISOPROV_REASSIGN,
-    ISOPROV_TO_FILENAME,
+    ISOPROV_TO_PROVINCIA_LOWER,
     ISOPROV_TO_PROVINCIA,
 )
 from covidnpi.utils.rho import compute_rho
@@ -123,7 +123,7 @@ def mobility_report_to_csv(
             .assign(ia7=series_ia7, growth_rate=series_growth, rho=series_rho)
             .rename_axis("date", axis=0)
         )
-        filename = ISOPROV_TO_FILENAME[code]
+        filename = ISOPROV_TO_PROVINCIA_LOWER[code]
         df_store.to_csv(os.path.join(path_output, f"{filename}.csv"))
 
 

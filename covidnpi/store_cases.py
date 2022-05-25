@@ -3,16 +3,14 @@ from pathlib import Path
 import pandas as pd
 import typer
 
-from covidnpi.utils.cases import (
-    load_cases_df,
-    return_cases_of_provincia_normed,
-)
+from covidnpi.utils.cases import load_cases_df, return_cases_of_provincia_normed
+from covidnpi.utils.config import load_config
 from covidnpi.utils.series import (
     compute_growth_rate,
+    compute_logarithmic_growth_rate,
     cumulative_cases,
     moving_average,
 )
-from covidnpi.utils.config import load_config
 
 
 def main(path_output: str = "output", path_config: str = "config.toml"):
@@ -37,6 +35,7 @@ def main(path_output: str = "output", path_config: str = "config.toml"):
     dict_daily = {}
     dict_acum = {}
     dict_growth = {}
+    dict_lr = {}
     dict_mean = {}
 
     # Loop through each province
@@ -54,15 +53,19 @@ def main(path_output: str = "output", path_config: str = "config.toml"):
         # Compute the growth rate of cases
         ser_growth = compute_growth_rate(ser, days).fillna(0)
         dict_growth.update({provincia: ser_growth})
+        # Compute the logarithmic growth rate of cases
+        ser_lr = compute_logarithmic_growth_rate(ser, days).fillna(0)
+        dict_lr.update({provincia: ser_lr})
         # Compute the mean cases
         ser_mean = moving_average(ser, days).fillna(0)
         dict_mean.update({provincia: ser_mean})
 
     # Store all cases rates
-    pd.DataFrame(dict_daily).to_csv(path_output / "incidencia_diaria.csv")
-    pd.DataFrame(dict_acum).to_csv(path_output / f"incidencia_acumulada_{days}.csv")
-    pd.DataFrame(dict_growth).to_csv(path_output / f"incidencia_crecimiento_{days}.csv")
-    pd.DataFrame(dict_mean).to_csv(path_output / f"incidencia_media_{days}.csv")
+    pd.DataFrame(dict_daily).to_csv(path_output / "covid_cases_daily.csv")
+    pd.DataFrame(dict_acum).to_csv(path_output / f"covid_cases_cumulative_{days}.csv")
+    pd.DataFrame(dict_growth).to_csv(path_output / f"covid_growth_rate_{days}.csv")
+    pd.DataFrame(dict_lr).to_csv(path_output / f"covid_growth_rate_log_{days}.csv")
+    pd.DataFrame(dict_mean).to_csv(path_output / f"covid_cases_average_{days}.csv")
 
 
 if __name__ == "__main__":
