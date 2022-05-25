@@ -195,15 +195,17 @@ def store_cases_in_mongo(
     cfg_cases = load_config(path_config, key="cases")
     days = cfg_cases["movavg"]
     df_cuminc = pd.read_csv(
-        path_output / f"incidencia_acumulada_{days}.csv", index_col=0, parse_dates=True
+        path_output / f"covid_cases_cumulative_{days}.csv",
+        index_col=0,
+        parse_dates=True,
     )
     df_growth = pd.read_csv(
-        path_output / f"incidencia_crecimiento_{days}.csv",
+        path_output / f"covid_growth_rate_{days}.csv",
         index_col=0,
         parse_dates=True,
     )
     df_lr = pd.read_csv(
-        path_output / f"incidencia_crecimiento_log_{days}.csv",
+        path_output / f"covid_growth_rate_log_{days}.csv",
         index_col=0,
         parse_dates=True,
     )
